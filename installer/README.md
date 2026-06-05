@@ -11,9 +11,16 @@ There are two installers:
 
 ## Easiest: prebuilt `.exe`
 
+![Kittycord Installer](preview.png)
+
 Download **`Kittycord-Installer.exe`** from the
 [latest release](https://github.com/CenturyRV/Kittycord/releases/latest), run it (not as Admin),
-then start Discord. It is produced automatically by [.github/workflows/release.yml](../.github/workflows/release.yml).
+pick your Discord install and click **Install**, then start Discord. The graphical installer
+downloads the latest build and patches Discord (and cleanly takes over an install that another mod
+patched). It is produced automatically by [.github/workflows/release.yml](../.github/workflows/release.yml).
+
+> The `.exe` is unsigned, so Windows SmartScreen may warn on first run — choose
+> "More info" → "Run anyway".
 
 ## Developer install (from source)
 

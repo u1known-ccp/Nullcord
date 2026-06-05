@@ -11,8 +11,11 @@ and more, plus its own plugin folder so you can add your own.
 ## Installing / Uninstalling
 
 **Windows (easiest):** download **`Kittycord-Installer.exe`** from the
-[latest release](https://github.com/CenturyRV/Kittycord/releases/latest), run it, then start
-Discord again. The installer downloads the latest build and patches your Discord client.
+[latest release](https://github.com/CenturyRV/Kittycord/releases/latest), run it, pick your
+Discord install and click **Install**, then start Discord again. The installer downloads the
+latest build and patches your Discord client.
+
+![Kittycord Installer](installer/preview.png)
 
 To uninstall, run the installer again and choose uninstall, or use
 [installer/Kittycord-Uninstall.ps1](installer/Kittycord-Uninstall.ps1).
