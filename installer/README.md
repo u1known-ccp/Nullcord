@@ -19,21 +19,22 @@ There are two installers:
   at least once so it has finished setting up. (The **Microsoft Store** version of Discord can't be
   patched — use the discord.com one.)
 - **An internet connection** (the installer downloads the build over HTTPS).
-- Run it as your **normal user — not** as Administrator.
+- Administrator is **not required**. Running as your normal user is recommended (elevation can
+  affect Discord's file permissions), but the installer no longer blocks it — it just warns.
 - On first launch, Windows SmartScreen may show "Windows protected your PC" because the `.exe` is
   unsigned — click **"More info" → "Run anyway"**. Some antivirus may flag it for the same reason
   (it's a PowerShell installer that downloads from GitHub); allow it / add an exclusion if needed.
 
 The installer checks these for you and shows a clear message if something's missing (Discord not
-installed, not launched yet, Store version, no internet, or run as Admin).
+installed, not launched yet, Store version, or no internet).
 
 ## Easiest: prebuilt `.exe`
 
 ![Kittycord Installer](preview.png)
 
 Download **`Kittycord-Installer.exe`** from the
-[latest release](https://github.com/CenturyRV/Kittycord/releases/latest), run it (not as Admin),
-pick your Discord install and click **Install**, then start Discord. The graphical installer
+[latest release](https://github.com/CenturyRV/Kittycord/releases/latest), run it (Administrator is
+not needed), pick your Discord install and click **Install**, then start Discord. The graphical installer
 downloads the latest build and patches Discord (and cleanly takes over an install that another mod
 patched). It is produced automatically by [.github/workflows/release.yml](../.github/workflows/release.yml).
 

@@ -20,18 +20,17 @@ try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 }
 
-# Discord lives in the per-user %LOCALAPPDATA%; patching it while elevated causes file-ownership
-# problems. Refuse to run as Administrator with a clear message.
+# Admin is NOT required (Discord lives in the per-user %LOCALAPPDATA%). Running elevated *can*
+# affect Discord's file permissions, so we only RECOMMEND against it - we don't block it.
 try {
     $kcId = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $kcPrincipal = New-Object System.Security.Principal.WindowsPrincipal($kcId)
     if ($kcPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            "Please don't run the Kittycord installer as Administrator." + [Environment]::NewLine + [Environment]::NewLine +
-            "Close it and just double-click it as your normal user (not 'Run as administrator'). " +
-            "Running elevated can break Discord's file permissions.",
-            "Kittycord", "OK", "Warning") | Out-Null
-        exit 1
+        $kcAns = [System.Windows.Forms.MessageBox]::Show(
+            "Tip: you don't need to run this as Administrator. Running as your normal user is recommended, since elevation can affect Discord's file permissions." + [Environment]::NewLine + [Environment]::NewLine +
+            "Continue anyway?",
+            "Kittycord", "YesNo", "Warning")
+        if ($kcAns -eq [System.Windows.Forms.DialogResult]::No) { exit 0 }
     }
 } catch { }
 
