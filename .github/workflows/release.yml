@@ -74,6 +74,7 @@ jobs:
                       -inputFile installer/Kittycord-Installer-GUI.ps1 `
                       -outputFile Kittycord-Installer.exe `
                       -noConsole `
+                      -iconFile installer/kittycord.ico `
                       -title "Kittycord Installer" `
                       -product "Kittycord" `
                       -company "Kittycord" `
