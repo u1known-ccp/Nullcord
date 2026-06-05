@@ -1,11 +1,3 @@
-# Equicord Types
+# Kittycord Types
 
-Typings for Equicord's api, published to npm
-
-```sh
-npm i @equicord/types
-
-yarn add @equicord/types
-
-pnpm add @equicord/types
-```
+Typings for Kittycord's API (generated from this repository).
