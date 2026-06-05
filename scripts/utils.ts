@@ -203,6 +203,14 @@ export async function parseFile(fileName: string) {
                 case "authors":
                     if (!isArrayLiteralExpression(value)) throw fail("authors is not an array literal");
                     data.authors = value.elements.map(e => {
+                        // Inline author objects (e.g. `{ name: "x", id: 0n }`) are used by some
+                        // ported plugins whose authors are not in the shared Devs/EquicordDevs maps.
+                        if (isObjectLiteralExpression(e)) {
+                            const nameProp = e.properties.find((p): p is PropertyAssignment =>
+                                isPropertyAssignment(p) && isIdentifier(p.name) && p.name.escapedText === "name");
+                            if (!nameProp || !isStringLiteral(nameProp.initializer)) throw fail("inline author object must have a string name");
+                            return { name: nameProp.initializer.text, id: "0" };
+                        }
                         if (!isPropertyAccessExpression(e)) throw fail("authors array contains non-property access expressions");
                         const d = devs[getName(e)!] || equicordDevs[getName(e)!];
                         if (!d) throw fail(`couldn't look up author ${getName(e)}`);

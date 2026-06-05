@@ -9,6 +9,7 @@ import { gitHashShort } from "@shared/vencordUserAgent";
 import { BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions, shell } from "electron";
 import aboutHtml from "file://about.html?minify";
 
+import { BRAND_NAME } from "../branding";
 import { SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 
 let cachedUpdateAvailable = false;
@@ -94,18 +95,18 @@ function openAboutWindow() {
 function createEquicordMenuItems(): MenuItemConstructorOptions[] {
     return [
         {
-            label: "Equicord",
+            label: BRAND_NAME,
             submenu: [
                 {
-                    label: "About Equicord",
+                    label: `About ${BRAND_NAME}`,
                     click: () => openAboutWindow()
                 },
                 {
-                    label: cachedUpdateAvailable ? "Update Equicord" : "Check for Updates",
+                    label: cachedUpdateAvailable ? `Update ${BRAND_NAME}` : "Check for Updates",
                     click: () => sendToRenderer(IpcEvents.TRAY_CHECK_UPDATES)
                 },
                 {
-                    label: "Repair Equicord",
+                    label: `Repair ${BRAND_NAME}`,
                     click: () => sendToRenderer(IpcEvents.TRAY_REPAIR)
                 },
                 { type: "separator" },
@@ -127,7 +128,7 @@ export function patchTrayMenu(): void {
     const originalBuildFromTemplate = Menu.buildFromTemplate;
 
     Menu.buildFromTemplate = function (template: MenuItemConstructorOptions[]) {
-        const alreadyPatched = template.some(item => item.label === "Equicord");
+        const alreadyPatched = template.some(item => item.label === BRAND_NAME);
         if (isTrayMenu(template) && !alreadyPatched) {
             const insertIndex = findInsertIndex(template);
             const equicordItems = createEquicordMenuItems();

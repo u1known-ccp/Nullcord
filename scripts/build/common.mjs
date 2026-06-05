@@ -147,7 +147,7 @@ export const globPlugins = kind => ({
         });
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
-            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "equicordplugins/_api", "equicordplugins/_core", "equicordplugins", "userplugins"];
+            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "equicordplugins/_api", "equicordplugins/_core", "equicordplugins", "moggcordplugins/_api", "moggcordplugins/_core", "moggcordplugins", "kittycordplugins/_api", "kittycordplugins/_core", "kittycordplugins", "userplugins"];
             let code = "";
             let pluginsCode = "\n";
             let metaCode = "\n";
@@ -229,13 +229,19 @@ export const gitRemotePlugin = {
             namespace: "git-remote", path: args.path
         }));
         build.onLoad({ filter, namespace: "git-remote" }, async () => {
-            let remote = process.env.EQUICORD_REMOTE;
+            let remote = process.env.KITTYCORD_REMOTE || process.env.EQUICORD_REMOTE;
             if (!remote) {
-                const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
-                remote = res.stdout.trim()
-                    .replace("https://github.com/", "")
-                    .replace("git@github.com:", "")
-                    .replace(/.git$/, "");
+                try {
+                    const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
+                    remote = res.stdout.trim()
+                        .replace("https://github.com/", "")
+                        .replace("git@github.com:", "")
+                        .replace(/.git$/, "");
+                } catch {
+                    // No `origin` configured yet (fresh Kittycord fork). Fall back so the build still succeeds;
+                    // once the Kittycord repo exists, run `git remote add origin <url>` and it is picked up automatically.
+                    remote = "CenturyRV/Kittycord";
+                }
             }
 
             return { contents: `export default "${remote}"` };

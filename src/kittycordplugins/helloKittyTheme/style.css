@@ -1,0 +1,84 @@
+/* Kittycord — Hello Kitty (kawaii pink) theme.
+   Works by overriding Discord's themeable CSS variables, so it degrades gracefully
+   across Discord versions instead of relying on mangled class names. */
+
+:root {
+    --kc-pink-50: #fff3f9;
+    --kc-pink-100: #ffe3f1;
+    --kc-pink-200: #ffd0e7;
+    --kc-pink-300: #ffb6d6;
+    --kc-pink-400: #ff8ac4;
+    --kc-pink-500: #ff5fa6;
+    --kc-pink-600: #ec3f8c;
+    --kc-ink: #5a3247;
+
+    /* Brand / accent (legacy brand scale) */
+    --brand-experiment: var(--kc-pink-500);
+    --brand-experiment-560: var(--kc-pink-600);
+    --brand-experiment-600: var(--kc-pink-600);
+    --brand-500: var(--kc-pink-500);
+    --brand-560: var(--kc-pink-600);
+    --brand-600: var(--kc-pink-600);
+    --brand-260: var(--kc-pink-200);
+    --brand-360: var(--kc-pink-300);
+
+    /* Backgrounds (legacy theming vars) */
+    --background-primary: var(--kc-pink-50);
+    --background-secondary: var(--kc-pink-100);
+    --background-secondary-alt: var(--kc-pink-200);
+    --background-tertiary: var(--kc-pink-200);
+    --background-floating: var(--kc-pink-50);
+    --background-nested-floating: var(--kc-pink-50);
+    --background-mobile-primary: var(--kc-pink-50);
+    --background-mobile-secondary: var(--kc-pink-100);
+    --channeltextarea-background: var(--kc-pink-100);
+    --background-modifier-hover: rgba(255 138 196 / 16%);
+    --background-modifier-selected: rgba(255 138 196 / 28%);
+    --background-modifier-active: rgba(255 138 196 / 32%);
+    --background-message-hover: rgba(255 138 196 / 10%);
+
+    /* Newer "base" background tokens (best-effort) */
+    --bg-base-low: var(--kc-pink-100);
+    --bg-base-lower: var(--kc-pink-50);
+    --bg-base-lowest: var(--kc-pink-50);
+    --bg-surface-overlay: var(--kc-pink-50);
+    --bg-surface-raised: var(--kc-pink-100);
+
+    /* Text */
+    --text-normal: var(--kc-ink);
+    --text-default: var(--kc-ink);
+    --text-muted: #a06b86;
+    --header-primary: var(--kc-ink);
+    --header-secondary: #8a5872;
+    --interactive-normal: var(--kc-ink);
+    --interactive-active: var(--kc-pink-600);
+
+    /* Links & misc accents */
+    --text-link: var(--kc-pink-600);
+    --mention-foreground: var(--kc-pink-600);
+}
+
+/* Cute accent on the message input and buttons */
+[class*="themedBackground"],
+[class*="channelTextArea"] {
+    background-color: var(--kc-pink-100) !important; /* input keeps its own inner bg token */
+}
+
+/* Rounded, soft corners (toggle) */
+.kc-hellokitty-rounded [class*="chat_"],
+.kc-hellokitty-rounded [class*="container_"],
+.kc-hellokitty-rounded [class*="card_"],
+.kc-hellokitty-rounded [class*="message_"],
+.kc-hellokitty-rounded [class*="button_"] {
+    border-radius: 16px !important; /* override Discord's tighter radii for a softer look */
+}
+
+/* Pink scrollbars (toggle) */
+.kc-hellokitty-pinkbars ::-webkit-scrollbar-thumb {
+    background-color: var(--kc-pink-400) !important; /* themed scrollbar thumb */
+    border-radius: 10px !important;
+}
+
+.kc-hellokitty-pinkbars ::-webkit-scrollbar-track {
+    background-color: transparent !important; /* clean track */
+}

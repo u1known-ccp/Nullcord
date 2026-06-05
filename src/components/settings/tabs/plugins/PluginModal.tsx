@@ -174,6 +174,9 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     const pluginMeta = PluginMeta[plugin.name];
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
+    const isVencordPlugin = pluginMeta.folderName.startsWith("src/plugins/") ?? false;
+    // Kittycord/moggcord plugins have no dedicated plugin website yet, so only the source-code link is shown for them.
+    const hasPluginWebsite = isVencordPlugin || isEquicordPlugin;
 
     return (
         <Modal
@@ -258,10 +261,12 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                         ) : <div />}
                         {!pluginMeta.userPlugin && (
                             <div className={cl("links")}>
-                                <WebsiteButton
-                                    text="Website"
-                                    href={isEquicordPlugin ? `https://equicord.org/plugins/${plugin.name}` : `https://vencord.dev/plugins/${plugin.name}`}
-                                />
+                                {hasPluginWebsite && (
+                                    <WebsiteButton
+                                        text="Website"
+                                        href={isEquicordPlugin ? `https://equicord.org/plugins/${plugin.name}` : `https://vencord.dev/plugins/${plugin.name}`}
+                                    />
+                                )}
                                 <GithubButton
                                     text="Source Code"
                                     href={`https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}

@@ -174,6 +174,12 @@ export const UserArea = $UserArea;
 export const isEquicord = true;
 
 /**
+ * Used to identify that the user is on Kittycord specifically (a fork of Equicord).
+ * `isEquicord` is kept `true` as well so plugins that target Equicord keep working.
+ */
+export const isKittycord = true;
+
+/**
  * An API allowing you to add other collections where discords game collection is.
  */
 export const ProfileCollections = $ProfileCollections;

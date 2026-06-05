@@ -2,7 +2,7 @@
 <meta charset="utf-8" />
 
 <head>
-    <title>About Equicord</title>
+    <title>About Kittycord</title>
     <style>
         body {
             padding: 2em;
@@ -12,9 +12,10 @@
         }
 
         :root {
-            --bg: #0d0d0d;
+            --bg: #1a0f16;
             --fg: #ffffff;
-            --fg-secondary: #a1a1a1;
+            --fg-secondary: #e6a9cb;
+            --accent: #ff5fa6;
         }
 
         html,
@@ -30,10 +31,10 @@
             margin-bottom: 2em;
         }
 
-        .header img {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
+        .header .logo {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
         }
 
         .header-text {
@@ -87,7 +88,7 @@
         }
 
         a {
-            color: var(--fg-secondary);
+            color: var(--accent);
             text-decoration: underline;
             transition: color 0.2s linear;
         }
@@ -104,19 +105,47 @@
 
 <body>
     <header class="header">
-        <img src="https://equicord.org/assets/favicon.png" alt="Equicord" />
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+            <defs>
+                <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#ffd3ec" />
+                    <stop offset="1" stop-color="#ff8ac4" />
+                </linearGradient>
+                <linearGradient id="bow" x1="150" y1="120" x2="250" y2="200" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#ff5fa2" />
+                    <stop offset="1" stop-color="#ff3d8b" />
+                </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="512" height="512" rx="116" fill="url(#bg)" />
+            <path d="M150 196 L150 92 L244 168 Z" fill="#fff" stroke="#3a2230" stroke-width="10" stroke-linejoin="round" />
+            <path d="M362 196 L362 92 L268 168 Z" fill="#fff" stroke="#3a2230" stroke-width="10" stroke-linejoin="round" />
+            <ellipse cx="256" cy="280" rx="158" ry="138" fill="#fff" stroke="#3a2230" stroke-width="10" />
+            <ellipse cx="200" cy="278" rx="17" ry="24" fill="#3a2230" />
+            <ellipse cx="312" cy="278" rx="17" ry="24" fill="#3a2230" />
+            <ellipse cx="256" cy="304" rx="11" ry="8" fill="#ffcf3f" />
+            <g stroke="#3a2230" stroke-width="8" stroke-linecap="round">
+                <path d="M126 290 L74 276" />
+                <path d="M126 310 L76 330" />
+                <path d="M386 290 L438 276" />
+                <path d="M386 310 L436 330" />
+            </g>
+            <g transform="translate(330 150)">
+                <path d="M0 0 C-46 -34 -86 -30 -86 6 C-86 42 -46 44 0 12 Z" fill="url(#bow)" stroke="#c61f63" stroke-width="8" stroke-linejoin="round" />
+                <path d="M0 0 C46 -34 86 -30 86 6 C86 42 46 44 0 12 Z" fill="url(#bow)" stroke="#c61f63" stroke-width="8" stroke-linejoin="round" />
+                <circle cx="0" cy="6" r="17" fill="#ff7ab0" stroke="#c61f63" stroke-width="8" />
+            </g>
+        </svg>
         <div class="header-text">
             <div class="header-top">
-                <h1>Equicord</h1>
+                <h1>Kittycord</h1>
                 <span class="version">
-                    <a href="https://github.com/Equicord/Equicord/releases/tag/v{{VERSION}}">
+                    <a href="https://github.com/CenturyRV/Kittycord/releases/tag/v{{VERSION}}">
                         v{{VERSION}}
                     </a>
-                    (<a href="https://github.com/Equicord/Equicord/commit/{{GIT_HASH}}">{{GIT_HASH}}</a>)
+                    (<a href="https://github.com/CenturyRV/Kittycord/commit/{{GIT_HASH}}">{{GIT_HASH}}</a>)
                 </span>
             </div>
-            <p class="tagline">An enhanced version of Vencord. A fork that offers a wider selection of plugins from the
-                community.</p>
+            <p class="tagline">The cutest Discord client mod — plugins, themes and a whole lot of pink.</p>
         </div>
     </header>
 
@@ -124,43 +153,19 @@
         <h2>Links</h2>
         <ul>
             <li>
-                <a href="https://equicord.org" target="_blank">Equicord Website</a>
-            </li>
-            <li>
-                <a href="https://docs.equicord.org" target="_blank">Equicord Docs</a>
-            </li>
-            <li>
-                <a href="https://github.com/Equicord/Equicord" target="_blank">Source Code</a>
-            </li>
-            <li>
-                <a href="https://equicord.org/discord" target="_blank">Support Server</a>
+                <a href="https://github.com/CenturyRV/Kittycord" target="_blank">Source Code</a>
             </li>
         </ul>
     </section>
     <section>
         <h2>License</h2>
         <p>
-            Equicord is licensed under the
+            Kittycord is licensed under the
             <a href="https://www.gnu.org/licenses/gpl-3.0.txt" target="_blank">GNU General Public License v3.0</a>.
             <br />
             This is free software, and you are welcome to redistribute it under certain conditions; see the license for
             details.
         </p>
-    </section>
-    <section>
-        <h2>Acknowledgements</h2>
-        <p>These awesome libraries/projects empower Equicord</p>
-        <ul>
-            <li>
-                <a href="https://github.com/Vendicated/Vencord" target="_blank">Vencord</a>
-                - Vencord is a modification for Discord that adds plugins and custom styles, blocks Discord's
-                tracking and what we are a fork of!
-            </li>
-            <li>
-                <a href="https://github.com/verticalsync/Suncord" target="_blank">Suncord</a>
-                - Suncord was a newer fork of Vencord which eventually merged into Equicord and brought many new users!
-            </li>
-        </ul>
     </section>
 </body>
 <script>

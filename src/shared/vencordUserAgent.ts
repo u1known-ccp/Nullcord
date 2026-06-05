@@ -7,8 +7,10 @@
 import gitHash from "~git-hash";
 import gitRemote from "~git-remote";
 
+import { BRAND_USER_AGENT_NAME } from "../branding";
+
 export { gitHash, gitRemote };
 
 export const gitHashShort = gitHash.slice(0, 7);
-export const VENCORD_USER_AGENT = `Equicord/${gitHash}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;
-export const VENCORD_USER_AGENT_HASHLESS = `Equicord${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;
+export const VENCORD_USER_AGENT = `${BRAND_USER_AGENT_NAME}/${gitHash}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;
+export const VENCORD_USER_AGENT_HASHLESS = `${BRAND_USER_AGENT_NAME}${gitRemote ? ` (https://github.com/${gitRemote})` : ""}`;

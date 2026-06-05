@@ -1,0 +1,100 @@
+name: Release
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+# The in-app updater finds the latest release, reads the git hash from the END of the release
+# NAME, and downloads the `desktop.asar` asset. So the release must be named "Kittycord <sha>".
+env:
+    KITTYCORD_REMOTE: ${{ github.repository }}
+
+jobs:
+    build:
+        name: Build Kittycord
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install pnpm
+              run: corepack enable
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build desktop (creates dist/desktop.asar + dist/equibop.asar)
+              run: pnpm build
+
+            - name: Build web (extensions + userscript)
+              run: pnpm buildWeb
+
+            - name: Collect release assets
+              run: |
+                  mkdir -p out
+                  cp dist/desktop.asar out/
+                  cp dist/equibop.asar out/
+                  cp dist/extension-chrome.zip out/
+                  cp dist/extension-firefox.zip out/
+                  cp dist/Kittycord.user.js out/
+                  cp dist/Kittycord.user.css out/
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: build
+                  path: out/
+
+    installer:
+        name: Build Windows installer (.exe)
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Compile installer with ps2exe
+              shell: powershell
+              run: |
+                  Install-Module -Name ps2exe -Force -Scope CurrentUser
+                  Invoke-ps2exe `
+                      -inputFile installer/Kittycord-Online-Install.ps1 `
+                      -outputFile Kittycord-Installer.exe `
+                      -title "Kittycord Installer" `
+                      -product "Kittycord" `
+                      -company "Kittycord" `
+                      -description "Installs Kittycord into your Discord desktop client"
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: installer
+                  path: Kittycord-Installer.exe
+
+    release:
+        name: Publish release
+        runs-on: ubuntu-latest
+        needs: [build, installer]
+        steps:
+            - name: Download all build outputs
+              uses: actions/download-artifact@v4
+              with:
+                  path: assets
+                  merge-multiple: true
+
+            - name: Publish/refresh the rolling release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: latest
+                  name: Kittycord ${{ github.sha }}
+                  make_latest: true
+                  body: |
+                      Automated Kittycord build for commit ${{ github.sha }}.
+
+                      **Install (Windows):** download `Kittycord-Installer.exe` below, run it, then start Discord.
+                  files: assets/**/*

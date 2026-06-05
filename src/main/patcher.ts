@@ -24,7 +24,7 @@ import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
 import { IS_VANILLA } from "./utils/constants";
 
-console.log("[Equicord] Starting up...");
+console.log("[Kittycord] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -52,7 +52,7 @@ if (!IS_VANILLA) {
         try {
             require("./hostUpdateHook").installHostUpdateHook();
         } catch (err) {
-            console.error("[Equicord] Failed to install host update hook", err);
+            console.error("[Kittycord] Failed to install host update hook", err);
         }
     }
 
@@ -178,8 +178,8 @@ if (!IS_VANILLA) {
     app.commandLine.appendSwitch("disable-background-timer-throttling");
     app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
 } else {
-    console.log("[Equicord] Running in vanilla mode. Not loading Equicord");
+    console.log("[Kittycord] Running in vanilla mode. Not loading Equicord");
 }
 
-console.log("[Equicord] Loading original Discord app.asar");
+console.log("[Kittycord] Loading original Discord app.asar");
 require(require.main!.filename);

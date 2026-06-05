@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { BRAND_NAME } from "../branding";
+
 export class Logger {
     /**
      * Returns the console format args for a title with the specified background colour and black text
@@ -33,12 +35,12 @@ export class Logger {
 
     private _log(level: "log" | "error" | "warn" | "info" | "debug", levelColor: string, args: any[], customFmt = "") {
         if (IS_REPORTER && IS_WEB && !IS_VESKTOP && !IS_EQUIBOP) {
-            console[level]("[Equicord]", this.name + ":", ...args);
+            console[level](`[${BRAND_NAME}]`, this.name + ":", ...args);
             return;
         }
 
         console[level](
-            `%c Equicord %c %c ${this.name} ${customFmt}`,
+            `%c ${BRAND_NAME} %c %c ${this.name} ${customFmt}`,
             `background: ${levelColor}; color: black; font-weight: bold; border-radius: 5px;`,
             "",
             `background: ${this.color}; color: black; font-weight: bold; border-radius: 5px;`

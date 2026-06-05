@@ -32,6 +32,8 @@ interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
 export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, isNew }: PluginCardProps) {
     const settings = Settings.plugins[plugin.name];
     const pluginMeta = PluginMeta[plugin.name];
+    const isKittycordPlugin = pluginMeta.folderName.startsWith("src/kittycordplugins/") ?? false;
+    const isMoggcordPlugin = pluginMeta.folderName.startsWith("src/moggcordplugins/") ?? false;
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
     const isVencordPlugin = pluginMeta.folderName.startsWith("src/plugins/") ?? false;
     const isUserPlugin = pluginMeta?.userPlugin ?? false;
@@ -95,6 +97,20 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             src: "https://equicord.org/assets/icons/equicord/modified.png",
             alt: "Modified",
             title: "Modified Vencord Plugin"
+        },
+        {
+            // TODO: replace placeholder badge with a dedicated Kittycord asset once branding assets exist
+            condition: isKittycordPlugin,
+            src: "https://equicord.org/assets/favicon.png",
+            alt: "Kittycord",
+            title: "Kittycord Plugin"
+        },
+        {
+            // TODO: replace placeholder badge with a dedicated moggcord asset once branding assets exist
+            condition: isMoggcordPlugin,
+            src: "https://equicord.org/assets/favicon.png",
+            alt: "Moggcord",
+            title: "Moggcord Plugin"
         },
         {
             condition: isEquicordPlugin,
