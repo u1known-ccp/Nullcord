@@ -1,0 +1,157 @@
+/*
+ * Kittycord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+import { findGroupChildrenByChildId } from "@api/ContextMenu";
+import { get, set } from "@api/DataStore";
+import { updateMessage } from "@api/MessageUpdater";
+import { Flex } from "@components/Flex";
+import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
+import definePlugin from "@utils/types";
+import { Message } from "@vencord/discord-types";
+import { Button, Menu, MessageActions, React, Text } from "@webpack/common";
+import type { ComponentType } from "react";
+
+// The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
+const ModalRoot = ModalRootRaw as ComponentType<any>;
+const ModalHeader = ModalHeaderRaw as ComponentType<any>;
+const ModalContent = ModalContentRaw as ComponentType<any>;
+const ModalCloseButton = ModalCloseButtonRaw as ComponentType<any>;
+
+const KEY = "Kittycord_MessageTags";
+const PRESET_TAGS = ["TODO", "Important", "Question", "Funny"];
+
+interface TaggedMessage {
+    channelId: string;
+    author: string;
+    content: string;
+    tags: string[];
+}
+
+let store: Record<string, TaggedMessage> = {};
+
+async function load() {
+    store = (await get<Record<string, TaggedMessage>>(KEY)) ?? {};
+}
+
+async function persist() {
+    await set(KEY, store);
+}
+
+const getTags = (id: string) => store[id]?.tags ?? [];
+
+async function toggleTag(msg: Message, tag: string) {
+    const entry = store[msg.id] ?? {
+        channelId: msg.channel_id,
+        author: msg.author?.username ?? "Unknown",
+        content: (msg.content || "").slice(0, 140),
+        tags: []
+    };
+
+    if (entry.tags.includes(tag)) entry.tags = entry.tags.filter(t => t !== tag);
+    else entry.tags = [...entry.tags, tag];
+
+    if (entry.tags.length === 0) delete store[msg.id];
+    else store[msg.id] = entry;
+
+    await persist();
+    updateMessage(msg.channel_id, msg.id);
+}
+
+function TagsModal({ rootProps }: { rootProps: any; }) {
+    const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+    const entries = Object.entries(store);
+
+    function removeAll(id: string) {
+        delete store[id];
+        persist();
+        forceUpdate();
+    }
+
+    return (
+        <ModalRoot {...rootProps} size={ModalSize.LARGE}>
+            <ModalHeader>
+                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Tagged messages ({entries.length})</Text>
+                <ModalCloseButton onClick={rootProps.onClose} />
+            </ModalHeader>
+            <ModalContent>
+                {entries.length === 0
+                    ? <Text variant="text-md/normal" style={{ padding: "16px 0" }}>No tagged messages yet. Right-click a message → Tags.</Text>
+                    : entries.map(([id, e]) => (
+                        <Flex key={id} style={{ padding: "8px 0", alignItems: "center", gap: 8 }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text variant="text-sm/semibold">{e.author} {e.tags.map(t => (
+                                    <span key={t} style={{ background: "var(--brand-500)", color: "var(--white)", borderRadius: 8, padding: "1px 6px", fontSize: 11, marginLeft: 4 }}>{t}</span>
+                                ))}</Text>
+                                <Text variant="text-sm/normal" style={{ opacity: 0.75, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    {e.content || "(no text)"}
+                                </Text>
+                            </div>
+                            <Button size={Button.Sizes.SMALL} onClick={() => {
+                                MessageActions.jumpToMessage({ channelId: e.channelId, messageId: id, flash: true });
+                                rootProps.onClose();
+                            }}>Jump</Button>
+                            <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} onClick={() => removeAll(id)}>Remove</Button>
+                        </Flex>
+                    ))}
+            </ModalContent>
+        </ModalRoot>
+    );
+}
+
+export default definePlugin({
+    name: "MessageTags",
+    description: "Tag messages with private local labels (TODO, Important, ...), see them as chips, and browse/jump to them from the toolbox.",
+    authors: [{ name: "Kittycord", id: 0n }],
+    tags: ["Utility", "Organisation"],
+    dependencies: ["ContextMenuAPI", "MessageAccessoriesAPI", "MessageUpdaterAPI"],
+
+    contextMenus: {
+        "message"(children, { message }: { message: Message; }) {
+            if (!message?.id) return;
+            const current = getTags(message.id);
+            const group = findGroupChildrenByChildId("copy-text", children) ?? children;
+            group.push(
+                <Menu.MenuItem id="kc-tags" label="Tags">
+                    {PRESET_TAGS.map(t => (
+                        <Menu.MenuCheckboxItem
+                            key={t}
+                            id={"kc-tag-" + t}
+                            label={t}
+                            checked={current.includes(t)}
+                            action={() => toggleTag(message, t)}
+                        />
+                    ))}
+                </Menu.MenuItem>
+            );
+        }
+    },
+
+    renderMessageAccessory({ message }) {
+        const tags = getTags(message.id);
+        if (!tags.length) return null;
+        return (
+            <Flex style={{ gap: 4, alignItems: "center" }}>
+                {tags.map(t => (
+                    <span key={t} style={{ background: "var(--brand-500)", color: "var(--white)", borderRadius: 8, padding: "1px 6px", fontSize: 11 }}>{t}</span>
+                ))}
+            </Flex>
+        );
+    },
+
+    toolboxActions: {
+        "Open Tagged Messages"() {
+            openModal(props => <TagsModal rootProps={props} />);
+        }
+    },
+
+    async start() {
+        await load();
+    },
+
+    stop() {
+        store = {};
+    }
+});

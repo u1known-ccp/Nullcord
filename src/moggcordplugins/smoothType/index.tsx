@@ -1,5 +1,5 @@
 /*
- * Vencord, a Discord client mod
+ * Kittycord, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -168,7 +168,7 @@ function applyCaretPosition(instant = false) {
     if (!sel?.rangeCount) { hideCaret(); return; }
     const range = sel.getRangeAt(0).cloneRange();
     range.collapse(false);
-    let rects = range.getClientRects();
+    const rects = range.getClientRects();
     let rect: DOMRect | null = rects.length > 0 ? rects[0] : null;
 
     // Collapsed ranges after deletion often return 0 rects. Use a temporary
