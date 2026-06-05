@@ -59,13 +59,14 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Compile installer with ps2exe
+            - name: Compile GUI installer with ps2exe
               shell: powershell
               run: |
                   Install-Module -Name ps2exe -Force -Scope CurrentUser
                   Invoke-ps2exe `
-                      -inputFile installer/Kittycord-Online-Install.ps1 `
+                      -inputFile installer/Kittycord-Installer-GUI.ps1 `
                       -outputFile Kittycord-Installer.exe `
+                      -noConsole `
                       -title "Kittycord Installer" `
                       -product "Kittycord" `
                       -company "Kittycord" `
