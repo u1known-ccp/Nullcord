@@ -152,93 +152,8 @@ function Get-NoInstallReason {
     return "Discord was not found. Install the Discord desktop app from discord.com first, then run this installer again."
 }
 
-function Stop-Discord($proc) {
-    Get-Process -Name $proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Milliseconds 1200
-}
-
-function Invoke-Patch($install) {
-    Stop-Discord $install.Proc
-    $res     = $install.Resources
-    $appAsar = Join-Path $res "app.asar"
-    $backup  = Join-Path $res "_app.asar"
-    $appDir  = Join-Path $res "app"
-
-    if ((Test-Path $appAsar) -and -not (Test-Path $backup)) {
-        Move-Item -Path $appAsar -Destination $backup -Force
-    }
-    if (-not (Test-Path $backup)) {
-        throw "No original app.asar/_app.asar found."
-    }
-    if (Test-Path $appDir) { Remove-Item -Path $appDir -Recurse -Force }
-    New-Item -ItemType Directory -Path $appDir | Out-Null
-
-    @'
-{
-    "name": "discord",
-    "main": "index.js",
-    "private": true
-}
-'@ | Set-Content -Path (Join-Path $appDir "package.json") -Encoding utf8
-
-    $indexJs = @"
-try {
-    require("$AsarForward");
-} catch (err) {
-    console.error("[Kittycord] Failed to load, starting vanilla Discord:", err);
-    require("../_app.asar");
-}
-"@
-    $indexJs | Set-Content -Path (Join-Path $appDir "index.js") -Encoding utf8
-}
-
-function Invoke-Unpatch($install) {
-    Stop-Discord $install.Proc
-    $res     = $install.Resources
-    $appAsar = Join-Path $res "app.asar"
-    $backup  = Join-Path $res "_app.asar"
-    $appDir  = Join-Path $res "app"
-    if (Test-Path $appDir) { Remove-Item -Path $appDir -Recurse -Force }
-    if ((Test-Path $backup) -and -not (Test-Path $appAsar)) {
-        Move-Item -Path $backup -Destination $appAsar -Force
-    }
-}
-
-# Robust download: retries via .NET, then curl.exe fallback. Validates size so a 404 "Not Found"
-# page (a few bytes) is treated as a clear failure instead of a broken install.
-function Get-Build {
-    New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-    if (Test-Path $AsarPath) { Remove-Item $AsarPath -Force -ErrorAction SilentlyContinue }
-    $headers = @{ "User-Agent" = "Kittycord-Installer" }
-    $lastErr = ""
-    for ($try = 1; $try -le 3; $try++) {
-        try {
-            Invoke-WebRequest -Uri $AsarUrl -OutFile $AsarPath -UseBasicParsing -Headers $headers -TimeoutSec 180
-            if ((Test-Path $AsarPath) -and (Get-Item $AsarPath).Length -gt 500000) { return }
-            $lastErr = "downloaded file too small (got a 'Not Found' page?). Is the repo public?"
-        } catch {
-            $lastErr = $_.Exception.Message
-        }
-        if (Test-Path $AsarPath) { Remove-Item $AsarPath -Force -ErrorAction SilentlyContinue }
-        Start-Sleep -Seconds 2
-    }
-    # fallback: bundled curl.exe (Windows 10/11), hidden
-    $curl = Join-Path $env:SystemRoot "System32\curl.exe"
-    if (Test-Path $curl) {
-        $psi = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName = $curl
-        $psi.Arguments = "-L --fail --silent --show-error -A Kittycord-Installer -o `"$AsarPath`" `"$AsarUrl`""
-        $psi.UseShellExecute = $false
-        $psi.CreateNoWindow = $true
-        $psi.RedirectStandardError = $true
-        $p = [System.Diagnostics.Process]::Start($psi)
-        $errOut = $p.StandardError.ReadToEnd()
-        $p.WaitForExit()
-        if ($p.ExitCode -eq 0 -and (Test-Path $AsarPath) -and (Get-Item $AsarPath).Length -gt 500000) { return }
-        if ($errOut) { $lastErr = $errOut.Trim() }
-    }
-    throw $lastErr
-}
+# Download + patch/unpatch run in a background runspace (see Start-Work below) so the window
+# never freezes during the large download.
 
 # ================= UI =================
 $form = New-Object System.Windows.Forms.Form
@@ -428,7 +343,6 @@ function Write-Status($msg) {
     $status.SelectionStart = $status.TextLength
     $status.SelectionLength = 0
     $status.ScrollToCaret()
-    [System.Windows.Forms.Application]::DoEvents()
 }
 
 function Get-Selected {
@@ -446,37 +360,152 @@ function Set-Busy($busy) {
     if ($busy) { $form.Cursor = "WaitCursor" } else { $form.Cursor = "Default" }
 }
 
-function Do-Install {
+# --- background worker: keeps the UI responsive (no "Not Responding") ---
+# All heavy work (download + patch/unpatch) runs in a separate runspace; a UI timer drains its
+# log queue and finalises when it's done.
+$script:work = [hashtable]::Synchronized(@{ Done = $false; Ok = $true })
+$script:workQueue = [System.Collections.Queue]::Synchronized((New-Object System.Collections.Queue))
+$script:doneMsg = ""
+
+$workerBody = {
+    function Log($m) { $q.Enqueue([string]$m) }
+    try {
+        if ($mode -eq "install") {
+            Log "Downloading latest Kittycord build..."
+            try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 } catch { }
+            New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+            if (Test-Path $AsarPath) { Remove-Item $AsarPath -Force -ErrorAction SilentlyContinue }
+            $ok = $false; $err = "unknown error"
+            for ($t = 0; $t -lt 3 -and -not $ok; $t++) {
+                try {
+                    Invoke-WebRequest -Uri $AsarUrl -OutFile $AsarPath -UseBasicParsing -Headers @{ "User-Agent" = "Kittycord-Installer" } -TimeoutSec 180
+                    if ((Test-Path $AsarPath) -and (Get-Item $AsarPath).Length -gt 500000) { $ok = $true }
+                    else { $err = "downloaded file too small (is the repo public?)" }
+                } catch { $err = $_.Exception.Message }
+                if (-not $ok) {
+                    if (Test-Path $AsarPath) { Remove-Item $AsarPath -Force -ErrorAction SilentlyContinue }
+                    Start-Sleep -Seconds 2
+                }
+            }
+            if (-not $ok) {
+                $curl = Join-Path $env:SystemRoot "System32\curl.exe"
+                if (Test-Path $curl) {
+                    & $curl -L --fail --silent --show-error -A Kittycord-Installer -o $AsarPath $AsarUrl 2>$null
+                    if ((Test-Path $AsarPath) -and (Get-Item $AsarPath).Length -gt 500000) { $ok = $true }
+                }
+            }
+            if (-not $ok) { Log ("Download failed: " + $err); $st.Ok = $false; return }
+            Log "Build downloaded. Patching..."
+            $idx = 'try {' + "`r`n" +
+                '    require("' + $AsarForward + '");' + "`r`n" +
+                '} catch (err) {' + "`r`n" +
+                '    console.error("[Kittycord] Failed to load, starting vanilla Discord:", err);' + "`r`n" +
+                '    require("../_app.asar");' + "`r`n" +
+                '}'
+            foreach ($i in $sel) {
+                try {
+                    Get-Process -Name $i.Proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+                    Start-Sleep -Milliseconds 1200
+                    $res = $i.Resources
+                    $appAsar = Join-Path $res "app.asar"
+                    $backup = Join-Path $res "_app.asar"
+                    $appDir = Join-Path $res "app"
+                    if ((Test-Path $appAsar) -and -not (Test-Path $backup)) { Move-Item -Path $appAsar -Destination $backup -Force }
+                    if (-not (Test-Path $backup)) { throw "no original app.asar/_app.asar found" }
+                    if (Test-Path $appDir) { Remove-Item -Path $appDir -Recurse -Force }
+                    New-Item -ItemType Directory -Path $appDir | Out-Null
+                    Set-Content -Path (Join-Path $appDir "package.json") -Encoding utf8 -Value '{ "name": "discord", "main": "index.js", "private": true }'
+                    Set-Content -Path (Join-Path $appDir "index.js") -Encoding utf8 -Value $idx
+                    Log ("Patched " + $i.Name + ".")
+                } catch { Log ("Error patching " + $i.Name + ": " + $_.Exception.Message); $st.Ok = $false }
+            }
+            Log "Done. Start Discord again to use Kittycord."
+        } else {
+            foreach ($i in $sel) {
+                try {
+                    Get-Process -Name $i.Proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+                    Start-Sleep -Milliseconds 1200
+                    $res = $i.Resources
+                    $appAsar = Join-Path $res "app.asar"
+                    $backup = Join-Path $res "_app.asar"
+                    $appDir = Join-Path $res "app"
+                    if (Test-Path $appDir) { Remove-Item -Path $appDir -Recurse -Force }
+                    if ((Test-Path $backup) -and -not (Test-Path $appAsar)) { Move-Item -Path $backup -Destination $appAsar -Force }
+                    Log ("Reverted " + $i.Name + ".")
+                } catch { Log ("Error reverting " + $i.Name + ": " + $_.Exception.Message); $st.Ok = $false }
+            }
+            Log "Uninstalled. Start Discord again for a clean client."
+        }
+    } catch {
+        Log ("Error: " + $_.Exception.Message); $st.Ok = $false
+    } finally {
+        $st.Done = $true
+    }
+}
+
+$script:poll = New-Object System.Windows.Forms.Timer
+$script:poll.Interval = 200
+$script:poll.Add_Tick({
+    while ($script:workQueue.Count -gt 0) { Write-Status ([string]$script:workQueue.Dequeue()) }
+    if ($script:work.Done) {
+        $script:poll.Stop()
+        try { $script:wps.EndInvoke($script:whandle) } catch { }
+        try { $script:wps.Dispose() } catch { }
+        try { $script:wrs.Dispose() } catch { }
+        Set-Busy $false
+        if ($script:work.Ok) {
+            [System.Windows.Forms.MessageBox]::Show($script:doneMsg, "Kittycord", "OK", "Information") | Out-Null
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("Something went wrong - check the log in the window.", "Kittycord", "OK", "Warning") | Out-Null
+        }
+    }
+})
+
+function Start-Work($mode, $sel) {
+    $script:work.Done = $false
+    $script:work.Ok = $true
+    # CreateDefault() so the worker has the standard cmdlets (Invoke-WebRequest, Get-Process,
+    # Move-Item, Set-Content, ...). A bare runspace may only load the core engine.
+    $iss = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+    $rs = [runspacefactory]::CreateRunspace($iss)
+    $rs.Open()
+    $rs.SessionStateProxy.SetVariable("mode", $mode)
+    $rs.SessionStateProxy.SetVariable("sel", $sel)
+    $rs.SessionStateProxy.SetVariable("AsarUrl", $AsarUrl)
+    $rs.SessionStateProxy.SetVariable("AsarPath", $AsarPath)
+    $rs.SessionStateProxy.SetVariable("AsarForward", $AsarForward)
+    $rs.SessionStateProxy.SetVariable("InstallDir", $InstallDir)
+    $rs.SessionStateProxy.SetVariable("q", $script:workQueue)
+    $rs.SessionStateProxy.SetVariable("st", $script:work)
+    $ps = [PowerShell]::Create()
+    $ps.Runspace = $rs
+    [void]$ps.AddScript($workerBody)
+    $script:wps = $ps
+    $script:wrs = $rs
+    $script:whandle = $ps.BeginInvoke()
+    $script:poll.Start()
+}
+
+$btnInstall.Add_Click({
     $sel = Get-Selected
     if ($sel.Count -eq 0) { Write-Status "Select at least one Discord install first."; return }
     Set-Busy $true
-    try {
-        Write-Status "Downloading latest Kittycord build..."
-        try { Get-Build } catch { Write-Status "Download failed: $($_.Exception.Message)"; return }
-        Write-Status "Build saved to $AsarPath"
-        foreach ($i in $sel) {
-            try { Invoke-Patch $i; Write-Status ("Patched {0}." -f $i.Name) }
-            catch { Write-Status ("Error patching {0}: {1}" -f $i.Name, $_.Exception.Message) }
-        }
-        Write-Status "Done. Start Discord again to use Kittycord."
-        [System.Windows.Forms.MessageBox]::Show("Kittycord installed. Start Discord again to see it.", "Kittycord", "OK", "Information") | Out-Null
-    } finally { Set-Busy $false }
-}
-
-$btnInstall.Add_Click({ Do-Install })
-$btnRepair.Add_Click({ Do-Install })
+    $script:doneMsg = "Kittycord installed. Start Discord again to see it."
+    Start-Work "install" $sel
+})
+$btnRepair.Add_Click({
+    $sel = Get-Selected
+    if ($sel.Count -eq 0) { Write-Status "Select at least one Discord install first."; return }
+    Set-Busy $true
+    $script:doneMsg = "Kittycord installed. Start Discord again to see it."
+    Start-Work "install" $sel
+})
 $btnUninstall.Add_Click({
     $sel = Get-Selected
     if ($sel.Count -eq 0) { Write-Status "Select at least one Discord install first."; return }
     Set-Busy $true
-    try {
-        foreach ($i in $sel) {
-            try { Invoke-Unpatch $i; Write-Status ("Reverted {0}." -f $i.Name) }
-            catch { Write-Status ("Error reverting {0}: {1}" -f $i.Name, $_.Exception.Message) }
-        }
-        Write-Status "Uninstalled. Start Discord again for a clean client."
-        [System.Windows.Forms.MessageBox]::Show("Kittycord removed.", "Kittycord", "OK", "Information") | Out-Null
-    } finally { Set-Busy $false }
+    $script:doneMsg = "Kittycord removed. Start Discord again for a clean client."
+    Start-Work "uninstall" $sel
 })
 
 $form.Add_Shown({
