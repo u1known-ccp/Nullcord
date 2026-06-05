@@ -46,6 +46,8 @@ jobs:
             - name: Collect release assets
               run: |
                   mkdir -p out
+                  # version marker the in-app updater reads from the CDN (avoids the GitHub API rate limit)
+                  echo "${{ github.sha }}" > out/version.txt
                   cp dist/desktop.asar out/
                   cp dist/equibop.asar out/
                   cp dist/extension-chrome.zip out/

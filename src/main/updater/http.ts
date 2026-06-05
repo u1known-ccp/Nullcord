@@ -28,6 +28,7 @@ import gitRemote from "~git-remote";
 import { ASAR_FILE, serializeErrors } from "./common";
 
 const API_BASE = `https://api.github.com/repos/${gitRemote}`;
+const RELEASE_DOWNLOAD_BASE = `https://github.com/${gitRemote}/releases/latest/download`;
 let PendingUpdate: string | null = null;
 
 async function githubGet<T = any>(endpoint: string) {
@@ -45,24 +46,30 @@ async function calculateGitChanges() {
     const isOutdated = await fetchUpdates();
     if (!isOutdated) return [];
 
-    const data = await githubGet(`/compare/${gitHash}...HEAD`);
+    // The per-commit changelog still uses the GitHub API. If that is rate-limited or fails, we
+    // still report that an update is available (just without the detailed commit list).
+    try {
+        const data = await githubGet(`/compare/${gitHash}...HEAD`);
 
-    return data.commits.map((c: any) => ({
-        hash: c.sha,
-        author: c.author?.login ?? c.commit?.author?.name ?? "Ghost",
-        message: c.commit.message.split("\n")[0]
-    }));
+        return data.commits.map((c: any) => ({
+            hash: c.sha,
+            author: c.author?.login ?? c.commit?.author?.name ?? "Ghost",
+            message: c.commit.message.split("\n")[0]
+        }));
+    } catch {
+        return [{ hash: gitHash.slice(0, 7), author: "", message: "A new version is available." }];
+    }
 }
 
 async function fetchUpdates() {
-    const data = await githubGet("/releases/latest");
+    // Check for updates via the release download CDN (version.txt) instead of the GitHub REST API,
+    // so update checks are NOT subject to the 60 requests/hour unauthenticated API rate limit.
+    const remoteHash = (await fetchBuffer(`${RELEASE_DOWNLOAD_BASE}/version.txt`)).toString("utf-8").trim();
 
-    const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
-    if (hash === gitHash)
+    if (!remoteHash || remoteHash === gitHash)
         return false;
 
-    const asset = data.assets.find(a => a.name === ASAR_FILE);
-    PendingUpdate = asset.browser_download_url;
+    PendingUpdate = `${RELEASE_DOWNLOAD_BASE}/${ASAR_FILE}`;
 
     return true;
 }
