@@ -9,6 +9,8 @@ import { definePluginSettings } from "@api/Settings";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 
+import { localCorrect } from "./corrections";
+
 // Groq's HTTP POST has to run in the main process: Discord's renderer CSP blocks fetch to
 // api.groq.com. This is the ONLY external network request the plugin ever makes.
 const Native = VencordNative.pluginHelpers.AutoCorrect as PluginNative<typeof import("./native")>;
@@ -16,13 +18,18 @@ const Native = VencordNative.pluginHelpers.AutoCorrect as PluginNative<typeof im
 const logger = new Logger("AutoCorrect");
 
 const settings = definePluginSettings({
+    engine: {
+        type: OptionType.SELECT,
+        description: "Local = offline, fixes common typos, nothing is ever sent anywhere. AI = smarter full grammar correction, but sends your message text to Groq and needs your own key below.",
+        options: [
+            { label: "Local (offline, no key, private)", value: "local", default: true },
+            { label: "AI via Groq (needs your own key)", value: "ai" }
+        ]
+    },
     apiKey: {
         type: OptionType.STRING,
         default: "",
-        description:
-            "Your own free Groq API key (console.groq.com). REQUIRED. " +
-            "WARNING: while AutoCorrect is on, the text of each message you send is sent to " +
-            "Groq's servers (a third party) to be corrected. Leave empty to send nothing anywhere."
+        description: "Only used in AI mode. Your own free Groq API key (console.groq.com). WARNING: in AI mode the text of each message you send is sent to Groq's servers (a third party). Leave empty to never send anything."
     },
     language: {
         type: OptionType.SELECT,
@@ -70,11 +77,7 @@ function buildSystemPrompt(): string {
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(w => w.length > 0).length;
 
-async function correctText(text: string): Promise<string> {
-    // No key => no network call, ever. This is the hard opt-in gate.
-    const apiKey = settings.store.apiKey?.trim();
-    if (!apiKey) return text;
-
+async function aiCorrect(text: string, apiKey: string): Promise<string> {
     if (text.trim().length < 3) return text;
 
     let corrected: string;
@@ -102,11 +105,25 @@ async function correctText(text: string): Promise<string> {
     return corrected;
 }
 
+async function correctText(text: string): Promise<string> {
+    const lang = settings.store.language ?? "en";
+
+    // AI mode only when the user selected it AND supplied their own key.
+    if (settings.store.engine === "ai") {
+        const apiKey = settings.store.apiKey?.trim();
+        if (apiKey) return aiCorrect(text, apiKey);
+        // AI selected but no key -> fall back to the offline corrector.
+    }
+
+    // Local mode: offline, nothing leaves the machine.
+    return localCorrect(text, lang);
+}
+
 let listener: MessageSendListener;
 
 export default definePlugin({
     name: "AutoCorrect",
-    description: "Opt-in: fixes spelling/grammar of the message you're about to send using the Groq AI API. Off until you paste your own free Groq key (console.groq.com) into its settings. WARNING: while enabled, the text of each message you send is sent to Groq's servers (a third party). No key configured = nothing is ever sent anywhere.",
+    description: "Fixes spelling/grammar of the message you're about to send. Default Local mode is offline, needs no key and sends nothing anywhere (fixes common typos). Optional AI mode uses Groq for full grammar correction - it needs your own free key and sends your message text to Groq (a third party).",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Chat", "Utility"],
     dependencies: ["MessageEventsAPI"],
@@ -114,8 +131,6 @@ export default definePlugin({
 
     start() {
         listener = addMessagePreSendListener(async (_channelId, message) => {
-            // Re-check the key on every send: still the only thing that allows a network call.
-            if (!settings.store.apiKey?.trim()) return;
             if (!message.content) return;
             message.content = await correctText(message.content);
         });
