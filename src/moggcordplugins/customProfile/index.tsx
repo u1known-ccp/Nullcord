@@ -1100,8 +1100,8 @@ export default definePlugin({
         {
             find: ':"SHOULD_LOAD");',
             replacement: {
-                match: /\i(?:\?)?.getPreviewBanner\(\i,\i,\i\)(?=.{0,100}"COMPLETE")/,
-                replace: "$self.patchBannerUrl(arguments[0])||$&"
+                match: /(\i)(?:\?)?.getPreviewBanner\(\i,\i,\i\)(?=.{0,100}"COMPLETE")/,
+                replace: "$self.patchBannerUrl($1)||$&"
             }
         },
         // UserProfileStore patch removed — caused invisible channels for members
@@ -1420,7 +1420,7 @@ export default definePlugin({
         return "***-***-" + fake.slice(-4);
     },
 
-    patchBannerUrl({ displayProfile }: any) {
+    patchBannerUrl(displayProfile: any) {
         if (!isEnabled || !storedData.nitro || !storedData.banner) return null;
         try { return isMe(displayProfile?.userId) ? storedData.banner : null; } catch { return null; }
     },
