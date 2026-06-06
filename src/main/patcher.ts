@@ -58,6 +58,13 @@ if (!IS_VANILLA) {
         console.error("[Kittycord] Failed to install bundled themes", err);
     }
 
+    // Optional anonymous usage stats (opt-in; fully inert until an endpoint is configured + the user agrees).
+    try {
+        require("./telemetry");
+    } catch (err) {
+        console.error("[Kittycord] Failed to set up telemetry", err);
+    }
+
     /*
      * re-apply the patch when discord ships a new host version. skipped
      * on vesktop and equibop because they manage their own updates.

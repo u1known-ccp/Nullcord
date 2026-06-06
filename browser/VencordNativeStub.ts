@@ -134,6 +134,12 @@ window.VencordNative = {
         openFolder: async () => Promise.reject("settings:openFolder is not supported on web"),
     },
 
+    kittycordTelemetry: {
+        // No main process on web -> telemetry is inert (no endpoint, no prompt, nothing sent).
+        getConsent: async () => ({ consent: null as boolean | null, endpointConfigured: false }),
+        setConsent: NOOP_ASYNC,
+    },
+
     pluginHelpers: {} as any,
     csp: {} as any,
     tray: {

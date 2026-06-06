@@ -105,5 +105,10 @@ export default {
         onRepair: (cb: () => void) => { ipcRenderer.on(IpcEvents.TRAY_REPAIR, cb); },
     },
 
+    kittycordTelemetry: {
+        getConsent: () => invoke<{ consent: boolean | null; endpointConfigured: boolean; }>(IpcEvents.GET_TELEMETRY_CONSENT),
+        setConsent: (consent: boolean) => invoke<void>(IpcEvents.SET_TELEMETRY_CONSENT, consent),
+    },
+
     pluginHelpers: PluginHelpers
 };
