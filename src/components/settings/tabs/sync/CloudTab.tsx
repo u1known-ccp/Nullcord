@@ -26,7 +26,6 @@ import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
 import { CloudDownloadIcon, CloudUploadIcon, SkullIcon } from "@components/Icons";
-import { Link } from "@components/Link";
 import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
@@ -38,12 +37,12 @@ import { Alerts, SearchableSelect, Select, useState } from "@webpack/common";
 
 const ICON_STYLE: React.CSSProperties = { width: 20, height: 20, borderRadius: 4, verticalAlign: "middle" };
 
-function EquicordIcon() {
-    return <img src="https://equicord.org/assets/favicon.png" alt="Equicord" style={ICON_STYLE} />;
-}
-
-function VencordIcon() {
-    return <img src="https://equicord.org/assets/icons/vencord/icon-light.png" alt="Vencord" style={ICON_STYLE} />;
+function CloudIcon() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={ICON_STYLE} aria-hidden="true">
+            <path d="M6.5 19a4.5 4.5 0 0 1-.42-8.98A6 6 0 0 1 17.7 9.2 4.5 4.5 0 0 1 17.5 19h-11Z" />
+        </svg>
+    );
 }
 
 const RefreshIcon = findComponentByCodeLazy("M4 12a8 8 0 0 1 14.93-4H15");
@@ -59,8 +58,8 @@ function validateUrl(url: string) {
 }
 
 const cloudBackendOptions = [
-    { label: "Equicord Cloud", value: "https://cloud.equicord.org/" },
-    { label: "Vencord Cloud", value: "https://api.vencord.dev/" }
+    { label: "Default Cloud", value: "https://cloud.equicord.org/" },
+    { label: "Alternate Cloud", value: "https://api.vencord.dev/" }
 ];
 
 const syncDirectionOptions = [
@@ -97,9 +96,8 @@ function CloudTab() {
             </Paragraph>
 
             <Notice.Info className={Margins.bottom16}>
-                We use our own <Link href="https://github.com/Equicord/Equicloud">Equicloud backend</Link> with enhanced features.
-                View our <Link href="https://equicord.org/cloud/policy">privacy policy</Link> to see what we store and how we use your data.
-                Equicloud is BSD 3.0 licensed, so you can self-host if preferred.
+                Your settings are stored on the cloud backend you select below. Check that backend's own privacy policy
+                to see what is stored and how it is used. The backend is open-source, so you can self-host your own instead.
             </Notice.Info>
 
             <FormSwitch
@@ -119,7 +117,7 @@ function CloudTab() {
 
             <Heading className={Margins.top20}>Cloud Backend</Heading>
             <Paragraph className={Margins.bottom16}>
-                Choose which cloud backend to use for storing your settings. You can switch between Equicord's and Vencord's cloud services, or use a self-hosted instance.
+                Choose which cloud backend to use for storing your settings. You can switch between the available cloud backends, or use a self-hosted instance.
             </Paragraph>
 
             <div className={Margins.bottom8}>
@@ -128,7 +126,7 @@ function CloudTab() {
                     value={cloudBackendOptions.find(o => o.value === cloud.url)?.value}
                     onChange={v => changeUrl(v)}
                     closeOnSelect={true}
-                    renderOptionPrefix={o => o?.value?.includes("equicord") ? <EquicordIcon /> : <VencordIcon />}
+                    renderOptionPrefix={() => <CloudIcon />}
                 />
             </div>
 
