@@ -17,7 +17,7 @@ import definePlugin from "@utils/types";
 import { findByProps } from "@webpack";
 import { AuthenticationStore, Button, FluxDispatcher, IconUtils, Menu, React, Select, SnowflakeUtils, UserStore } from "@webpack/common";
 import { ComponentType } from "react";
-import virtualMerge from "virtual-merge";
+
 
 const ModalRoot = ModalRootRaw as ComponentType<any>;
 const ModalHeader = ModalHeaderRaw as ComponentType<any>;
@@ -1390,7 +1390,7 @@ export default definePlugin({
                 if (profile.premiumGuildSince) merged.premiumGuildSince = profile.premiumGuildSince;
             }
 
-            const result = virtualMerge(profile, merged);
+            const result = { ...profile, ...merged };
             this._cachedProfileInput = profile;
             this._cachedProfile = result;
             this._cachedProfileVersion = _dataVersion;
