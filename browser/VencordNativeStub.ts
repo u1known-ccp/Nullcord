@@ -140,6 +140,14 @@ window.VencordNative = {
         setConsent: NOOP_ASYNC,
     },
 
+    kittycordShare: {
+        // No main process on web -> friend discovery is inert.
+        getConsent: async () => ({ consent: null as boolean | null, endpointConfigured: false }),
+        setConsent: NOOP_ASYNC,
+        register: NOOP_ASYNC,
+        friendsCheck: async () => [] as string[],
+    },
+
     pluginHelpers: {} as any,
     csp: {} as any,
     tray: {

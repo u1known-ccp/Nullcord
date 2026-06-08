@@ -12,9 +12,10 @@ import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRa
 import { relaunch } from "@utils/native";
 import definePlugin from "@utils/types";
 import type { Message, MessageAttachment, User } from "@vencord/discord-types";
-import { Alerts, Button, Menu, React, RelationshipStore, SearchableSelect, showToast, Text, TextInput, Toasts, UserStore } from "@webpack/common";
+import { Alerts, Button, IconUtils, Menu, React, RelationshipStore, SearchableSelect, showToast, Text, TextInput, Toasts, UserStore } from "@webpack/common";
 import type { ComponentType } from "react";
 
+import { getKittycordFriendIds, getShareConsent, registerSelf, setShareConsent } from "./registry";
 import { applyShare, fetchShare, findShareAttachment, sendShare, type ShareEnvelope, type ShareScope } from "./utils";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
@@ -132,12 +133,131 @@ function ImportCardInner({ message, attachment }: { message: Message; attachment
 
 const ImportCard = ErrorBoundary.wrap(ImportCardInner, { noop: true });
 
+type FriendsPhase = "loading" | "needConsent" | "disabled" | "ready";
+
+function FriendsModal({ rootProps }: { rootProps: any; }) {
+    const [phase, setPhase] = React.useState<FriendsPhase>("loading");
+    const [friends, setFriends] = React.useState<User[]>([]);
+    const [scope, setScope] = React.useState<ShareScope>("plugins");
+    const [note, setNote] = React.useState("Here's my Kittycord setup — open it in Kittycord to import.");
+
+    async function loadFriends() {
+        setPhase("loading");
+        await registerSelf();
+        const ids = await getKittycordFriendIds();
+        setFriends(ids.map(id => UserStore.getUser(id)).filter((u): u is User => Boolean(u)));
+        setPhase("ready");
+    }
+
+    React.useEffect(() => {
+        (async () => {
+            const { consent, endpointConfigured } = await getShareConsent();
+            if (!endpointConfigured) return setPhase("disabled");
+            if (consent === true) return loadFriends();
+            setPhase("needConsent");
+        })();
+    }, []);
+
+    function askConsent() {
+        Alerts.show({
+            title: "Find friends who use Kittycord?",
+            body: (
+                <div style={{ textAlign: "left" }}>
+                    <Text variant="text-md/normal">
+                        To show which of your friends use Kittycord, your friend list is sent to the Kittycord server, which replies with the ones that have it.
+                    </Text>
+                    <Text variant="text-sm/normal" style={{ marginTop: 8, opacity: 0.8 }}>
+                        The server only ever stores a salted hash of each opted-in user's id — never your friend list, your token, or any messages. You can turn this off anytime.
+                    </Text>
+                </div>
+            ),
+            confirmText: "Enable & find friends",
+            cancelText: "Not now",
+            onConfirm: async () => {
+                await setShareConsent(true);
+                await loadFriends();
+            }
+        });
+    }
+
+    async function sendTo(user: User) {
+        try {
+            await sendShare(user.id, scope, note.trim() || "Here's my Kittycord setup.");
+            showToast(`Sent to ${user.globalName || user.username}.`, Toasts.Type.SUCCESS);
+        } catch (e) {
+            showToast(String((e as Error)?.message ?? "Could not send the setup."), Toasts.Type.FAILURE);
+        }
+    }
+
+    return (
+        <ModalRoot {...rootProps} size={ModalSize.MEDIUM}>
+            <ModalHeader>
+                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Share with a Kittycord friend</Text>
+                <ModalCloseButton onClick={rootProps.onClose} />
+            </ModalHeader>
+            <ModalContent>
+                <Text variant="text-sm/semibold" style={{ margin: "12px 0 4px" }}>What to share</Text>
+                <SearchableSelect options={SCOPE_OPTIONS} value={scope} onChange={(v: ShareScope) => setScope(v)} closeOnSelect />
+
+                <Text variant="text-sm/semibold" style={{ margin: "12px 0 4px" }}>Message</Text>
+                <TextInput value={note} onChange={setNote} />
+
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 4px" }}>Your Kittycord friends</Text>
+                {phase === "loading" && <Text variant="text-sm/normal" style={{ opacity: 0.7 }}>Looking…</Text>}
+                {phase === "disabled" && (
+                    <Text variant="text-sm/normal" style={{ opacity: 0.7 }}>
+                        Friend discovery isn't available here. You can still right-click any friend and choose “Send my Kittycord setup”.
+                    </Text>
+                )}
+                {phase === "needConsent" && (
+                    <>
+                        <Text variant="text-sm/normal" style={{ opacity: 0.8, marginBottom: 8 }}>
+                            See which of your friends use Kittycord and send to them in one click.
+                        </Text>
+                        <Button color={Button.Colors.BRAND} onClick={askConsent}>Find my Kittycord friends</Button>
+                    </>
+                )}
+                {phase === "ready" && friends.length === 0 && (
+                    <Text variant="text-sm/normal" style={{ opacity: 0.7 }}>
+                        None of your friends are registered yet. Tell them to enable this in Kittycord!
+                    </Text>
+                )}
+                {phase === "ready" && friends.map(user => (
+                    <Flex key={user.id} style={{ alignItems: "center", gap: 10, padding: "6px 0" }}>
+                        <img src={IconUtils.getUserAvatarURL(user)} width={28} height={28} style={{ borderRadius: "50%" }} alt="" />
+                        <Text variant="text-md/normal" style={{ flex: 1 }}>{user.globalName || user.username}</Text>
+                        <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => sendTo(user)}>Send</Button>
+                    </Flex>
+                ))}
+                {phase === "ready" && (
+                    <div style={{ marginTop: 12 }}>
+                        <Button
+                            size={Button.Sizes.SMALL}
+                            look={Button.Looks.LINK}
+                            color={Button.Colors.PRIMARY}
+                            onClick={async () => { await setShareConsent(false); setFriends([]); setPhase("needConsent"); }}
+                        >
+                            Stop being discoverable
+                        </Button>
+                    </div>
+                )}
+            </ModalContent>
+        </ModalRoot>
+    );
+}
+
 export default definePlugin({
     name: "ShareSetup",
     description: "Send your Kittycord plugins, themes and settings to a friend in one click. They get a one-tap import card right in the DM.",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Utility"],
     dependencies: ["MessageAccessoriesAPI", "ContextMenuAPI"],
+
+    toolboxActions: {
+        "Share setup with a friend"() {
+            openModal(props => <FriendsModal rootProps={props} />);
+        }
+    },
 
     contextMenus: {
         "user-context"(children, { user }: { user?: User; }) {

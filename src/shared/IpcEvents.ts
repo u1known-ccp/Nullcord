@@ -60,4 +60,9 @@ export const enum IpcEvents {
 
     GET_TELEMETRY_CONSENT = "KittycordGetTelemetryConsent",
     SET_TELEMETRY_CONSENT = "KittycordSetTelemetryConsent",
+
+    GET_SHARE_CONSENT = "KittycordGetShareConsent",
+    SET_SHARE_CONSENT = "KittycordSetShareConsent",
+    SHARE_REGISTER = "KittycordShareRegister",
+    SHARE_FRIENDS_CHECK = "KittycordShareFriendsCheck",
 }

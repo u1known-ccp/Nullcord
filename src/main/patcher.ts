@@ -65,6 +65,13 @@ if (!IS_VANILLA) {
         console.error("[Kittycord] Failed to set up telemetry", err);
     }
 
+    // Optional opt-in "which friends use Kittycord?" registry (inert until configured + the user agrees).
+    try {
+        require("./shareRegistry");
+    } catch (err) {
+        console.error("[Kittycord] Failed to set up share registry", err);
+    }
+
     /*
      * re-apply the patch when discord ships a new host version. skipped
      * on vesktop and equibop because they manage their own updates.
