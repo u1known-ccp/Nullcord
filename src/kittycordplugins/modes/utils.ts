@@ -18,7 +18,6 @@ interface CustomStatusSettingValue {
     expiresAtMs: string;
 }
 
-// Discord's own status user-settings, same ones QuietHours / profileSets use.
 const StatusSetting = getUserSettingLazy<StatusValue>("status", "status");
 const CustomStatusSetting = getUserSettingLazy<CustomStatusSettingValue | null>("status", "customStatus");
 
@@ -31,13 +30,9 @@ export interface Mode {
     id: string;
     name: string;
     emoji?: string;
-    /** Undefined leaves the current online status untouched. */
     status?: StatusValue;
-    /** Undefined leaves the custom status untouched; null clears it. */
     customStatus?: ModeCustomStatus | null;
-    /** Undefined leaves the enabled themes untouched. */
     themes?: string[];
-    /** Plugin name to desired enabled state. Only the listed plugins are touched. */
     plugins?: Record<string, boolean>;
 }
 
@@ -82,7 +77,6 @@ export function newMode(name: string): Mode {
     return { id: crypto.randomUUID(), name, plugins: {} };
 }
 
-/** Snapshot the current online status, custom status and enabled themes into a mode. */
 export function captureInto(mode: Mode): Mode {
     const status = StatusSetting?.getSetting?.();
     const cs = CustomStatusSetting?.getSetting?.();
@@ -94,7 +88,6 @@ export function captureInto(mode: Mode): Mode {
     };
 }
 
-/** Real, toggleable plugins a mode may turn on or off (excludes required, API and Modes itself). */
 export function getTogglablePlugins(): { value: string; label: string; }[] {
     return Object.values(plugins)
         .filter(p => !p.required && !p.name.endsWith("API") && p.name !== "Modes")

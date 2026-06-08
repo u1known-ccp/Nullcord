@@ -25,7 +25,6 @@ export interface ShareEnvelope {
     created: number;
     scope: ShareScope;
     enabledPlugins: string[];
-    /** Raw exportSettings() output for the chosen scope, fed straight back into importSettings(). */
     body: string;
 }
 
@@ -56,8 +55,6 @@ export async function buildEnvelopeFile(scope: ShareScope): Promise<File> {
     const data = new TextEncoder().encode(JSON.stringify(envelope));
     return new File([data], `kittycord-setup-${moment().format("YYYY-MM-DD")}${FILE_SUFFIX}`, { type: "application/json" });
 }
-
-// ---------- sending ----------
 
 async function waitForDmChannel(userId: string, timeoutMs = 3000): Promise<string | null> {
     const started = Date.now();
@@ -101,8 +98,6 @@ export async function sendShare(userId: string, scope: ShareScope, note: string)
     });
 }
 
-// ---------- receiving ----------
-
 export function findShareAttachment(attachments: MessageAttachment[] | undefined): MessageAttachment | null {
     return attachments?.find(a => a.filename?.toLowerCase().endsWith(FILE_SUFFIX)) ?? null;
 }
@@ -132,8 +127,6 @@ export async function fetchShare(attachment: MessageAttachment): Promise<ShareEn
 }
 
 export async function applyShare(envelope: ShareEnvelope) {
-    // importSettings validates the JSON (isSafeObject, prototype-pollution guard) and deep-merges
-    // only the slice matching the scope; we never auto-apply without an explicit user confirm.
     await importSettings(envelope.body, envelope.scope, false);
     logger.info(`Imported a shared setup (${envelope.scope}) from ${envelope.sender.username}`);
 }

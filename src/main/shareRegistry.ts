@@ -4,12 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Optional, opt-in "which of my friends use Kittycord?" registry. Runs in the MAIN process (so it
-// isn't blocked by the renderer CSP and the consent flag can be a local file). It stores NOTHING
-// locally beyond a consent flag and a throttle timestamp. The only data ever sent is the user's OWN
-// Discord id (to register themselves) or a list of friend ids (to look up which are registered), and
-// ONLY after the user explicitly opted in. The server keeps just salted hashes of ids. Fully inert
-// while ENDPOINT is empty (no prompt, no network).
+// Optional, opt-in "which friends use Kittycord?" registry. Main process (CSP-free, local consent
+// file). Sends only the user's own id (register) or friend ids (lookup), and only after consent.
 
 import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
