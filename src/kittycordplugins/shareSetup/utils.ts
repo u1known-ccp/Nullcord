@@ -133,9 +133,29 @@ function parseEnvelope(text: string): ShareEnvelope {
     return obj as ShareEnvelope;
 }
 
+async function refreshCdnUrl(url: string): Promise<string | null> {
+    try {
+        const res = await RestAPI.post({
+            url: Constants.Endpoints.ATTACHMENTS_REFRESH_URLS,
+            body: { attachment_urls: [url] }
+        });
+        const refreshed = res?.body?.refreshed_urls?.[0]?.refreshed;
+        return typeof refreshed === "string" ? refreshed : null;
+    } catch {
+        return null;
+    }
+}
+
 export async function fetchShare(attachment: MessageAttachment): Promise<ShareEnvelope> {
-    const res = await fetch(attachment.proxy_url || attachment.url);
+    const url = attachment.url || attachment.proxy_url;
+
+    let res = await fetch(url);
+    if (!res.ok) {
+        const fresh = await refreshCdnUrl(url);
+        if (fresh) res = await fetch(fresh);
+    }
     if (!res.ok) throw new Error("Could not download that setup file.");
+
     return parseEnvelope(await res.text());
 }
 
