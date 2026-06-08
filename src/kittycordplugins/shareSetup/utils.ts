@@ -6,13 +6,12 @@
 
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { exportSettings, importSettings } from "@api/SettingsSync/offline";
-import { openPrivateChannel } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { sleep } from "@utils/misc";
 import { CloudUpload, MessageAttachment } from "@vencord/discord-types";
 import { CloudUploadPlatform } from "@vencord/discord-types/enums";
 import { findLazy } from "@webpack";
-import { ChannelStore, Constants, moment, RestAPI, SnowflakeUtils, UserStore } from "@webpack/common";
+import { ChannelActionCreators, ChannelStore, Constants, moment, RestAPI, SnowflakeUtils, UserStore } from "@webpack/common";
 
 const logger = new Logger("ShareSetup");
 
@@ -66,6 +65,21 @@ async function waitForDmChannel(userId: string, timeoutMs = 3000): Promise<strin
     return null;
 }
 
+async function ensureDmChannel(userId: string): Promise<string | null> {
+    const existing = ChannelStore.getDMFromUserId?.(userId);
+    if (existing) return existing;
+
+    let result: unknown;
+    try {
+        result = await Promise.resolve(ChannelActionCreators.openPrivateChannel({ recipientIds: [userId], navigateToChannel: false }));
+    } catch {
+        result = null;
+    }
+    if (typeof result === "string") return result;
+
+    return waitForDmChannel(userId);
+}
+
 function uploadAttachment(channelId: string, file: File): Promise<{ id: string; filename: string; uploaded_filename: string; } | null> {
     return new Promise(resolve => {
         const upload = new CloudUploader({ file, platform: CloudUploadPlatform.WEB }, channelId);
@@ -78,8 +92,7 @@ function uploadAttachment(channelId: string, file: File): Promise<{ id: string; 
 export async function sendShare(userId: string, scope: ShareScope, note: string) {
     const file = await buildEnvelopeFile(scope);
 
-    openPrivateChannel(userId);
-    const channelId = await waitForDmChannel(userId);
+    const channelId = await ensureDmChannel(userId);
     if (!channelId) throw new Error("Could not open a DM with that user.");
 
     const attachment = await uploadAttachment(channelId, file);
