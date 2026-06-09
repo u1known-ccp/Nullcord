@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Optional, opt-in "which friends use Kittycord?" registry. Main process (CSP-free, local consent
-// file). Sends only the user's own id (register) or friend ids (lookup), and only after consent.
+// "Which friends use Kittycord?" registry. Main process (CSP-free, local opt-out file). On by
+// default; sends only the user's own id (register) or friend ids (lookup) unless the user opts out.
 
 import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
@@ -47,7 +47,7 @@ async function register(id: string) {
     if (typeof id !== "string" || !SNOWFLAKE_RE.test(id)) return;
 
     const state = read();
-    if (state.consent !== true) return;
+    if (state.consent === false) return;
     if (Date.now() - state.lastRegister < DAY) return;
 
     try {
@@ -63,7 +63,7 @@ async function register(id: string) {
 
 async function friendsCheck(ids: unknown): Promise<string[]> {
     if (!ENDPOINT) return [];
-    if (read().consent !== true) return [];
+    if (read().consent === false) return [];
     if (!Array.isArray(ids)) return [];
 
     const clean = ids.filter((x): x is string => typeof x === "string" && SNOWFLAKE_RE.test(x)).slice(0, MAX_FRIENDS);

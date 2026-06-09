@@ -83,7 +83,7 @@ function FriendDiscoveryToggle() {
             <FormSwitch
                 title="Find which friends use Kittycord"
                 description="Checks your friend list against the Kittycord server to show which friends also use it, and lets them find you. The server only ever keeps a salted hash of each id — never your friend list, your token or any messages."
-                value={consent === true}
+                value={consent !== false}
                 onChange={onChange}
                 hideBorder
             />
@@ -226,7 +226,7 @@ function FriendsModal({ rootProps }: { rootProps: any; }) {
         (async () => {
             const { consent, endpointConfigured } = await getShareConsent();
             if (!endpointConfigured) return setPhase("disabled");
-            if (consent === true) return loadFriends();
+            if (consent !== false) return loadFriends();
             setPhase("needConsent");
         })();
     }, []);
@@ -358,19 +358,8 @@ export default definePlugin({
         refreshTimer = setInterval(refreshKittycordFriends, 10 * 60 * 1000);
 
         try {
-            const { consent, endpointConfigured } = await getShareConsent();
-            if (endpointConfigured && consent === null) {
-                Alerts.show({
-                    title: "Find friends who use Kittycord? 🐱",
-                    body: "Want to see which of your friends also use Kittycord, and let them find you? Your friend list is checked against the Kittycord server, which only ever keeps a salted hash of each id — never your friend list, your token or any messages. You can change this anytime under Plugins → ShareSetup.",
-                    confirmText: "Yes, find friends",
-                    cancelText: "No thanks",
-                    onConfirm: async () => { await setShareConsent(true); await enableFriendDiscovery(); },
-                    onCancel: () => void setShareConsent(false)
-                });
-            } else if (consent === true) {
-                await enableFriendDiscovery();
-            }
+            const { consent } = await getShareConsent();
+            if (consent !== false) await enableFriendDiscovery();
         } catch (e) {
             logger.error("friend discovery init failed", e);
         }
