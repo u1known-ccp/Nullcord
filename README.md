@@ -101,3 +101,8 @@ Regardless, if your account is essential to you and getting disabled would be a 
 Additionally, make sure not to post screenshots with Kittycord in a server where you might get banned for it.
 
 </details>
+
+---
+
+<sub>@<a href="https://github.com/Vendicated/Vencord">vencord</a> 👀</sub><br>
+<img src="ezgif.com-video-to-gif_2.gif" width="140">
