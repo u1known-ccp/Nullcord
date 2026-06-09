@@ -65,4 +65,8 @@ export const enum IpcEvents {
     SET_SHARE_CONSENT = "KittycordSetShareConsent",
     SHARE_REGISTER = "KittycordShareRegister",
     SHARE_FRIENDS_CHECK = "KittycordShareFriendsCheck",
+
+    GET_CUSTOM_BADGES = "KittycordGetCustomBadges",
+    SET_CUSTOM_BADGE = "KittycordSetCustomBadge",
+    CLEAR_CUSTOM_BADGE = "KittycordClearCustomBadge",
 }

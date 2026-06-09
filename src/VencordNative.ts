@@ -117,5 +117,11 @@ export default {
         friendsCheck: (ids: string[]) => invoke<string[]>(IpcEvents.SHARE_FRIENDS_CHECK, ids),
     },
 
+    kittycordBadges: {
+        getBadges: () => invoke<{ id: string; emoji: string; label: string; }[]>(IpcEvents.GET_CUSTOM_BADGES),
+        setBadge: (id: string, emoji: string, label: string) => invoke<{ ok: boolean; error?: string; }>(IpcEvents.SET_CUSTOM_BADGE, id, emoji, label),
+        clearBadge: (id: string) => invoke<void>(IpcEvents.CLEAR_CUSTOM_BADGE, id),
+    },
+
     pluginHelpers: PluginHelpers
 };

@@ -148,6 +148,12 @@ window.VencordNative = {
         friendsCheck: async () => [] as string[],
     },
 
+    kittycordBadges: {
+        getBadges: async () => [] as { id: string; emoji: string; label: string; }[],
+        setBadge: async () => ({ ok: false as boolean, error: "web" as string | undefined }),
+        clearBadge: NOOP_ASYNC,
+    },
+
     pluginHelpers: {} as any,
     csp: {} as any,
     tray: {

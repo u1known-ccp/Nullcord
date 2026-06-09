@@ -72,6 +72,13 @@ if (!IS_VANILLA) {
         console.error("[Kittycord] Failed to set up share registry", err);
     }
 
+    // Custom profile badges (emoji + label).
+    try {
+        require("./customBadges");
+    } catch (err) {
+        console.error("[Kittycord] Failed to set up custom badges", err);
+    }
+
     /*
      * re-apply the patch when discord ships a new host version. skipped
      * on vesktop and equibop because they manage their own updates.
