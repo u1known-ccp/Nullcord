@@ -5,15 +5,32 @@
  */
 
 import { showNotification } from "@api/Notifications";
+import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import { relaunch } from "@utils/native";
-import definePlugin from "@utils/types";
-import { Button, React, SearchableSelect, showToast, Text, TextInput, Toasts } from "@webpack/common";
+import definePlugin, { OptionType } from "@utils/types";
+import { Button, GuildStore, React, SearchableSelect, showToast, Text, TextInput, Toasts } from "@webpack/common";
 import type { ComponentType } from "react";
 
-import { applyMode, captureInto, currentThemes, deleteMode, getActiveId, getModes, getTogglablePlugins, loadModes, type Mode, newMode, saveMode, type StatusValue } from "./utils";
+import { applyMode, type AutoTrigger, captureInto, currentThemes, deleteMode, getActiveId, getModes, getTogglablePlugins, loadModes, type Mode, newMode, notifyManualActivation, runningGameNames, saveMode, startAuto, type StatusValue, stopAuto } from "./utils";
+
+const settings = definePluginSettings({
+    autoSwitch: {
+        type: OptionType.BOOLEAN,
+        description: "Let modes switch themselves based on their triggers (time of day, running game, open server)",
+        default: true,
+        onChange: () => (settings.store.autoSwitch ? startAuto() : stopAuto())
+    }
+});
+
+const AUTO_OPTIONS = [
+    { label: "Don't auto-switch", value: "" },
+    { label: "At a time of day", value: "time" },
+    { label: "When playing a game", value: "game" },
+    { label: "When a server is open", value: "guild" }
+];
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
 const ModalRoot = ModalRootRaw as ComponentType<any>;
@@ -42,11 +59,32 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
     const [withThemes, setWithThemes] = React.useState(initial.themes !== undefined);
     const [themes, setThemes] = React.useState<string[]>(initial.themes ?? currentThemes());
     const [pluginMap, setPluginMap] = React.useState<Record<string, boolean>>(initial.plugins ?? {});
+    const [autoKind, setAutoKind] = React.useState<string>(initial.auto?.kind ?? "");
+    const [timeStart, setTimeStart] = React.useState(initial.auto?.kind === "time" ? initial.auto.start : "23:00");
+    const [timeEnd, setTimeEnd] = React.useState(initial.auto?.kind === "time" ? initial.auto.end : "07:00");
+    const [games, setGames] = React.useState<string[]>(initial.auto?.kind === "game" ? initial.auto.games : []);
+    const [gameDraft, setGameDraft] = React.useState("");
+    const [guildIds, setGuildIds] = React.useState<string[]>(initial.auto?.kind === "guild" ? initial.auto.guildIds : []);
+    const [isDefault, setIsDefault] = React.useState(!!initial.isDefault);
 
     const togglable = React.useMemo(getTogglablePlugins, []);
     const available = togglable.filter(o => !(o.value in pluginMap));
+    const detectedGames = React.useMemo(runningGameNames, []);
+    const guildOptions = React.useMemo(() => Object.values(GuildStore.getGuilds()).map(g => ({ value: g.id, label: g.name })).sort((a, b) => a.label.localeCompare(b.label)), []);
+    const guildAvailable = guildOptions.filter(o => !guildIds.includes(o.value));
+
+    function addGame() {
+        const g = gameDraft.trim();
+        if (g && !games.includes(g)) setGames([...games, g]);
+        setGameDraft("");
+    }
 
     async function save() {
+        let auto: AutoTrigger | undefined;
+        if (autoKind === "time") auto = { kind: "time", start: timeStart.trim(), end: timeEnd.trim() };
+        else if (autoKind === "game" && games.length) auto = { kind: "game", games };
+        else if (autoKind === "guild" && guildIds.length) auto = { kind: "guild", guildIds };
+
         const mode: Mode = {
             ...initial,
             name: name.trim() || "Untitled mode",
@@ -54,7 +92,9 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
             status: status ? (status as StatusValue) : undefined,
             customStatus: csOn ? (csText.trim() ? { text: csText.trim() } : null) : undefined,
             themes: withThemes ? themes : undefined,
-            plugins: Object.keys(pluginMap).length ? pluginMap : undefined
+            plugins: Object.keys(pluginMap).length ? pluginMap : undefined,
+            auto,
+            isDefault: isDefault || undefined
         };
         await saveMode(mode);
         onSaved();
@@ -114,6 +154,63 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
                     <SearchableSelect options={available} value={undefined} placeholder="Add a plugin…" onChange={(v: string) => setPluginMap(m => ({ ...m, [v]: true }))} closeOnSelect />
                 </div>
 
+                <Label>Auto-switch to this mode</Label>
+                <SearchableSelect options={AUTO_OPTIONS} value={autoKind} onChange={(v: string) => setAutoKind(v)} closeOnSelect />
+
+                {autoKind === "time" && (
+                    <Flex style={{ gap: 8, marginTop: 8 }}>
+                        <div style={{ flex: 1 }}>
+                            <Label>From</Label>
+                            <TextInput value={timeStart} onChange={setTimeStart} placeholder="23:00" maxLength={5} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <Label>Until</Label>
+                            <TextInput value={timeEnd} onChange={setTimeEnd} placeholder="07:00" maxLength={5} />
+                        </div>
+                    </Flex>
+                )}
+
+                {autoKind === "game" && (
+                    <>
+                        {games.map(g => (
+                            <Flex key={g} style={{ gap: 8, alignItems: "center", padding: "4px 0" }}>
+                                <Text variant="text-sm/normal" style={{ flex: 1 }}>{g}</Text>
+                                <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={() => setGames(games.filter(x => x !== g))}>Remove</Button>
+                            </Flex>
+                        ))}
+                        <Flex style={{ gap: 8, marginTop: 4 }}>
+                            <div style={{ flex: 1 }}>
+                                <TextInput value={gameDraft} onChange={setGameDraft} placeholder="Game name, e.g. League of Legends" />
+                            </div>
+                            <Button size={Button.Sizes.SMALL} onClick={addGame}>Add</Button>
+                        </Flex>
+                        {detectedGames.length > 0 && (
+                            <Text variant="text-xs/normal" style={{ opacity: 0.6, marginTop: 4 }}>Detected right now: {detectedGames.join(", ")}</Text>
+                        )}
+                    </>
+                )}
+
+                {autoKind === "guild" && (
+                    <>
+                        {guildIds.map(id => (
+                            <Flex key={id} style={{ gap: 8, alignItems: "center", padding: "4px 0" }}>
+                                <Text variant="text-sm/normal" style={{ flex: 1 }}>{GuildStore.getGuild(id)?.name ?? "Unknown server"}</Text>
+                                <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={() => setGuildIds(guildIds.filter(x => x !== id))}>Remove</Button>
+                            </Flex>
+                        ))}
+                        <div style={{ marginTop: 4 }}>
+                            <SearchableSelect options={guildAvailable} value={undefined} placeholder="Add a server…" onChange={(v: string) => setGuildIds([...guildIds, v])} closeOnSelect />
+                        </div>
+                    </>
+                )}
+
+                <FormSwitch
+                    title="Use as default mode"
+                    description="Switch back to this mode when no auto-rule matches."
+                    value={isDefault}
+                    onChange={setIsDefault}
+                />
+
                 <Flex style={{ gap: 8, justifyContent: "flex-end", margin: "16px 0" }}>
                     <Button color={Button.Colors.PRIMARY} look={Button.Looks.LINK} onClick={rootProps.onClose}>Cancel</Button>
                     <Button color={Button.Colors.BRAND} onClick={save}>Save mode</Button>
@@ -123,6 +220,14 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
     );
 }
 
+function triggerLabel(mode: Mode): string | null {
+    const a = mode.auto;
+    if (!a) return null;
+    if (a.kind === "time") return `⏰ ${a.start}–${a.end}`;
+    if (a.kind === "game") return `🎮 ${a.games.join(", ")}`;
+    return `🏠 ${a.guildIds.map(id => GuildStore.getGuild(id)?.name ?? "server").join(", ")}`;
+}
+
 function ModesModal({ rootProps }: { rootProps: any; }) {
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
     const modes = getModes();
@@ -130,6 +235,7 @@ function ModesModal({ rootProps }: { rootProps: any; }) {
 
     async function activate(mode: Mode) {
         try {
+            notifyManualActivation();
             const { restartNeeded } = await applyMode(mode);
             forceUpdate();
             showToast(`Switched to "${mode.name}".`, Toasts.Type.SUCCESS);
@@ -160,10 +266,14 @@ function ModesModal({ rootProps }: { rootProps: any; }) {
                     ? <Text variant="text-md/normal" style={{ padding: "16px 0" }}>No modes yet. Set up your client how you like it, then create one — it captures your status, custom status and themes.</Text>
                     : modes.map(mode => (
                         <Flex key={mode.id} style={{ gap: 8, alignItems: "center", padding: "8px 0" }}>
-                            <Text variant="text-md/semibold" style={{ flex: 1 }}>
-                                {mode.emoji ? mode.emoji + " " : ""}{mode.name}
-                                {mode.id === activeId && <span style={{ marginLeft: 8, fontSize: 11, opacity: 0.7 }}>active</span>}
-                            </Text>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Text variant="text-md/semibold">
+                                    {mode.emoji ? mode.emoji + " " : ""}{mode.name}
+                                    {mode.id === activeId && <span style={{ marginLeft: 8, fontSize: 11, opacity: 0.7 }}>active</span>}
+                                    {mode.isDefault && <span style={{ marginLeft: 8, fontSize: 11, opacity: 0.7 }}>default</span>}
+                                </Text>
+                                {triggerLabel(mode) && <Text variant="text-xs/normal" style={{ opacity: 0.6 }}>{triggerLabel(mode)}</Text>}
+                            </div>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => activate(mode)}>Activate</Button>
                             <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openEditor(mode)}>Edit</Button>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={async () => { await deleteMode(mode.id); forceUpdate(); }}>Delete</Button>
@@ -184,6 +294,7 @@ export default definePlugin({
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Utility"],
     dependencies: ["UserSettingsAPI"],
+    settings,
 
     toolboxActions: {
         "Open Modes"() {
@@ -193,5 +304,10 @@ export default definePlugin({
 
     async start() {
         await loadModes();
+        if (settings.store.autoSwitch) startAuto();
+    },
+
+    stop() {
+        stopAuto();
     }
 });

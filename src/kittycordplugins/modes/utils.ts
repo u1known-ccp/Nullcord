@@ -8,6 +8,7 @@ import { get, set } from "@api/DataStore";
 import { isPluginEnabled, pluginRequiresRestart, plugins, startPlugin, stopPlugin } from "@api/PluginManager";
 import { Settings } from "@api/Settings";
 import { getUserSettingLazy } from "@api/UserSettings";
+import { RunningGameStore, SelectedGuildStore } from "@webpack/common";
 
 export type StatusValue = "online" | "idle" | "dnd" | "invisible";
 
@@ -26,6 +27,11 @@ export interface ModeCustomStatus {
     emojiName?: string;
 }
 
+export type AutoTrigger =
+    | { kind: "time"; start: string; end: string; }
+    | { kind: "game"; games: string[]; }
+    | { kind: "guild"; guildIds: string[]; };
+
 export interface Mode {
     id: string;
     name: string;
@@ -34,6 +40,8 @@ export interface Mode {
     customStatus?: ModeCustomStatus | null;
     themes?: string[];
     plugins?: Record<string, boolean>;
+    auto?: AutoTrigger;
+    isDefault?: boolean;
 }
 
 interface Stored {
@@ -61,16 +69,19 @@ async function persist() {
 }
 
 export async function saveMode(mode: Mode) {
+    if (mode.isDefault) modes = modes.map(m => (m.id === mode.id ? m : { ...m, isDefault: false }));
     const existing = modes.findIndex(m => m.id === mode.id);
     if (existing === -1) modes = [...modes, mode];
     else modes = modes.map(m => (m.id === mode.id ? mode : m));
     await persist();
+    evaluateAuto();
 }
 
 export async function deleteMode(id: string) {
     modes = modes.filter(m => m.id !== id);
     if (activeId === id) activeId = null;
     await persist();
+    evaluateAuto();
 }
 
 export function newMode(name: string): Mode {
@@ -124,4 +135,98 @@ export async function applyMode(mode: Mode): Promise<{ restartNeeded: boolean; }
     activeId = mode.id;
     await persist();
     return { restartNeeded };
+}
+
+const PRIORITY = { game: 0, guild: 1, time: 2 } as const;
+
+let enabled = false;
+let autoTimer: ReturnType<typeof setInterval> | null = null;
+let listening = false;
+let autoAppliedId: string | null = null;
+let lastBest: string | null | undefined;
+
+function nowHHMM(): string {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function inWindow(now: string, start: string, end: string): boolean {
+    if (start === end) return false;
+    if (start < end) return now >= start && now < end;
+    return now >= start || now < end;
+}
+
+export function runningGameNames(): string[] {
+    return (RunningGameStore?.getRunningGames?.() ?? []).map(g => g.name?.trim()).filter(Boolean) as string[];
+}
+
+function triggerMatches(t: AutoTrigger): boolean {
+    switch (t.kind) {
+        case "time":
+            return inWindow(nowHHMM(), t.start, t.end);
+        case "game": {
+            const names = runningGameNames().map(n => n.toLowerCase());
+            return t.games.some(g => names.includes(g.toLowerCase().trim()));
+        }
+        case "guild":
+            return t.guildIds.includes(SelectedGuildStore?.getGuildId?.() ?? "");
+    }
+}
+
+function bestMatch(): Mode | null {
+    const matches = modes.filter(m => m.auto && triggerMatches(m.auto));
+    if (!matches.length) return null;
+    return [...matches].sort((a, b) => PRIORITY[a.auto!.kind] - PRIORITY[b.auto!.kind])[0];
+}
+
+export async function evaluateAuto() {
+    if (!enabled || !modes.some(m => m.auto)) return;
+
+    const best = bestMatch();
+    const bestId = best?.id ?? null;
+    if (bestId === lastBest) return;
+    lastBest = bestId;
+
+    if (best) {
+        if (best.id !== activeId) await applyMode(best);
+        autoAppliedId = best.id;
+    } else if (activeId && activeId === autoAppliedId) {
+        const def = modes.find(m => m.isDefault);
+        if (def && def.id !== activeId) {
+            await applyMode(def);
+            autoAppliedId = def.id;
+        }
+    }
+}
+
+export function notifyManualActivation() {
+    autoAppliedId = null;
+}
+
+export function startAuto() {
+    enabled = true;
+    autoAppliedId = null;
+    lastBest = undefined;
+    if (autoTimer == null) autoTimer = setInterval(evaluateAuto, 30_000);
+    if (!listening) {
+        SelectedGuildStore?.addChangeListener?.(evaluateAuto);
+        RunningGameStore?.addChangeListener?.(evaluateAuto);
+        listening = true;
+    }
+    evaluateAuto();
+}
+
+export function stopAuto() {
+    enabled = false;
+    autoAppliedId = null;
+    lastBest = undefined;
+    if (autoTimer != null) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+    }
+    if (listening) {
+        SelectedGuildStore?.removeChangeListener?.(evaluateAuto);
+        RunningGameStore?.removeChangeListener?.(evaluateAuto);
+        listening = false;
+    }
 }
