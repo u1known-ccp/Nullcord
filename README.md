@@ -1,8 +1,9 @@
 <div align="center">
-  <a href="https://github.com/CenturyRV/Kittycord">
+  <a href="https://kittycord.dev">
     <img src="./browser/logo.png" width="440" alt="Kittycord">
   </a>
   <p><b>The cutest Discord client mod — plugins, themes and a whole lot of pink.</b></p>
+  <p><a href="https://kittycord.dev"><b>🐾 kittycord.dev</b></a></p>
 </div>
 
 Kittycord is a Discord client modification — a plugin and theme platform that adds hundreds of

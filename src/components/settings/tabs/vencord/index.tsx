@@ -13,7 +13,7 @@ import { Button } from "@components/Button";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
-import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/Icons";
+import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon, WebsiteIcon } from "@components/Icons";
 import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { openContributorModal, openPluginModal, SettingsTab, wrapTab } from "@components/settings";
@@ -29,6 +29,7 @@ import { isAnyPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { Alerts, GuildMemberStore, React, UserStore } from "@webpack/common";
 
+import { BRAND_WEBSITE } from "../../../../branding";
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
@@ -198,6 +199,11 @@ function EquicordSettings() {
             </Paragraph>
 
             <QuickActionCard>
+                <QuickAction
+                    Icon={WebsiteIcon}
+                    text="Visit kittycord.dev"
+                    action={() => VencordNative.native.openExternal(BRAND_WEBSITE)}
+                />
                 <QuickAction
                     Icon={DiscordIcon}
                     text="Join our Discord"
