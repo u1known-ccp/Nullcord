@@ -27,6 +27,8 @@ try {
     Add-Type -Namespace KittycordNative -Name Win32 -MemberDefinition @'
 [DllImport("shcore.dll")] public static extern int SetProcessDpiAwareness(int value);
 [DllImport("dwmapi.dll")] public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
+[DllImport("user32.dll")] public static extern bool ReleaseCapture();
+[DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 '@
     $script:nativeOk = $true
 } catch { }
@@ -61,6 +63,18 @@ function Set-DarkTitlebar([IntPtr]$hwnd) {
         # 20 = DWMWA_USE_IMMERSIVE_DARK_MODE (Win10 20H1+), 19 = same attribute on older builds
         [void][KittycordNative.Win32]::DwmSetWindowAttribute($hwnd, 20, [ref]$on, 4)
         [void][KittycordNative.Win32]::DwmSetWindowAttribute($hwnd, 19, [ref]$on, 4)
+        # 33 = DWMWA_WINDOW_CORNER_PREFERENCE, 2 = rounded (Win11; older builds ignore it)
+        $round = 2
+        [void][KittycordNative.Win32]::DwmSetWindowAttribute($hwnd, 33, [ref]$round, 4)
+    } catch { }
+}
+
+# The window is borderless, so dragging anywhere on the background moves it.
+function Start-WindowDrag {
+    if (-not $script:nativeOk) { return }
+    try {
+        [void][KittycordNative.Win32]::ReleaseCapture()
+        [void][KittycordNative.Win32]::SendMessage($form.Handle, 0xA1, 2, 0)
     } catch { }
 }
 
@@ -555,12 +569,16 @@ $form = New-Object System.Windows.Forms.Form
 $form.Text = "Kittycord Installer"
 $form.ClientSize = New-Object System.Drawing.Size((S 880), (S 600))
 $form.StartPosition = "CenterScreen"
-$form.FormBorderStyle = "FixedSingle"
+$form.FormBorderStyle = "None"
 $form.MaximizeBox = $false
 $form.BackColor = $cBg
 $form.ForeColor = $cText
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.Add_HandleCreated({ Set-DarkTitlebar $form.Handle })
+$form.Add_MouseDown({
+    param($s, $e)
+    if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) { Start-WindowDrag }
+})
 if ($logo) {
     try { $form.Icon = [System.Drawing.Icon]::FromHandle(([System.Drawing.Bitmap]$logo).GetHicon()) } catch { }
 }
@@ -628,12 +646,24 @@ $form.Add_Paint({
     $ch.Dispose()
 })
 
-# --- GitHub pill (top right) ---
+# --- GitHub pill + window controls (top right; the window has no native titlebar) ---
 $ghBtn = New-Pill "GitHub" $cPanel $cPanel2 $cMuted $fFoot (S 13) $true
-$ghBtn.Location = New-Object System.Drawing.Point((S 766), (S 18))
+$ghBtn.Location = New-Object System.Drawing.Point((S 666), (S 18))
 $ghBtn.Size = New-Object System.Drawing.Size((S 86), (S 27))
 $ghBtn.Add_Click({ try { Start-Process "https://github.com/$Repo" } catch { } })
 $form.Controls.Add($ghBtn)
+
+$btnMin = New-Pill ([string][char]8211) $cPanel $cPanel2 $cMuted $fFoot (S 13) $true
+$btnMin.Location = New-Object System.Drawing.Point((S 764), (S 18))
+$btnMin.Size = New-Object System.Drawing.Size((S 40), (S 27))
+$btnMin.Add_Click({ $form.WindowState = [System.Windows.Forms.FormWindowState]::Minimized })
+$form.Controls.Add($btnMin)
+
+$btnClose = New-Pill ([string][char]10005) $cPanel ([System.Drawing.Color]::FromArgb(214, 64, 92)) $cText $fFoot (S 13) $true
+$btnClose.Location = New-Object System.Drawing.Point((S 812), (S 18))
+$btnClose.Size = New-Object System.Drawing.Size((S 40), (S 27))
+$btnClose.Add_Click({ $form.Close() })
+$form.Controls.Add($btnClose)
 
 # --- install rows ---
 $toggle = {
