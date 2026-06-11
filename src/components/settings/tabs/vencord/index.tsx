@@ -29,7 +29,9 @@ import { isAnyPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { Alerts, GuildMemberStore, React, UserStore } from "@webpack/common";
 
-import { BRAND_WEBSITE } from "../../../../branding";
+import gitHash from "~git-hash";
+
+import { BRAND_ICON, BRAND_NAME, BRAND_WEBSITE } from "../../../../branding";
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
@@ -171,6 +173,19 @@ function EquicordSettings() {
 
     return (
         <SettingsTab>
+            <div className={cl("hero")}>
+                <img className={cl("hero-logo")} src={BRAND_ICON} alt="" aria-hidden />
+                <div>
+                    <div className={cl("hero-title")}>{BRAND_NAME}</div>
+                    <div className={cl("hero-tagline")}>The cutest Discord client mod — plugins, themes and a whole lot of pink.</div>
+                    <div className={cl("hero-badges")}>
+                        <span className={cl("hero-badge")}>v{VERSION}</span>
+                        <span className={cl("hero-badge")}>{gitHash}</span>
+                        {IS_DEV && <span className={cl("hero-badge")}>dev</span>}
+                    </div>
+                </div>
+            </div>
+
             {isAnyPluginDev(user?.id) && (
                 <SpecialCard
                     title="Contributions"

@@ -52,3 +52,58 @@
     color: var(--text-link);
     display: inline-block;
 }
+
+.vc-vencord-tab-hero {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+    border: 1px solid rgb(255 95 166 / 30%);
+    background:
+        radial-gradient(ellipse at top left, rgb(255 138 196 / 28%), transparent 65%),
+        radial-gradient(ellipse at bottom right, rgb(255 61 139 / 20%), transparent 60%),
+        var(--background-base-low, var(--background-secondary));
+    overflow: hidden;
+}
+
+.vc-vencord-tab-hero-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px -6px rgb(255 95 166 / 50%);
+}
+
+.vc-vencord-tab-hero-title {
+    color: var(--header-primary);
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.vc-vencord-tab-hero-tagline {
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.vc-vencord-tab-hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.vc-vencord-tab-hero-badge {
+    background: rgb(255 95 166 / 16%);
+    color: #ff8ac4;
+    border: 1px solid rgb(255 95 166 / 35%);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
