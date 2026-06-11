@@ -19,6 +19,7 @@
 import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { IpcEvents } from "@shared/IpcEvents";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
+import { createHash } from "crypto";
 import { ipcMain } from "electron";
 import { writeFileSync } from "original-fs";
 
@@ -74,10 +75,30 @@ async function fetchUpdates() {
     return true;
 }
 
+// CI publishes a `<asar>.sha256` asset next to each build. Releases from before that have no
+// checksum, so a missing file skips verification instead of failing the update.
+async function fetchExpectedHash() {
+    try {
+        const hash = (await fetchBuffer(`${RELEASE_DOWNLOAD_BASE}/${ASAR_FILE}.sha256`)).toString("utf-8").trim().toLowerCase();
+        return /^[0-9a-f]{64}$/.test(hash) ? hash : null;
+    } catch {
+        return null;
+    }
+}
+
 async function applyUpdates() {
     if (!PendingUpdate) return true;
 
-    const data = await fetchBuffer(PendingUpdate);
+    const [data, expectedHash] = await Promise.all([fetchBuffer(PendingUpdate), fetchExpectedHash()]);
+
+    // Catches corrupted/truncated downloads and the brief window where the rolling release's
+    // assets are mid-republish, so a bad build never overwrites the working install.
+    if (expectedHash) {
+        const actualHash = createHash("sha256").update(data).digest("hex");
+        if (actualHash !== expectedHash)
+            throw new Error("The update download failed verification (checksum mismatch). A new release may be publishing right now - please try again in a few minutes.");
+    }
+
     writeFileSync(__dirname, data, { flush: true });
 
     PendingUpdate = null;

@@ -8,8 +8,9 @@ on:
 permissions:
     contents: write
 
-# The in-app updater finds the latest release, reads the git hash from the END of the release
-# NAME, and downloads the `desktop.asar` asset. So the release must be named "Kittycord <sha>".
+# The in-app updater reads the git hash from the `version.txt` asset of the latest release and
+# downloads the `desktop.asar` asset. The `.sha256` assets let the updater and the installer
+# verify their downloads.
 env:
     KITTYCORD_REMOTE: ${{ github.repository }}
     # Run the JS actions on Node 24 (silences the Node 20 deprecation warning)
@@ -50,6 +51,9 @@ jobs:
                   echo "${{ github.sha }}" > out/version.txt
                   cp dist/desktop.asar out/
                   cp dist/equibop.asar out/
+                  # checksums the in-app updater and the installer verify before applying a download
+                  sha256sum out/desktop.asar | cut -d' ' -f1 > out/desktop.asar.sha256
+                  sha256sum out/equibop.asar | cut -d' ' -f1 > out/equibop.asar.sha256
                   cp dist/extension-chrome.zip out/
                   cp dist/extension-firefox.zip out/
                   cp dist/Kittycord.user.js out/

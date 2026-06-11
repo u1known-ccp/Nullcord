@@ -18,7 +18,8 @@ There are two installers:
 - **The standard Discord desktop app** from [discord.com](https://discord.com/download), launched
   at least once so it has finished setting up. (The **Microsoft Store** version of Discord can't be
   patched — use the discord.com one.)
-- **An internet connection** (the installer downloads the build over HTTPS).
+- **An internet connection** (the installer downloads the build over HTTPS and verifies it
+  against the SHA-256 checksum published with each release).
 - Administrator is **not required**. Running as your normal user is recommended (elevation can
   affect Discord's file permissions), but the installer no longer blocks it — it just warns.
 - On first launch, Windows SmartScreen may show "Windows protected your PC" because the `.exe` is

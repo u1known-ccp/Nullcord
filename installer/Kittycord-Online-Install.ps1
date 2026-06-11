@@ -33,6 +33,29 @@ try {
     exit 1
 }
 
+# Verify the download against the SHA-256 checksum CI publishes next to the asar. Releases from
+# before the checksum files exist have none - then verification is skipped.
+$expected = $null
+try {
+    $shaResp = Invoke-WebRequest -Uri ($AsarUrl + ".sha256") -UseBasicParsing -TimeoutSec 15
+    $shaText = $shaResp.Content
+    if ($shaText -is [byte[]]) { $shaText = [System.Text.Encoding]::ASCII.GetString($shaText) }
+    $shaText = ([string]$shaText).Trim().ToLower()
+    if ($shaText -match '^[0-9a-f]{64}$') { $expected = $shaText }
+} catch { }
+if ($expected) {
+    $actual = (Get-FileHash -Path $AsarPath -Algorithm SHA256).Hash.ToLower()
+    if ($actual -ne $expected) {
+        Remove-Item $AsarPath -Force -ErrorAction SilentlyContinue
+        Write-Host "Checksum mismatch - the download may be corrupted, or a new release is publishing right now." -ForegroundColor Red
+        Write-Host "Please try again in a minute." -ForegroundColor Yellow
+        exit 1
+    }
+    Write-Host "Checksum verified (SHA-256 OK)." -ForegroundColor Green
+} else {
+    Write-Host "No checksum published for this release - skipping verification." -ForegroundColor Yellow
+}
+
 # Path used inside the injected index.js (forward slashes are safe for Node require on Windows)
 $AsarForward = ($AsarPath -replace '\\', '/')
 
