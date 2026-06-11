@@ -6,15 +6,22 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
+import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 
 import { BRAND_ICON } from "../../branding";
 import style from "./style.css?managed";
 
 const Native = VencordNative.pluginHelpers.KittyLogo as PluginNative<typeof import("./native")>;
+const logger = new Logger("KittyLogo");
 
 function applyAppIcon() {
-    if (IS_DISCORD_DESKTOP && settings.store.taskbarIcon) Native.applyAppIcon();
+    if (!IS_DISCORD_DESKTOP || !settings.store.taskbarIcon) return;
+    try {
+        Native?.applyAppIcon?.()?.catch?.(e => logger.error("Failed to set app icon", e));
+    } catch (e) {
+        logger.error("Failed to set app icon", e);
+    }
 }
 
 const settings = definePluginSettings({
