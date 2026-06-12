@@ -7,12 +7,11 @@
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { exportSettings, importSettings } from "@api/SettingsSync/offline";
 import { Logger } from "@utils/Logger";
-import { sleep } from "@utils/misc";
 import type { PluginNative } from "@utils/types";
-import { CloudUpload, MessageAttachment } from "@vencord/discord-types";
-import { CloudUploadPlatform } from "@vencord/discord-types/enums";
-import { findLazy } from "@webpack";
-import { ChannelActionCreators, ChannelStore, Constants, moment, RestAPI, SnowflakeUtils, UserStore } from "@webpack/common";
+import { MessageAttachment } from "@vencord/discord-types";
+import { Constants, moment, RestAPI, UserStore } from "@webpack/common";
+
+import { sendFileToUser } from "../_shared/dm";
 
 const logger = new Logger("ShareSetup");
 
@@ -31,7 +30,6 @@ export interface ShareEnvelope {
 const FILE_SUFFIX = ".kcshare";
 const MAX_SHARE_BYTES = 2_000_000;
 
-const CloudUploader = findLazy(m => m.prototype?.trackUploadFinished) as typeof CloudUpload;
 const Native = VencordNative?.pluginHelpers?.ShareSetup as PluginNative<typeof import("./native")> | undefined;
 
 function enabledPluginNames(): string[] {
@@ -57,60 +55,9 @@ export async function buildEnvelopeFile(scope: ShareScope): Promise<File> {
     return new File([data], `kittycord-setup-${moment().format("YYYY-MM-DD")}${FILE_SUFFIX}`, { type: "application/json" });
 }
 
-async function waitForDmChannel(userId: string, timeoutMs = 3000): Promise<string | null> {
-    const started = Date.now();
-    do {
-        const id = ChannelStore.getDMFromUserId?.(userId) ?? null;
-        if (id) return id;
-        await sleep(80);
-    } while (Date.now() - started < timeoutMs);
-    return null;
-}
-
-async function ensureDmChannel(userId: string): Promise<string | null> {
-    const existing = ChannelStore.getDMFromUserId?.(userId);
-    if (existing) return existing;
-
-    let result: unknown;
-    try {
-        result = await Promise.resolve(ChannelActionCreators.openPrivateChannel({ recipientIds: [userId], navigateToChannel: false }));
-    } catch {
-        result = null;
-    }
-    if (typeof result === "string") return result;
-
-    return waitForDmChannel(userId);
-}
-
-function uploadAttachment(channelId: string, file: File): Promise<{ id: string; filename: string; uploaded_filename: string; } | null> {
-    return new Promise(resolve => {
-        const upload = new CloudUploader({ file, platform: CloudUploadPlatform.WEB }, channelId);
-        upload.on("complete", () => resolve({ id: "0", filename: upload.filename, uploaded_filename: upload.uploadedFilename }));
-        upload.on("error", () => resolve(null));
-        upload.upload();
-    });
-}
-
 export async function sendShare(userId: string, scope: ShareScope, note: string) {
     const file = await buildEnvelopeFile(scope);
-
-    const channelId = await ensureDmChannel(userId);
-    if (!channelId) throw new Error("Could not open a DM with that user.");
-
-    const attachment = await uploadAttachment(channelId, file);
-    if (!attachment) throw new Error("Upload failed. Please try again.");
-
-    await RestAPI.post({
-        url: Constants.Endpoints.MESSAGES(channelId),
-        body: {
-            content: note,
-            nonce: SnowflakeUtils.fromTimestamp(Date.now()),
-            channel_id: channelId,
-            sticker_ids: [],
-            type: 0,
-            attachments: [attachment]
-        }
-    });
+    await sendFileToUser(userId, file, note);
 }
 
 export function findShareAttachment(attachments: MessageAttachment[] | undefined): MessageAttachment | null {
