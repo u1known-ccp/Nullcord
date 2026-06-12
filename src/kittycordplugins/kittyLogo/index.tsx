@@ -5,13 +5,10 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { disableStyle, enableStyle } from "@api/Styles";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
-import { React } from "@webpack/common";
 
 import { BRAND_ICON } from "../../branding";
-import style from "./style.css?managed";
 
 const Native = VencordNative?.pluginHelpers?.KittyLogo as PluginNative<typeof import("./native")> | undefined;
 const logger = new Logger("KittyLogo");
@@ -67,21 +64,17 @@ export default definePlugin({
         {
             find: "#{intl::DISCODO_DISABLED}",
             replacement: {
-                match: /(\(0,\i.jsxs?\)\(\i,{}\))/,
-                replace: "arguments[0].user == null ? $self.KittyIcon() : $1"
+                match: /\(0,\i\.jsx\)\(\i\.\i,\{size:"custom",color:"currentColor",width:\d+,height:\d+\}\)/,
+                replace: "$self.KittyIcon()"
             }
         }
     ],
 
     start() {
-        document.documentElement.style.setProperty("--kc-logo", `url("${BRAND_ICON}")`);
-        enableStyle(style);
         if (settings.store.taskbarIcon) enableAppIcon();
     },
 
     stop() {
-        disableStyle(style);
-        document.documentElement.style.removeProperty("--kc-logo");
         disableAppIcon();
     }
 });
