@@ -9,7 +9,7 @@ import type { PluginNative } from "@utils/types";
 import { MessageAttachment } from "@vencord/discord-types";
 import { moment, UserStore } from "@webpack/common";
 
-import { downloadAttachmentText, sendFileToUser } from "../_shared/dm";
+import { downloadAttachmentText } from "../_shared/dm";
 import type { AutoTrigger, Mode, StatusValue } from "./utils";
 
 export interface ModeEnvelope {
@@ -38,10 +38,6 @@ export function buildModeFile(mode: Mode): File {
     const data = new TextEncoder().encode(JSON.stringify(envelope));
     const slug = mode.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "mode";
     return new File([data], `kittycord-mode-${slug}-${moment().format("YYYY-MM-DD")}${FILE_SUFFIX}`, { type: "application/json" });
-}
-
-export async function sendMode(userId: string, mode: Mode, note: string) {
-    await sendFileToUser(userId, buildModeFile(mode), note);
 }
 
 export function findModeAttachment(attachments: MessageAttachment[] | undefined): MessageAttachment | null {

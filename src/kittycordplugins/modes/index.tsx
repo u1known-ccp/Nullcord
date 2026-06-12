@@ -9,15 +9,15 @@ import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
 import { ErrorBoundary } from "@components/index";
-import { getCurrentChannel } from "@utils/discord";
 import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import { relaunch } from "@utils/native";
 import definePlugin, { OptionType } from "@utils/types";
-import type { Message, User } from "@vencord/discord-types";
-import { Alerts, Button, DraftType, GuildStore, React, RelationshipStore, SearchableSelect, showToast, Text, TextInput, Toasts, UploadHandler, UserStore } from "@webpack/common";
+import type { Message } from "@vencord/discord-types";
+import { Alerts, Button, GuildStore, React, SearchableSelect, showToast, Text, TextInput, Toasts, UserStore } from "@webpack/common";
 import type { ComponentType } from "react";
 
-import { buildModeFile, fetchMode, findModeAttachment, sendMode } from "./share";
+import { ShareFileModal } from "../_shared/ShareFileModal";
+import { buildModeFile, fetchMode, findModeAttachment } from "./share";
 import { applyMode, type AutoTrigger, captureInto, currentThemes, deleteMode, getActiveId, getModes, getTogglablePlugins, loadModes, type Mode, newMode, notifyManualActivation, runningGameNames, saveMode, startAuto, type StatusValue, stopAuto } from "./utils";
 
 const settings = definePluginSettings({
@@ -224,71 +224,6 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
     );
 }
 
-function ShareModeModal({ rootProps, mode }: { rootProps: any; mode: Mode; }) {
-    const [target, setTarget] = React.useState<User | null>(null);
-    const [note, setNote] = React.useState(`Here's my "${mode.name}" mode for Kittycord — add it with one tap!`);
-    const [busy, setBusy] = React.useState(false);
-
-    const friendOptions = React.useMemo(() =>
-        RelationshipStore.getFriendIDs()
-            .map(id => UserStore.getUser(id))
-            .filter((u): u is User => Boolean(u))
-            .map(u => ({ label: u.globalName || u.username, value: u.id }))
-            .sort((a, b) => a.label.localeCompare(b.label)), []);
-
-    async function sendDm() {
-        if (!target) return;
-        setBusy(true);
-        try {
-            await sendMode(target.id, mode, note.trim());
-            showToast(`Mode sent to ${target.globalName || target.username}.`, Toasts.Type.SUCCESS);
-            rootProps.onClose();
-        } catch (e) {
-            showToast(String((e as Error)?.message ?? "Could not send the mode."), Toasts.Type.FAILURE);
-        } finally {
-            setBusy(false);
-        }
-    }
-
-    function postInChat() {
-        const channel = getCurrentChannel();
-        if (!channel) return showToast("Open a chat first to post it there.", Toasts.Type.FAILURE);
-        UploadHandler.promptToUpload([buildModeFile(mode)], channel, DraftType.ChannelMessage);
-        rootProps.onClose();
-    }
-
-    return (
-        <ModalRoot {...rootProps} size={ModalSize.SMALL}>
-            <ModalHeader>
-                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Share "{mode.emoji ? mode.emoji + " " : ""}{mode.name}"</Text>
-                <ModalCloseButton onClick={rootProps.onClose} />
-            </ModalHeader>
-            <ModalContent>
-                <Text variant="text-sm/normal" style={{ margin: "12px 0", opacity: 0.8 }}>
-                    Friends with Kittycord get a one-tap import card. Nothing personal is included — just the mode itself.
-                </Text>
-
-                <Text variant="text-sm/semibold" style={{ marginBottom: 4 }}>Send to a friend</Text>
-                <SearchableSelect
-                    options={friendOptions}
-                    value={target?.id}
-                    placeholder="Pick a friend…"
-                    onChange={(v: string) => setTarget(UserStore.getUser(v) ?? null)}
-                    closeOnSelect
-                />
-
-                <Text variant="text-sm/semibold" style={{ margin: "12px 0 4px" }}>Message</Text>
-                <TextInput value={note} onChange={setNote} />
-
-                <Flex style={{ gap: 8, justifyContent: "flex-end", margin: "16px 0" }}>
-                    <Button look={Button.Looks.LINK} color={Button.Colors.PRIMARY} onClick={postInChat}>Post in current chat</Button>
-                    <Button color={Button.Colors.BRAND} disabled={!target || busy} onClick={sendDm}>Send</Button>
-                </Flex>
-            </ModalContent>
-        </ModalRoot>
-    );
-}
-
 function describeMode(mode: Mode, missingPlugins: string[]) {
     const parts: string[] = [];
     if (mode.status) parts.push(`status: ${mode.status}`);
@@ -414,7 +349,15 @@ function ModesModal({ rootProps }: { rootProps: any; }) {
                             </div>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => activate(mode)}>Activate</Button>
                             <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openEditor(mode)}>Edit</Button>
-                            <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openModal(props => <ShareModeModal rootProps={props} mode={mode} />)}>Share</Button>
+                            <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openModal(props => (
+                                <ShareFileModal
+                                    rootProps={props}
+                                    title={`Share "${mode.emoji ? mode.emoji + " " : ""}${mode.name}"`}
+                                    blurb="Friends with Kittycord get a one-tap import card. Nothing personal is included — just the mode itself."
+                                    buildFile={() => buildModeFile(mode)}
+                                    defaultNote={`Here's my "${mode.name}" mode for Kittycord — add it with one tap!`}
+                                />
+                            ))}>Share</Button>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={async () => { await deleteMode(mode.id); forceUpdate(); }}>Delete</Button>
                         </Flex>
                     ))}

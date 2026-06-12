@@ -11,6 +11,8 @@ import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRa
 import { Button, React, showToast, Slider, Text, TextInput, Toasts } from "@webpack/common";
 import type { ComponentType } from "react";
 
+import { ShareFileModal } from "../_shared/ShareFileModal";
+import { buildThemeFile } from "./share";
 import { enableTheme, getThemes, isThemeEnabled, loadThemes, removeTheme, saveTheme } from "./store";
 import { defaultParams, derivePalette, HEX_RE, MAX_ROUNDNESS, NAME_RE, type StudioParams } from "./template";
 
@@ -60,7 +62,7 @@ function ColorRow({ label, hint, value, onChange }: { label: string; hint: strin
     );
 }
 
-function PreviewPane({ params }: { params: StudioParams; }) {
+export function PreviewPane({ params }: { params: StudioParams; }) {
     const p = derivePalette(params);
     const r = Math.max(4, params.roundness - 4);
 
@@ -231,6 +233,15 @@ function StudioListModal({ rootProps }: { rootProps: any; }) {
                             </div>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => { enableTheme(fileName); forceUpdate(); }}>Apply</Button>
                             <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openEditor(params, fileName)}>Edit</Button>
+                            <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openModal(props => (
+                                <ShareFileModal
+                                    rootProps={props}
+                                    title={`Share "${params.name}"`}
+                                    blurb="Friends with Kittycord get a one-tap import card with a live preview. Only the theme's colors and settings are shared."
+                                    buildFile={() => buildThemeFile(params)}
+                                    defaultNote={`Here's my "${params.name}" theme, made with Kittycord Studio — add it with one tap!`}
+                                />
+                            ))}>Share</Button>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={async () => { await removeTheme(fileName); forceUpdate(); }}>Delete</Button>
                         </Flex>
                     );
