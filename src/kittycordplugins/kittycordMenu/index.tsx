@@ -22,6 +22,7 @@ const FEATURES: Feature[] = [
     { plugin: "Modes", action: "Open Modes", label: "Modes" },
     { plugin: "MessageTags", action: "Open Tagged Messages", label: "Tagged messages" },
     { plugin: "Bookmarks", action: "Open Bookmarks", label: "Bookmarks" },
+    { plugin: "KittycordStudio", action: "Open Studio", label: "Theme Studio" },
     { plugin: "KittycordWrapped", action: "Open Kittycord Wrapped", label: "Wrapped" },
     { plugin: "ShareSetup", action: "Share setup with a friend", label: "Share setup" },
     { plugin: "InviteFriend", action: "Invite a friend", label: "Invite a friend" },
