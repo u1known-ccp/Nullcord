@@ -7,12 +7,16 @@
 import { get, set } from "@api/DataStore";
 import { Settings } from "@api/Settings";
 import type { PluginNative } from "@utils/types";
+import { UserStore } from "@webpack/common";
 
-import { generateCss, type StudioParams, themeFileName } from "./template";
+import { generateCss, sanitizeParams, type StudioParams, themeFileName } from "./template";
 
 const KEY = "Kittycord_StudioThemes";
+const TOKENS_KEY = "Kittycord_StudioTokens";
 
 const Native = VencordNative?.pluginHelpers?.KittycordStudio as PluginNative<typeof import("./native")> | undefined;
+
+export const galleryAvailable = () => Boolean(Native);
 
 let themes: Record<string, StudioParams> = {};
 let loaded = false;
@@ -69,3 +73,73 @@ export function enableTheme(fileName: string) {
 }
 
 export const isThemeEnabled = (fileName: string) => Settings.enabledThemes.includes(fileName);
+
+export interface GalleryTheme {
+    id: string;
+    name: string;
+    authorName: string;
+    likes: number;
+    created: number;
+    params: StudioParams;
+}
+
+export async function browseGallery(sort: "new" | "top"): Promise<GalleryTheme[]> {
+    if (!Native) return [];
+    const raw = await Native.listGallery(sort);
+    const out: GalleryTheme[] = [];
+    for (const t of raw) {
+        try {
+            out.push({
+                id: String(t.id),
+                name: String(t.name),
+                authorName: String(t.authorName),
+                likes: Number(t.likes) || 0,
+                created: Number(t.created) || 0,
+                params: sanitizeParams(t.params)
+            });
+        } catch { }
+    }
+    return out;
+}
+
+async function getTokens(): Promise<Record<string, string>> {
+    return (await get<Record<string, string>>(TOKENS_KEY)) ?? {};
+}
+
+export async function publishTheme(params: StudioParams, authorName: string): Promise<void> {
+    if (!Native) throw new Error("The gallery needs the Kittycord desktop app.");
+    const me = UserStore.getCurrentUser();
+    if (!me) throw new Error("Could not read your account.");
+
+    const result = await Native.publishTheme(me.id, authorName, params);
+    if (!result.ok) throw new Error(result.error);
+
+    const tokens = await getTokens();
+    tokens[result.id] = result.ownerToken;
+    await set(TOKENS_KEY, tokens);
+}
+
+export async function likeGalleryTheme(themeId: string): Promise<number | null> {
+    if (!Native) return null;
+    const me = UserStore.getCurrentUser();
+    if (!me) return null;
+    const result = await Native.likeGalleryTheme(me.id, themeId);
+    return result ? result.likes : null;
+}
+
+export async function isMyTheme(themeId: string): Promise<boolean> {
+    return Boolean((await getTokens())[themeId]);
+}
+
+export async function deleteGalleryTheme(themeId: string): Promise<boolean> {
+    if (!Native) return false;
+    const tokens = await getTokens();
+    const token = tokens[themeId];
+    if (!token) return false;
+    const ok = await Native.deleteGalleryTheme(themeId, token);
+    if (ok) {
+        delete tokens[themeId];
+        await set(TOKENS_KEY, tokens);
+    }
+    return ok;
+}

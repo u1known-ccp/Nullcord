@@ -12,8 +12,9 @@ import { Button, React, showToast, Slider, Text, TextInput, Toasts } from "@webp
 import type { ComponentType } from "react";
 
 import { ShareFileModal } from "../_shared/ShareFileModal";
+import { openGallery, openPublish } from "./GalleryModal";
 import { buildThemeFile } from "./share";
-import { enableTheme, getThemes, isThemeEnabled, loadThemes, removeTheme, saveTheme } from "./store";
+import { enableTheme, galleryAvailable, getThemes, isThemeEnabled, loadThemes, removeTheme, saveTheme } from "./store";
 import { defaultParams, derivePalette, HEX_RE, MAX_ROUNDNESS, NAME_RE, type StudioParams } from "./template";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
@@ -242,13 +243,15 @@ function StudioListModal({ rootProps }: { rootProps: any; }) {
                                     defaultNote={`Here's my "${params.name}" theme, made with Kittycord Studio — add it with one tap!`}
                                 />
                             ))}>Share</Button>
+                            {galleryAvailable() && <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openPublish(params)}>Publish</Button>}
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={async () => { await removeTheme(fileName); forceUpdate(); }}>Delete</Button>
                         </Flex>
                     );
                 })}
 
-                <Flex style={{ margin: "16px 0" }}>
+                <Flex style={{ margin: "16px 0", gap: 8 }}>
                     <Button color={Button.Colors.BRAND} onClick={() => openEditor(defaultParams())}>+ New theme</Button>
+                    {galleryAvailable() && <Button color={Button.Colors.PRIMARY} look={Button.Looks.LINK} onClick={openGallery}>Browse gallery</Button>}
                 </Flex>
             </ModalContent>
         </ModalRoot>
