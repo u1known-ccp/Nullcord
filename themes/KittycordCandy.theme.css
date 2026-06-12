@@ -2,7 +2,7 @@
  * @name Kittycord Candy
  * @author Kittycord
  * @description The Kittycord installer look for your whole Discord — deep plum, candy pink, rounded everything.
- * @version 1.0.0
+ * @version 1.1.0
  * @website https://kittycord.dev
  * @source https://github.com/CenturyRV/Kittycord
 */
@@ -27,11 +27,12 @@
 .theme-midnight,
 .visual-refresh.theme-dark,
 .visual-refresh .theme-dark {
-    /* classic tokens */
-    --background-primary: var(--kc-bg-3);
-    --background-secondary: var(--kc-bg-2);
-    --background-secondary-alt: var(--kc-bg-2);
-    --background-tertiary: var(--kc-bg-1);
+    /* classic tokens — the main surfaces are slightly translucent so the painted
+       installer backdrop (see #app-mount below) shimmers through everywhere */
+    --background-primary: rgb(31 19 25 / 78%);
+    --background-secondary: rgb(25 15 21 / 72%);
+    --background-secondary-alt: rgb(25 15 21 / 72%);
+    --background-tertiary: rgb(17 10 14 / 60%);
     --background-floating: var(--kc-bg-2);
     --background-nested-floating: var(--kc-bg-2);
     --background-mobile-primary: var(--kc-bg-3);
@@ -42,21 +43,23 @@
     --background-modifier-selected: rgb(255 95 166 / 13%);
     --background-modifier-accent: var(--kc-line);
     --channeltextarea-background: var(--kc-bg-4);
+    --modal-background: var(--kc-bg-2);
+    --modal-footer-background: var(--kc-bg-1);
     --activity-card-background: var(--kc-bg-2);
     --background-message-hover: rgb(255 95 166 / 4%);
     --background-message-highlight: rgb(255 138 196 / 9%);
 
     /* visual refresh tokens */
-    --background-base-lowest: var(--kc-bg-0);
-    --background-base-lower: var(--kc-bg-1);
-    --background-base-low: var(--kc-bg-2);
+    --background-base-lowest: rgb(13 7 9 / 55%);
+    --background-base-lower: rgb(17 10 14 / 60%);
+    --background-base-low: rgb(25 15 21 / 72%);
     --background-surface-high: var(--kc-bg-4);
     --background-surface-higher: var(--kc-bg-5);
     --background-surface-highest: #382330;
-    --bg-overlay-chat: var(--kc-bg-3);
-    --bg-base-primary: var(--kc-bg-3);
-    --bg-base-secondary: var(--kc-bg-2);
-    --bg-base-tertiary: var(--kc-bg-1);
+    --bg-overlay-chat: rgb(31 19 25 / 78%);
+    --bg-base-primary: rgb(31 19 25 / 78%);
+    --bg-base-secondary: rgb(25 15 21 / 72%);
+    --bg-base-tertiary: rgb(17 10 14 / 60%);
     --bg-surface-raised: var(--kc-bg-2);
     --bg-surface-overlay: var(--kc-bg-2);
     --border-subtle: var(--kc-line);
@@ -101,6 +104,23 @@
     --scrollbar-thin-track: transparent;
     --scrollbar-auto-scrollbar-color-thumb: var(--kc-bg-5);
     --scrollbar-auto-scrollbar-color-track: transparent;
+}
+
+/* ---- the installer backdrop ----------------------------------------------------------
+   Painted once on the app root: candy glows, outlined diamond geometry, sweeping arcs and
+   plus-sparkles, exactly like Kittycord-Installer.exe. The translucent surfaces above let
+   it shimmer through the whole client. */
+#app-mount {
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='%23ff5fa6' stroke-opacity='.32' stroke-width='.7'%3E%3Cpath d='M100 8 192 100 100 192 8 100Z'/%3E%3Cpath d='M100 30 170 100 100 170 30 100Z' stroke-dasharray='3 4' stroke-opacity='.55'/%3E%3C/g%3E%3Cg stroke='%23ff8ac4' stroke-opacity='.22' stroke-width='.6'%3E%3Ccircle cx='170' cy='30' r='92'/%3E%3Ccircle cx='170' cy='30' r='76' stroke-dasharray='2 5'/%3E%3C/g%3E%3Cg stroke='%23ff8ac4' stroke-opacity='.6' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M28 44h12M34 38v12'/%3E%3Cpath d='M58 132h9M62.5 127.5v9'/%3E%3Cpath d='M148 152h9M152.5 147.5v9'/%3E%3C/g%3E%3C/svg%3E") no-repeat right -140px top -160px / 640px 640px,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='%23ff8ac4' stroke-width='.7'%3E%3Ccircle cx='100' cy='100' r='88' stroke-opacity='.30' stroke-dasharray='3 5'/%3E%3Ccircle cx='100' cy='100' r='62' stroke-opacity='.18'/%3E%3C/g%3E%3Cg stroke='%23ff8ac4' stroke-opacity='.5' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M150 60h10M155 55v10'/%3E%3C/g%3E%3C/svg%3E") no-repeat left -200px bottom -220px / 560px 560px,
+        radial-gradient(1000px 620px at 10% -12%, rgb(255 95 166 / 13%), transparent 62%),
+        radial-gradient(880px 700px at 98% 34%, rgb(255 138 196 / 9%), transparent 58%),
+        var(--kc-bg-1);
+}
+
+#app-mount [class*="bg_"] {
+    background: transparent;
 }
 
 /* The message box paints its own inner background, so variables alone don't reach it. */
