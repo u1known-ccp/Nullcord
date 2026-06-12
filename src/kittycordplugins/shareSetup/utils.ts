@@ -9,9 +9,9 @@ import { exportSettings, importSettings } from "@api/SettingsSync/offline";
 import { Logger } from "@utils/Logger";
 import type { PluginNative } from "@utils/types";
 import { MessageAttachment } from "@vencord/discord-types";
-import { Constants, moment, RestAPI, UserStore } from "@webpack/common";
+import { moment, UserStore } from "@webpack/common";
 
-import { sendFileToUser } from "../_shared/dm";
+import { downloadAttachmentText, sendFileToUser } from "../_shared/dm";
 
 const logger = new Logger("ShareSetup");
 
@@ -82,44 +82,8 @@ function parseEnvelope(text: string): ShareEnvelope {
     return obj as ShareEnvelope;
 }
 
-async function refreshCdnUrl(url: string): Promise<string | null> {
-    try {
-        const res = await RestAPI.post({
-            url: Constants.Endpoints.ATTACHMENTS_REFRESH_URLS,
-            body: { attachment_urls: [url] }
-        });
-        const refreshed = res?.body?.refreshed_urls?.[0]?.refreshed;
-        return typeof refreshed === "string" ? refreshed : null;
-    } catch {
-        return null;
-    }
-}
-
-async function downloadSetupText(attachment: MessageAttachment): Promise<string> {
-    const url = attachment.url || attachment.proxy_url;
-
-    if (Native) {
-        let r = await Native.downloadSetup(url);
-        if (!r.ok) {
-            const fresh = await refreshCdnUrl(url);
-            if (fresh) r = await Native.downloadSetup(fresh);
-        }
-        if (r.ok) return r.data;
-        throw new Error("Could not download that setup file.");
-    }
-
-    const webUrl = attachment.proxy_url || attachment.url;
-    let res = await fetch(webUrl);
-    if (!res.ok) {
-        const fresh = await refreshCdnUrl(webUrl);
-        if (fresh) res = await fetch(fresh);
-    }
-    if (!res.ok) throw new Error("Could not download that setup file.");
-    return res.text();
-}
-
 export async function fetchShare(attachment: MessageAttachment): Promise<ShareEnvelope> {
-    return parseEnvelope(await downloadSetupText(attachment));
+    return parseEnvelope(await downloadAttachmentText(attachment, Native));
 }
 
 export async function applyShare(envelope: ShareEnvelope) {

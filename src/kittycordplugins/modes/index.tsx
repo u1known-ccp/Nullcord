@@ -8,12 +8,16 @@ import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
+import { ErrorBoundary } from "@components/index";
+import { getCurrentChannel } from "@utils/discord";
 import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import { relaunch } from "@utils/native";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, GuildStore, React, SearchableSelect, showToast, Text, TextInput, Toasts } from "@webpack/common";
+import type { Message, User } from "@vencord/discord-types";
+import { Alerts, Button, DraftType, GuildStore, React, RelationshipStore, SearchableSelect, showToast, Text, TextInput, Toasts, UploadHandler, UserStore } from "@webpack/common";
 import type { ComponentType } from "react";
 
+import { buildModeFile, fetchMode, findModeAttachment, sendMode } from "./share";
 import { applyMode, type AutoTrigger, captureInto, currentThemes, deleteMode, getActiveId, getModes, getTogglablePlugins, loadModes, type Mode, newMode, notifyManualActivation, runningGameNames, saveMode, startAuto, type StatusValue, stopAuto } from "./utils";
 
 const settings = definePluginSettings({
@@ -220,6 +224,140 @@ function ModeEditor({ rootProps, initial, onSaved }: { rootProps: any; initial: 
     );
 }
 
+function ShareModeModal({ rootProps, mode }: { rootProps: any; mode: Mode; }) {
+    const [target, setTarget] = React.useState<User | null>(null);
+    const [note, setNote] = React.useState(`Here's my "${mode.name}" mode for Kittycord — add it with one tap!`);
+    const [busy, setBusy] = React.useState(false);
+
+    const friendOptions = React.useMemo(() =>
+        RelationshipStore.getFriendIDs()
+            .map(id => UserStore.getUser(id))
+            .filter((u): u is User => Boolean(u))
+            .map(u => ({ label: u.globalName || u.username, value: u.id }))
+            .sort((a, b) => a.label.localeCompare(b.label)), []);
+
+    async function sendDm() {
+        if (!target) return;
+        setBusy(true);
+        try {
+            await sendMode(target.id, mode, note.trim());
+            showToast(`Mode sent to ${target.globalName || target.username}.`, Toasts.Type.SUCCESS);
+            rootProps.onClose();
+        } catch (e) {
+            showToast(String((e as Error)?.message ?? "Could not send the mode."), Toasts.Type.FAILURE);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function postInChat() {
+        const channel = getCurrentChannel();
+        if (!channel) return showToast("Open a chat first to post it there.", Toasts.Type.FAILURE);
+        UploadHandler.promptToUpload([buildModeFile(mode)], channel, DraftType.ChannelMessage);
+        rootProps.onClose();
+    }
+
+    return (
+        <ModalRoot {...rootProps} size={ModalSize.SMALL}>
+            <ModalHeader>
+                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Share "{mode.emoji ? mode.emoji + " " : ""}{mode.name}"</Text>
+                <ModalCloseButton onClick={rootProps.onClose} />
+            </ModalHeader>
+            <ModalContent>
+                <Text variant="text-sm/normal" style={{ margin: "12px 0", opacity: 0.8 }}>
+                    Friends with Kittycord get a one-tap import card. Nothing personal is included — just the mode itself.
+                </Text>
+
+                <Text variant="text-sm/semibold" style={{ marginBottom: 4 }}>Send to a friend</Text>
+                <SearchableSelect
+                    options={friendOptions}
+                    value={target?.id}
+                    placeholder="Pick a friend…"
+                    onChange={(v: string) => setTarget(UserStore.getUser(v) ?? null)}
+                    closeOnSelect
+                />
+
+                <Text variant="text-sm/semibold" style={{ margin: "12px 0 4px" }}>Message</Text>
+                <TextInput value={note} onChange={setNote} />
+
+                <Flex style={{ gap: 8, justifyContent: "flex-end", margin: "16px 0" }}>
+                    <Button look={Button.Looks.LINK} color={Button.Colors.PRIMARY} onClick={postInChat}>Post in current chat</Button>
+                    <Button color={Button.Colors.BRAND} disabled={!target || busy} onClick={sendDm}>Send</Button>
+                </Flex>
+            </ModalContent>
+        </ModalRoot>
+    );
+}
+
+function describeMode(mode: Mode, missingPlugins: string[]) {
+    const parts: string[] = [];
+    if (mode.status) parts.push(`status: ${mode.status}`);
+    if (mode.customStatus?.text) parts.push("a custom status");
+    if (mode.themes?.length) parts.push(`${mode.themes.length} theme(s)`);
+    if (mode.plugins) parts.push(`${Object.keys(mode.plugins).length} plugin toggle(s)`);
+    return (
+        <div style={{ textAlign: "left" }}>
+            <Text variant="text-md/normal">
+                "{mode.emoji ? mode.emoji + " " : ""}{mode.name}" changes: {parts.length ? parts.join(", ") : "nothing yet"}.
+            </Text>
+            {missingPlugins.length > 0 && (
+                <Text variant="text-sm/normal" style={{ opacity: 0.8, marginTop: 8 }}>
+                    {missingPlugins.length} plugin(s) in this mode aren't available here and will be skipped: {missingPlugins.join(", ")}
+                </Text>
+            )}
+        </div>
+    );
+}
+
+function ModeImportCardInner({ message }: { message: Message; }) {
+    const attachment = findModeAttachment(message.attachments);
+    const own = message.author?.id === UserStore.getCurrentUser()?.id;
+    if (!attachment) return null;
+
+    async function startImport() {
+        try {
+            const { mode, sender, missingPlugins } = await fetchMode(attachment!);
+            Alerts.show({
+                title: own ? "Add your shared mode?" : `Add ${sender}'s mode?`,
+                body: describeMode(mode, missingPlugins),
+                confirmText: "Add & activate",
+                secondaryConfirmText: "Just add",
+                cancelText: "Cancel",
+                onConfirm: async () => {
+                    await saveMode(mode);
+                    notifyManualActivation();
+                    const { restartNeeded } = await applyMode(mode);
+                    showToast(`Switched to "${mode.name}".`, Toasts.Type.SUCCESS);
+                    if (restartNeeded) {
+                        showNotification({
+                            title: "Mode applied — restart needed",
+                            body: "Some plugins in this mode need a restart to fully apply. Click to restart now.",
+                            onClick: () => (IS_WEB ? location.reload() : relaunch())
+                        });
+                    }
+                },
+                onConfirmSecondary: async () => {
+                    await saveMode(mode);
+                    showToast(`Added "${mode.name}" to your modes.`, Toasts.Type.SUCCESS);
+                }
+            });
+        } catch (e) {
+            showToast(String((e as Error)?.message ?? "Could not read that mode."), Toasts.Type.FAILURE);
+        }
+    }
+
+    return (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, margin: "4px 0", borderRadius: 8, background: "var(--background-secondary)" }}>
+            <Text variant="text-md/semibold" style={{ flex: 1 }}>
+                🎛️ {own ? "Your shared Kittycord mode" : `${message.author?.username ?? "Someone"} shared a Kittycord mode`}
+            </Text>
+            <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={startImport}>Add</Button>
+        </div>
+    );
+}
+
+const ModeImportCard = ErrorBoundary.wrap(ModeImportCardInner, { noop: true });
+
 function triggerLabel(mode: Mode): string | null {
     const a = mode.auto;
     if (!a) return null;
@@ -276,6 +414,7 @@ function ModesModal({ rootProps }: { rootProps: any; }) {
                             </div>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => activate(mode)}>Activate</Button>
                             <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openEditor(mode)}>Edit</Button>
+                            <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={() => openModal(props => <ShareModeModal rootProps={props} mode={mode} />)}>Share</Button>
                             <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={async () => { await deleteMode(mode.id); forceUpdate(); }}>Delete</Button>
                         </Flex>
                     ))}
@@ -290,16 +429,21 @@ function ModesModal({ rootProps }: { rootProps: any; }) {
 
 export default definePlugin({
     name: "Modes",
-    description: "Switch your whole Discord with one tap: status, custom status, themes and which plugins are on — bundled into named modes like Work, Gaming or Focus.",
+    description: "Switch your whole Discord with one tap: status, custom status, themes and which plugins are on — bundled into named modes like Work, Gaming or Focus. Share modes with friends for one-tap import.",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Utility"],
-    dependencies: ["UserSettingsAPI"],
+    dependencies: ["UserSettingsAPI", "MessageAccessoriesAPI"],
     settings,
 
     toolboxActions: {
         "Open Modes"() {
             openModal(props => <ModesModal rootProps={props} />);
         }
+    },
+
+    renderMessageAccessory({ message }) {
+        if (!findModeAttachment(message.attachments)) return null;
+        return <ModeImportCard message={message} />;
     },
 
     async start() {

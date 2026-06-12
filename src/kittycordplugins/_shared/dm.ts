@@ -5,10 +5,14 @@
  */
 
 import { sleep } from "@utils/misc";
-import { CloudUpload } from "@vencord/discord-types";
+import { CloudUpload, MessageAttachment } from "@vencord/discord-types";
 import { CloudUploadPlatform } from "@vencord/discord-types/enums";
 import { findLazy } from "@webpack";
 import { ChannelActionCreators, ChannelStore, Constants, RestAPI, SnowflakeUtils } from "@webpack/common";
+
+export type AttachmentDownloader = {
+    downloadSetup(url: string): Promise<{ ok: true; data: string; } | { ok: false; error: string; }>;
+};
 
 const CloudUploader = findLazy(m => m.prototype?.trackUploadFinished) as typeof CloudUpload;
 
@@ -64,4 +68,40 @@ export async function sendFileToUser(userId: string, file: File, content: string
             attachments: [attachment]
         }
     });
+}
+
+async function refreshCdnUrl(url: string): Promise<string | null> {
+    try {
+        const res = await RestAPI.post({
+            url: Constants.Endpoints.ATTACHMENTS_REFRESH_URLS,
+            body: { attachment_urls: [url] }
+        });
+        const refreshed = res?.body?.refreshed_urls?.[0]?.refreshed;
+        return typeof refreshed === "string" ? refreshed : null;
+    } catch {
+        return null;
+    }
+}
+
+export async function downloadAttachmentText(attachment: MessageAttachment, native: AttachmentDownloader | undefined): Promise<string> {
+    const url = attachment.url || attachment.proxy_url;
+
+    if (native) {
+        let r = await native.downloadSetup(url);
+        if (!r.ok) {
+            const fresh = await refreshCdnUrl(url);
+            if (fresh) r = await native.downloadSetup(fresh);
+        }
+        if (r.ok) return r.data;
+        throw new Error("Could not download that file.");
+    }
+
+    const webUrl = attachment.proxy_url || attachment.url;
+    let res = await fetch(webUrl);
+    if (!res.ok) {
+        const fresh = await refreshCdnUrl(webUrl);
+        if (fresh) res = await fetch(fresh);
+    }
+    if (!res.ok) throw new Error("Could not download that file.");
+    return res.text();
 }
