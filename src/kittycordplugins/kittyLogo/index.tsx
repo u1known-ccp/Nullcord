@@ -8,28 +8,38 @@ import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
+import { React } from "@webpack/common";
 
 import { BRAND_ICON } from "../../branding";
 import style from "./style.css?managed";
 
-const Native = VencordNative.pluginHelpers.KittyLogo as PluginNative<typeof import("./native")>;
+const Native = VencordNative?.pluginHelpers?.KittyLogo as PluginNative<typeof import("./native")> | undefined;
 const logger = new Logger("KittyLogo");
 
-function applyAppIcon() {
-    if (!IS_DISCORD_DESKTOP || !settings.store.taskbarIcon) return;
+function enableAppIcon() {
+    if (!IS_DISCORD_DESKTOP) return;
     try {
-        Native?.applyAppIcon?.()?.catch?.(e => logger.error("Failed to set app icon", e));
+        Native?.enableAppIcon?.()?.catch?.(e => logger.error("Failed to set app icon", e));
     } catch (e) {
         logger.error("Failed to set app icon", e);
+    }
+}
+
+function disableAppIcon() {
+    if (!IS_DISCORD_DESKTOP) return;
+    try {
+        Native?.disableAppIcon?.()?.catch?.(e => logger.error("Failed to revert app icon", e));
+    } catch (e) {
+        logger.error("Failed to revert app icon", e);
     }
 }
 
 const settings = definePluginSettings({
     taskbarIcon: {
         type: OptionType.BOOLEAN,
-        description: "Also replace the Discord taskbar / app icon with the Kittycord cat (turning it off reverts after a Discord restart)",
+        description: "Also replace the Discord taskbar / app icon with the Kittycord cat",
         default: true,
-        onChange: applyAppIcon
+        onChange: value => (value ? enableAppIcon() : disableAppIcon())
     }
 });
 
@@ -40,14 +50,38 @@ export default definePlugin({
     tags: ["Appearance", "Customisation"],
     settings,
 
+    KittyIcon() {
+        return (
+            <img
+                src={BRAND_ICON}
+                width={30}
+                height={30}
+                style={{ borderRadius: "30%", objectFit: "contain" }}
+                draggable={false}
+                alt=""
+            />
+        );
+    },
+
+    patches: [
+        {
+            find: "#{intl::DISCODO_DISABLED}",
+            replacement: {
+                match: /(\(0,\i.jsxs?\)\(\i,{}\))/,
+                replace: "arguments[0].user == null ? null : $self.KittyIcon()"
+            }
+        }
+    ],
+
     start() {
         document.documentElement.style.setProperty("--kc-logo", `url("${BRAND_ICON}")`);
         enableStyle(style);
-        applyAppIcon();
+        if (settings.store.taskbarIcon) enableAppIcon();
     },
 
     stop() {
         disableStyle(style);
         document.documentElement.style.removeProperty("--kc-logo");
+        disableAppIcon();
     }
 });
