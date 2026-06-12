@@ -303,8 +303,8 @@ function DevBuildConfirmModal(props: RenderModalProps) {
                 <Paragraph>You are using a custom build of Kittycord, which we do not provide support for!</Paragraph>
 
                 <Paragraph className={Margins.top8}>
-                    We only provide support for <Link href="https://equicord.org/download">official builds</Link>.
-                    Either <Link href="https://equicord.org/download">switch to an official build</Link> or figure your issue out yourself.
+                    We only provide support for <Link href="https://kittycord.dev">official builds</Link>.
+                    Either <Link href="https://kittycord.dev">switch to an official build</Link> or figure your issue out yourself.
                 </Paragraph>
 
                 <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
@@ -414,7 +414,7 @@ export default definePlugin({
                         <div>
                             <Paragraph>You are using an externally updated Kittycord version, which we do not provide support for!</Paragraph>
                             <Paragraph className={Margins.top8}>
-                                Please either switch to an <Link href="https://equicord.org/download">officially supported version of Kittycord</Link>, or
+                                Please either switch to an <Link href="https://kittycord.dev">officially supported version of Kittycord</Link>, or
                                 contact your package maintainer for support instead.
                             </Paragraph>
                         </div>

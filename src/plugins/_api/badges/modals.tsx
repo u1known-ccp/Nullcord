@@ -9,7 +9,7 @@ import { Flex } from "@components/Flex";
 import { Heading } from "@components/Heading";
 import { Heart } from "@components/Heart";
 import { Paragraph } from "@components/Paragraph";
-import { DonateButton, TranslateButton } from "@components/settings";
+import { DonateButton } from "@components/settings";
 import { Margins } from "@utils/margins";
 import { Modal, openModal } from "@webpack/common";
 
@@ -32,7 +32,7 @@ export function VencordDonorModal() {
                     >
                         <Flex justifyContent="center" alignItems="center" gap="0.5em">
                             <Heart />
-                            Vencord Donor
+                            Donor
                         </Flex>
                     </Heading>
                 }
@@ -54,10 +54,10 @@ export function VencordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Paragraph>
-                            This Badge is a special perk for Vencord Donors
+                            This Badge is a special perk for Donors
                         </Paragraph>
                         <Paragraph className={Margins.top20}>
-                            Please consider supporting the development of Vencord by becoming a donor. It would mean a lot!!
+                            Please consider supporting development by becoming a donor. It would mean a lot!!
                         </Paragraph>
                     </div>
                 </div>
@@ -112,7 +112,7 @@ export function EquicordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Paragraph>
-                            This Badge is a special perk for Kittycord (Not Vencord) Donors
+                            This Badge is a special perk for Kittycord Donors
                         </Paragraph>
                         <Paragraph className={Margins.top20}>
                             Please consider supporting the development of Kittycord by becoming a donor. It would mean a lot! :3
@@ -165,11 +165,6 @@ export function EquicordTranslatorModal() {
                             Awarded to contributors who expand Kittycord’s language support by translating content for the community.
                         </Paragraph>
                     </div>
-                </div>
-                <div>
-                    <Flex justifyContent="center" style={{ width: "100%" }}>
-                        <TranslateButton />
-                    </Flex>
                 </div>
             </Modal>
         </ErrorBoundary>

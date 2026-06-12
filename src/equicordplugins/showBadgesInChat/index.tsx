@@ -12,6 +12,8 @@ import { isEquicordPluginDev, isPluginDev } from "@utils/misc";
 import definePlugin from "@utils/types";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
 
+import { BRAND_ICON } from "../../branding";
+
 const { roleIcon } = findCssClassesLazy("roleIcon", "separator");
 const RoleIconComponent = findComponentByCodeLazy("#{intl::ROLE_ICON_ALT_TEXT}");
 
@@ -56,9 +58,9 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 <span style={{ order: settings.store.EquicordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name="Equicord Contributor"
+                        name="Kittycord Contributor"
                         size={20}
-                        src={"https://equicord.org/assets/favicon.png"}
+                        src={BRAND_ICON}
                     />
                 </span>
             ) : null;
@@ -81,7 +83,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 <span style={{ order: settings.store.VencordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name="Vencord Contributor"
+                        name="Contributor"
                         size={20}
                         src={"https://cdn.discordapp.com/emojis/1092089799109775453.png"}
                     />
