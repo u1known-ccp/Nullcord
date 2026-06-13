@@ -15,14 +15,14 @@ export interface Deko {
 }
 
 export const CATALOG: Deko[] = [
-    { id: "sakura", label: "Cherry blossom", file: "sakura.webp", animated: true },
-    { id: "galaxy", label: "Galaxy", file: "galaxy.webp", animated: true },
-    { id: "neon", label: "Neon", file: "neon.webp", animated: true },
-    { id: "ice", label: "Frost", file: "ice.webp", animated: true },
-    { id: "flames", label: "Flames", file: "flames.webp", animated: true },
-    { id: "wings", label: "Angel wings", file: "wings.webp", animated: true },
-    { id: "aura", label: "Kitty aura", file: "aura.webp", animated: true },
-    { id: "butterfly", label: "Butterflies", file: "butterfly.webp", animated: true },
+    { id: "sakura", label: "Cherry blossom", file: "sakura.svg", animated: true },
+    { id: "galaxy", label: "Galaxy", file: "galaxy.svg", animated: true },
+    { id: "neon", label: "Neon", file: "neon.svg", animated: true },
+    { id: "ice", label: "Frost", file: "ice.svg", animated: true },
+    { id: "flames", label: "Flames", file: "flames.svg", animated: true },
+    { id: "wings", label: "Angel wings", file: "wings.svg", animated: true },
+    { id: "aura", label: "Kitty aura", file: "aura.svg", animated: true },
+    { id: "butterfly", label: "Butterflies", file: "butterfly.svg", animated: true },
     { id: "glow", label: "Pink glow", file: "glow" },
     { id: "hearts", label: "Hearts", file: "hearts" },
     { id: "sparkles", label: "Sparkles", file: "sparkles", animated: true },
