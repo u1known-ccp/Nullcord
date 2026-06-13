@@ -1,0 +1,74 @@
+/*
+ * Kittycord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.kc-inv-card {
+    background: var(--background-secondary);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.kc-inv-coderow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.kc-inv-coderow > :first-child {
+    flex: 1;
+}
+
+.kc-inv-board {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.kc-inv-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--background-secondary);
+}
+
+.kc-inv-me {
+    background: var(--brand-experiment-360, rgba(255, 95, 166, 0.18));
+    outline: 1px solid var(--brand-experiment, #ff5fa6);
+}
+
+.kc-inv-rank {
+    width: 24px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.kc-inv-rank.kc-inv-top {
+    color: #ffd46b;
+}
+
+.kc-inv-av {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--background-tertiary);
+    flex-shrink: 0;
+}
+
+.kc-inv-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--header-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kc-inv-count {
+    font-weight: 700;
+    color: var(--brand-experiment, #ff5fa6);
+}
