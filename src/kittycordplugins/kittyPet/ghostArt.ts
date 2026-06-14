@@ -27,17 +27,36 @@ function eyesFor(expression: GhostExpression): string {
     }
 }
 
-export const GHOST_ACCESSORIES: Record<string, string> = {
-    bow: "<path d=\"M16 4.3 L11 2 L11 6.6 Z\" fill=\"#ff4d6d\"/><path d=\"M16 4.3 L21 2 L21 6.6 Z\" fill=\"#ff4d6d\"/><circle cx=\"16\" cy=\"4.3\" r=\"1.5\" fill=\"#ff5fa6\"/>",
-    scarf: "<path d=\"M7 21 Q16 24.5 25 21 L25 23.5 Q16 27 7 23.5 Z\" fill=\"#8ad1ff\"/><rect x=\"13\" y=\"22.5\" width=\"3\" height=\"5.5\" rx=\"0.6\" fill=\"#8ad1ff\"/>",
-    hat: "<path d=\"M16 0.5 L20 6 L12 6 Z\" fill=\"#ffd46b\"/><rect x=\"11.5\" y=\"5.6\" width=\"9\" height=\"1.4\" rx=\"0.5\" fill=\"#ff8ac4\"/><circle cx=\"16\" cy=\"0.7\" r=\"1\" fill=\"#ffe9f4\"/>",
-    crown: "<path d=\"M10 8 L10 3 L13 5.5 L16 2 L19 5.5 L22 3 L22 8 Z\" fill=\"#ffd46b\" stroke=\"#e8b94f\" stroke-width=\"0.5\"/><circle cx=\"16\" cy=\"2\" r=\"0.9\" fill=\"#ff8ac4\"/>"
+export const GHOST_ACCESSORIES: Record<string, { label: string; svg: string; }> = {
+    halo: {
+        label: "Halo",
+        svg: "<ellipse cx=\"16\" cy=\"2.6\" rx=\"6\" ry=\"1.8\" fill=\"none\" stroke=\"#ffd46b\" stroke-width=\"1.5\"/>"
+    },
+    witchHat: {
+        label: "Witch hat",
+        svg: "<ellipse cx=\"16\" cy=\"6\" rx=\"9.5\" ry=\"2.1\" fill=\"#5b3a7a\"/><path d=\"M16 0.5 L21.5 6 L10.5 6 Z\" fill=\"#6d479a\"/><rect x=\"11\" y=\"4.6\" width=\"10\" height=\"1.6\" fill=\"#ffd46b\"/>"
+    },
+    scarf: {
+        label: "Cozy scarf",
+        svg: "<path d=\"M7 21 Q16 24.5 25 21 L25 23.5 Q16 27 7 23.5 Z\" fill=\"#8ad1ff\"/><rect x=\"13\" y=\"22.5\" width=\"3\" height=\"5.5\" rx=\"0.6\" fill=\"#8ad1ff\"/>"
+    },
+    crown: {
+        label: "Spooky crown",
+        svg: "<path d=\"M10 8 L10 3 L13 5.5 L16 2 L19 5.5 L22 3 L22 8 Z\" fill=\"#b07bd8\" stroke=\"#8a55b8\" stroke-width=\"0.5\"/><circle cx=\"16\" cy=\"2\" r=\"0.9\" fill=\"#ff8ac4\"/>"
+    }
+};
+
+export const GHOST_ACCESSORY_LEVELS: Record<string, number> = {
+    halo: 2,
+    witchHat: 3,
+    scarf: 4,
+    crown: 5
 };
 
 const THUMB_VIEWBOX: Record<string, string> = {
-    bow: "9 1 14 7",
+    halo: "4 0 24 6",
+    witchHat: "6 0 20 8",
     scarf: "6 20 20 9",
-    hat: "10 0 12 8",
     crown: "9 1 14 8"
 };
 
@@ -47,10 +66,10 @@ function toUri(viewBox: string, inner: string): string {
 }
 
 export function buildGhostUri({ expression, accessory }: { expression: GhostExpression; accessory: string | null; }): string {
-    const acc = accessory && GHOST_ACCESSORIES[accessory] ? GHOST_ACCESSORIES[accessory] : "";
+    const acc = accessory && GHOST_ACCESSORIES[accessory] ? GHOST_ACCESSORIES[accessory].svg : "";
     return toUri("0 0 32 32", BODY + CHEEKS + eyesFor(expression) + acc);
 }
 
 export const GHOST_ACCESSORY_THUMBS: Record<string, string> = Object.fromEntries(
-    Object.entries(GHOST_ACCESSORIES).map(([id, svg]) => [id, toUri(THUMB_VIEWBOX[id], svg)])
+    Object.entries(GHOST_ACCESSORIES).map(([id, a]) => [id, toUri(THUMB_VIEWBOX[id], a.svg)])
 );
