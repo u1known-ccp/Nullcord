@@ -20,6 +20,38 @@
     pointer-events: none;
 }
 
+.kc-ghost {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+}
+
+.kc-ghost-bob {
+    width: 100%;
+    height: 100%;
+    animation: kc-ghost-bob 2.6s ease-in-out infinite;
+}
+
+.kc-ghost-body {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 2px 6px rgba(255, 95, 166, 0.45));
+}
+
+@keyframes kc-ghost-bob {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
 .kc-pet-heart {
     position: fixed;
     z-index: 2001;

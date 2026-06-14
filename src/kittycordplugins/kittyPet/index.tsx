@@ -11,6 +11,8 @@ import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRa
 import definePlugin, { OptionType } from "@utils/types";
 import { Button, React, SelectedChannelStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
 
+import { GhostController } from "./ghost";
+import { GHOST_ACCESSORY_THUMBS } from "./ghostArt";
 import { PetController } from "./pet";
 import { ACCESSORIES, ACCESSORY_URIS } from "./sprites";
 import { ACCESSORY_LEVELS, addXp, DAILY_MSG_XP_CAP, getSave, levelFor, loadSave, MAX_LEVEL, nextLevelXp, updateSave } from "./state";
@@ -23,9 +25,18 @@ const ModalContent = ModalContentRaw as React.ComponentType<any>;
 const ModalCloseButton = ModalCloseButtonRaw as React.ComponentType<any>;
 
 const settings = definePluginSettings({
+    style: {
+        type: OptionType.SELECT,
+        description: "How your pet gets around",
+        options: [
+            { label: "Cat — walks along the bottom", value: "cat", default: true },
+            { label: "Ghost — floats and follows your cursor", value: "ghost" }
+        ],
+        onChange: () => restartController()
+    },
     size: {
         type: OptionType.SELECT,
-        description: "How big the cat is",
+        description: "How big your pet is",
         options: [
             { label: "Small", value: 24 },
             { label: "Medium", value: 32, default: true },
@@ -34,9 +45,16 @@ const settings = definePluginSettings({
     },
     speed: {
         type: OptionType.SLIDER,
-        description: "How fast the cat walks",
+        description: "How fast the cat walks (cat style)",
         markers: [0.5, 1, 1.5, 2, 3],
         default: 1,
+        stickToMarkers: true
+    },
+    lag: {
+        type: OptionType.SLIDER,
+        description: "How lazily the ghost trails your cursor (ghost style)",
+        markers: [1, 2, 3, 4, 5],
+        default: 3,
         stickToMarkers: true
     },
     reactions: {
@@ -46,12 +64,51 @@ const settings = definePluginSettings({
     },
     sleepWhenIdle: {
         type: OptionType.BOOLEAN,
-        description: "Fall asleep when nothing happens for a while",
+        description: "Fall asleep when nothing happens for a while (cat style)",
         default: true
     }
 });
 
-let controller: PetController | null = null;
+let controller: PetController | GhostController | null = null;
+
+function onPet() {
+    updateSave({ pets: getSave().pets + 1 });
+    addXp(2).then(notifyLevel);
+}
+
+function buildController(): PetController | GhostController {
+    if (settings.store.style === "ghost") {
+        return new GhostController({
+            getConfig: () => ({
+                size: settings.store.size,
+                lag: settings.store.lag,
+                reactions: settings.store.reactions
+            }),
+            onPet
+        });
+    }
+    return new PetController({
+        getConfig: () => ({
+            size: settings.store.size,
+            speed: settings.store.speed,
+            reactions: settings.store.reactions,
+            sleepWhenIdle: settings.store.sleepWhenIdle
+        }),
+        onPet
+    });
+}
+
+function startController() {
+    controller = buildController();
+    controller.setEquipped(getSave().equipped);
+    controller.start();
+}
+
+function restartController() {
+    if (!controller) return;
+    controller.stop();
+    startController();
+}
 
 function notifyLevel(level: number | null) {
     if (level === null) return;
@@ -66,10 +123,17 @@ function PetModal({ rootProps }: { rootProps: any; }) {
     const level = levelFor(save.xp);
     const next = nextLevelXp(level);
     const progress = next === null ? 1 : Math.min(1, save.xp / next);
+    const isGhost = settings.store.style === "ghost";
+    const thumbs = isGhost ? GHOST_ACCESSORY_THUMBS : ACCESSORY_URIS;
 
     async function equip(id: string | null) {
         await updateSave({ equipped: id });
         controller?.setEquipped(id);
+        forceUpdate();
+    }
+
+    function pet() {
+        controller?.pet();
         forceUpdate();
     }
 
@@ -86,11 +150,17 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                         <div style={{ height: "100%", width: `${Math.round(progress * 100)}%`, borderRadius: 999, background: "linear-gradient(90deg, #ff5fa6, #ff8ac4)" }} />
                     </div>
                     <Text variant="text-sm/normal" style={{ opacity: 0.8 }}>
-                        {next === null ? "Fully grown — what a good kitty." : `${save.xp} / ${next} XP — pet the cat and chat to level up.`}
+                        {next === null ? "Fully grown — what a good kitty." : `${save.xp} / ${next} XP — pet your kitty and chat to level up.`}
                     </Text>
                     <Text variant="text-sm/normal" style={{ opacity: 0.8, marginTop: 4 }}>
                         Petted {save.pets} time{save.pets === 1 ? "" : "s"}.
                     </Text>
+
+                    {isGhost && (
+                        <Flex style={{ marginTop: 12 }}>
+                            <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={pet}>Pet the ghost</Button>
+                        </Flex>
+                    )}
 
                     <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Accessories</Text>
                     <Flex style={{ gap: 8, flexWrap: "wrap" }}>
@@ -113,7 +183,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                                     onClick={() => equip(id)}
                                 >
                                     <Flex style={{ gap: 6, alignItems: "center" }}>
-                                        <img src={ACCESSORY_URIS[id]} style={{ height: 14, imageRendering: "pixelated" }} alt="" />
+                                        <img src={thumbs[id]} style={{ height: 14, imageRendering: isGhost ? "auto" : "pixelated" }} alt="" />
                                         <span>{locked ? `${acc.label} (level ${needed})` : acc.label}</span>
                                     </Flex>
                                 </Button>
@@ -128,7 +198,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
 
 export default definePlugin({
     name: "KittyPet",
-    description: "A tiny pixel cat that lives in your Discord — it walks around, naps, reacts to pings and can be petted. Level it up to unlock accessories.",
+    description: "A tiny pet that lives in your Discord — pick a pixel cat that walks around the bottom, or a ghost that floats along and follows your cursor. It reacts to pings, can be petted, and levels up to unlock accessories.",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Fun", "Customisation"],
     settings,
@@ -168,21 +238,8 @@ export default definePlugin({
 
     async start() {
         enableStyle(style);
-        const save = await loadSave();
-        controller = new PetController({
-            getConfig: () => ({
-                size: settings.store.size,
-                speed: settings.store.speed,
-                reactions: settings.store.reactions,
-                sleepWhenIdle: settings.store.sleepWhenIdle
-            }),
-            onPet() {
-                updateSave({ pets: getSave().pets + 1 });
-                addXp(2).then(notifyLevel);
-            }
-        });
-        controller.setEquipped(save.equipped);
-        controller.start();
+        await loadSave();
+        startController();
     },
 
     stop() {
