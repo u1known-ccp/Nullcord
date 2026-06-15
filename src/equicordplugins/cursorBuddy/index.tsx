@@ -99,8 +99,16 @@ const settings = definePluginSettings({
     speed: {
         description: "Speed of your buddy",
         type: OptionType.NUMBER,
-        default: 10,
+        default: 4,
         isValid: (value: number) => value >= 0 || "Speed must be bigger than 0",
+        onChange: load,
+    },
+    smoothness: {
+        description: "How smoothly your buddy follows (0 = snappy, 1 = floaty)",
+        type: OptionType.SLIDER,
+        markers: [0, 0.25, 0.5, 0.75, 1],
+        default: 0.5,
+        stickToMarkers: false,
         onChange: load,
     },
     fps: {
@@ -210,6 +218,7 @@ function load() {
             oneko({
                 speed: settings.store.speed,
                 fps: settings.store.fps,
+                smoothness: settings.store.smoothness,
                 image: ONEKO_IMAGE,
                 persistPosition: false,
                 furColor: settings.store.furColor,
@@ -221,6 +230,7 @@ function load() {
             fathorse({
                 speed: settings.store.speed,
                 fps: settings.store.fps,
+                smoothness: settings.store.smoothness,
                 size: settings.store.size,
                 fade: settings.store.fade,
                 freeroam: settings.store.freeroam,

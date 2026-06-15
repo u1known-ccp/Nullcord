@@ -15,6 +15,7 @@ export default function oneko(options = {}) {
     const {
         speed = 10,
         fps = 24,
+        smoothness = 0.5,
         image = "./oneko.gif",
         persistPosition = true,
         furColor = "#FFFFFF",
@@ -33,7 +34,7 @@ export default function oneko(options = {}) {
     let idleAnimation = null;
     let idleAnimationFrame = 0;
 
-    const nekoSpeed = speed;
+    const rate = (2 + speed * 0.8) * (1.3 - Math.min(1, Math.max(0, smoothness)));
     const spriteSets = {
         idle: [[-3, -3]],
         alert: [[-7, -3]],
@@ -224,14 +225,23 @@ export default function oneko(options = {}) {
     }
 
     let lastFrameTimestamp;
+    let lastMoveTimestamp;
 
     function onAnimationFrame(timestamp) {
         if (!nekoEl.isConnected) return;
-        if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
-        if (timestamp - lastFrameTimestamp > 1000 / fps) {
-            lastFrameTimestamp = timestamp;
-            frame();
-        }
+        try {
+            if (lastMoveTimestamp === undefined) lastMoveTimestamp = timestamp;
+            const dt = Math.min(0.05, (timestamp - lastMoveTimestamp) / 1000);
+            lastMoveTimestamp = timestamp;
+
+            let spriteTick = false;
+            if (!lastFrameTimestamp || timestamp - lastFrameTimestamp > 1000 / fps) {
+                lastFrameTimestamp = timestamp;
+                spriteTick = true;
+            }
+
+            frame(dt, spriteTick);
+        } catch { }
         window.requestAnimationFrame(onAnimationFrame);
     }
 
@@ -296,14 +306,13 @@ export default function oneko(options = {}) {
         idleAnimationFrame += 1;
     }
 
-    function frame() {
-        frameCount += 1;
+    function frame(dt, spriteTick) {
         const diffX = nekoPosX - mousePosX;
         const diffY = nekoPosY - mousePosY;
         const distance = Math.sqrt(diffX ** 2 + diffY ** 2);
 
-        if (distance < nekoSpeed || distance < 48) {
-            idle();
+        if (distance < 48) {
+            if (spriteTick) idle();
             return;
         }
 
@@ -311,21 +320,27 @@ export default function oneko(options = {}) {
         idleAnimationFrame = 0;
 
         if (idleTime > 1) {
-            setSprite("alert", 0);
-            idleTime = Math.min(idleTime, 7);
-            idleTime -= 1;
+            if (spriteTick) {
+                setSprite("alert", 0);
+                idleTime = Math.min(idleTime, 7);
+                idleTime -= 1;
+            }
             return;
         }
 
-        let direction;
-        direction = diffY / distance > 0.5 ? "N" : "";
-        direction += diffY / distance < -0.5 ? "S" : "";
-        direction += diffX / distance > 0.5 ? "W" : "";
-        direction += diffX / distance < -0.5 ? "E" : "";
-        setSprite(direction, frameCount);
+        if (spriteTick) {
+            frameCount += 1;
+            let direction;
+            direction = diffY / distance > 0.5 ? "N" : "";
+            direction += diffY / distance < -0.5 ? "S" : "";
+            direction += diffX / distance > 0.5 ? "W" : "";
+            direction += diffX / distance < -0.5 ? "E" : "";
+            setSprite(direction, frameCount);
+        }
 
-        nekoPosX -= (diffX / distance) * nekoSpeed;
-        nekoPosY -= (diffY / distance) * nekoSpeed;
+        const k = 1 - Math.exp(-rate * dt);
+        nekoPosX -= diffX * k;
+        nekoPosY -= diffY * k;
 
         nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
         nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);

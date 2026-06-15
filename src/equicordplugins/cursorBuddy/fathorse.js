@@ -18,6 +18,7 @@ export default function fathorse(cfg) {
     const config = {
         speed: cfg.speed ?? 30,
         framerate: cfg.fps ?? 24,
+        smoothness: cfg.smoothness ?? 0.5,
         size: cfg.size ?? 120,
         fade: cfg.fade ?? true,
         freeroam: cfg.freeroam ?? true,
@@ -37,6 +38,7 @@ export default function fathorse(cfg) {
     const freeroamStart = 9e3;
     const freeroamInterval = 3e3;
     const freeroamSpeed = 12;
+    const rate = (2 + config.speed * 0.8) * (1.3 - Math.min(1, Math.max(0, config.smoothness)));
 
     const fathorse = document.createElement("div");
 
@@ -80,7 +82,9 @@ export default function fathorse(cfg) {
 
     let nextMove = Infinity, isRoaming = false;
     function frame() {
-        lastFrame = Date.now();
+        const now = Date.now();
+        const dt = Math.min(0.05, (now - lastFrame) / 1000);
+        lastFrame = now;
         if (config.freeroam && nextMove < Date.now()) {
             const angle = Math.random() * Math.PI * 2;
             const distance = Math.min(window.innerWidth, window.innerHeight) / config.size * 50;
@@ -110,12 +114,12 @@ export default function fathorse(cfg) {
 
             const innerSize = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
             const mult = dist / innerSize > 0.5;
-            if (mult || animationFrame % 2 === 1) {
-                horsePos.x += (diffX / dist) * speed;
-                horsePos.y += (diffY / dist) * speed;
+            const roamFactor = isRoaming ? Math.min(1, freeroamSpeed / config.speed) : 1;
+            const k = 1 - Math.exp(-rate * roamFactor * dt);
+            horsePos.x += diffX * k;
+            horsePos.y += diffY * k;
 
-                if (!isRoaming) moved();
-            }
+            if (!isRoaming && (mult || animationFrame % 2 === 1)) moved();
 
             const inset = config.size / 2;
             horsePos.x = Math.min(Math.max(inset, horsePos.x), window.innerWidth - inset);
