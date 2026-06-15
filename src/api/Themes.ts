@@ -26,6 +26,14 @@ import { coreStyleRootNode, managedStyleRootNode, userStyleRootNode, vencordRoot
 let style: HTMLStyleElement;
 let themesStyle: HTMLStyleElement;
 
+function isOverlayWindow() {
+    try {
+        return Boolean((window as any).__OVERLAY__) || /\/overlay/i.test(location.href);
+    } catch {
+        return false;
+    }
+}
+
 function getThemeActivationMode(themeId: string) {
     return Settings.themeActivationModes?.[themeId] ?? "always";
 }
@@ -37,6 +45,7 @@ function shouldApplyTheme(mode: ThemeActivationMode, activeTheme?: "light" | "da
 }
 
 async function toggle(isEnabled: boolean) {
+    if (isOverlayWindow()) return;
     if (!style) {
         if (isEnabled) {
             style = createAndAppendStyle("vencord-custom-css", userStyleRootNode);
@@ -53,6 +62,7 @@ async function toggle(isEnabled: boolean) {
 }
 
 async function initThemes() {
+    if (isOverlayWindow()) return;
     themesStyle ??= createAndAppendStyle("vencord-themes", userStyleRootNode);
 
     const { enabledThemeLinks, enabledThemes } = Settings;
@@ -114,7 +124,7 @@ function applyToPopout(popoutWindow: Window | undefined, key: string) {
         managedStyleRootNode.cloneNode(true)
     );
 
-    if (key !== "DISCORD_OutOfProcessOverlay") {
+    if (!/overlay/i.test(key)) {
         clonedRoot.append(userStyleRootNode.cloneNode(true));
     }
 
