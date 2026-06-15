@@ -5,6 +5,7 @@
  */
 
 import { buildGhostUri, GHOST_ACCESSORIES, GhostExpression } from "./ghostArt";
+import { spawnHearts } from "./hearts";
 import { PetConfig, PetHooks } from "./pet";
 
 const BLINK_MIN = 3000;
@@ -44,6 +45,10 @@ export class GhostController {
     private prevTX = NaN;
     private prevTY = NaN;
     private prevLean = "";
+    private nameEl: HTMLDivElement;
+    private renderedName = "";
+    private lastPetDay = "";
+    private renderedWants: boolean | null = null;
 
     constructor(hooks: PetHooks) {
         this.hooks = hooks;
@@ -54,8 +59,12 @@ export class GhostController {
         this.body = document.createElement("img");
         this.body.className = "kc-ghost-body";
         this.body.alt = "";
+        this.nameEl = document.createElement("div");
+        this.nameEl.className = "kc-pet-name";
+        this.nameEl.style.display = "none";
         this.bob.appendChild(this.body);
         this.container.appendChild(this.bob);
+        this.container.appendChild(this.nameEl);
         this.container.addEventListener("click", () => this.pet());
     }
 
@@ -84,12 +93,42 @@ export class GhostController {
         this.equipped = accessory && GHOST_ACCESSORIES[accessory] ? accessory : null;
     }
 
+    setName(name: string) {
+        if (name !== this.renderedName) {
+            this.nameEl.textContent = name;
+            this.renderedName = name;
+        }
+        this.nameEl.style.display = name ? "" : "none";
+    }
+
+    setTint(filter: string) {
+        this.body.style.filter = filter;
+    }
+
+    setAura(color: string) {
+        this.container.style.setProperty("--kc-aura", color);
+    }
+
+    setLastPetDay(day: string) {
+        this.lastPetDay = day;
+        this.updateWants();
+    }
+
+    private updateWants() {
+        const wants = this.lastPetDay !== new Date().toDateString();
+        if (wants !== this.renderedWants) {
+            this.container.classList.toggle("kc-pet-wants", wants);
+            this.renderedWants = wants;
+        }
+    }
+
     react(kind: "mention" | "message" | "typing") {
         if (!this.hooks.getConfig().reactions) return;
         this.sleeping = false;
         if (kind === "mention") {
             this.setTemp("happy", 1500);
-            this.spawnHearts();
+            const { size } = this.hooks.getConfig();
+            spawnHearts(this.x + size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
         } else {
             this.setTemp("alert", kind === "message" ? 700 : 500);
         }
@@ -98,7 +137,8 @@ export class GhostController {
     pet() {
         this.sleeping = false;
         this.setTemp("happy", 1600);
-        this.spawnHearts();
+        const { size } = this.hooks.getConfig();
+        spawnHearts(this.x + size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
         this.hooks.onPet();
     }
 
@@ -150,6 +190,7 @@ export class GhostController {
         const cfg = this.hooks.getConfig();
         if (now - this.lastMeasure > 1000) {
             this.measure();
+            this.updateWants();
             this.lastMeasure = now;
         }
         this.advance(cfg, now, dt);
@@ -241,20 +282,5 @@ export class GhostController {
             this.nextBlinkAt = now + BLINK_MIN + Math.random() * (BLINK_MAX - BLINK_MIN);
         }
         return now < this.blinkUntil ? "blink" : "idle";
-    }
-
-    private spawnHearts() {
-        const { size } = this.hooks.getConfig();
-        const count = 3 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < count; i++) {
-            const heart = document.createElement("span");
-            heart.className = "kc-pet-heart";
-            heart.textContent = "♥";
-            heart.style.left = `${this.x + size * (0.2 + Math.random() * 0.6)}px`;
-            heart.style.top = `${this.y - 4 - Math.random() * size * 0.4}px`;
-            heart.style.animationDelay = `${i * 70}ms`;
-            heart.addEventListener("animationend", () => heart.remove());
-            document.body.appendChild(heart);
-        }
     }
 }

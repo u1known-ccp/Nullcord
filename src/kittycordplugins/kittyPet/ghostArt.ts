@@ -43,6 +43,26 @@ export const GHOST_ACCESSORIES: Record<string, { label: string; svg: string; }> 
     crown: {
         label: "Spooky crown",
         svg: "<path d=\"M10 8 L10 3 L13 5.5 L16 2 L19 5.5 L22 3 L22 8 Z\" fill=\"#b07bd8\" stroke=\"#8a55b8\" stroke-width=\"0.5\"/><circle cx=\"16\" cy=\"2\" r=\"0.9\" fill=\"#ff8ac4\"/>"
+    },
+    flowerCrown: {
+        label: "Flower crown",
+        svg: "<circle cx=\"10\" cy=\"6\" r=\"1.7\" fill=\"#ff8ac4\"/><circle cx=\"13\" cy=\"4.8\" r=\"1.7\" fill=\"#ffd46b\"/><circle cx=\"16\" cy=\"4.4\" r=\"1.7\" fill=\"#ff8ac4\"/><circle cx=\"19\" cy=\"4.8\" r=\"1.7\" fill=\"#ffd46b\"/><circle cx=\"22\" cy=\"6\" r=\"1.7\" fill=\"#ff8ac4\"/>"
+    },
+    bowTie: {
+        label: "Bow tie",
+        svg: "<path d=\"M16 23 L11 20.5 L11 25.5 Z\" fill=\"#ff5fa6\"/><path d=\"M16 23 L21 20.5 L21 25.5 Z\" fill=\"#ff5fa6\"/><circle cx=\"16\" cy=\"23\" r=\"1.4\" fill=\"#c61f63\"/>"
+    },
+    sunglasses: {
+        label: "Sunglasses",
+        svg: "<rect x=\"9.5\" y=\"12.8\" width=\"5\" height=\"3.4\" rx=\"1.5\" fill=\"#3a2230\"/><rect x=\"17.5\" y=\"12.8\" width=\"5\" height=\"3.4\" rx=\"1.5\" fill=\"#3a2230\"/><rect x=\"14.3\" y=\"13.8\" width=\"3.4\" height=\"1\" fill=\"#3a2230\"/>"
+    },
+    topHat: {
+        label: "Top hat",
+        svg: "<rect x=\"9.5\" y=\"5.4\" width=\"13\" height=\"1.7\" rx=\"0.7\" fill=\"#3a2230\"/><rect x=\"12\" y=\"0.6\" width=\"8\" height=\"5\" rx=\"0.6\" fill=\"#3a2230\"/><rect x=\"12\" y=\"3.2\" width=\"8\" height=\"1.4\" fill=\"#ff5fa6\"/>"
+    },
+    star: {
+        label: "Lucky star",
+        svg: "<path d=\"M16 1 Q16.7 4.3 20 5 Q16.7 5.7 16 9 Q15.3 5.7 12 5 Q15.3 4.3 16 1 Z\" fill=\"#ffd46b\"/>"
     }
 };
 
@@ -50,14 +70,24 @@ export const GHOST_ACCESSORY_LEVELS: Record<string, number> = {
     halo: 2,
     witchHat: 3,
     scarf: 4,
-    crown: 5
+    crown: 5,
+    flowerCrown: 6,
+    bowTie: 7,
+    sunglasses: 8,
+    topHat: 9,
+    star: 10
 };
 
 const THUMB_VIEWBOX: Record<string, string> = {
     halo: "4 0 24 6",
     witchHat: "6 0 20 8",
     scarf: "6 20 20 9",
-    crown: "9 1 14 8"
+    crown: "9 1 14 8",
+    flowerCrown: "7 2 18 7",
+    bowTie: "10 20 12 7",
+    sunglasses: "8 12 16 6",
+    topHat: "9 0 14 8",
+    star: "11 0 10 10"
 };
 
 function toUri(viewBox: string, inner: string): string {

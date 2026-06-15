@@ -9,13 +9,14 @@ import { disableStyle, enableStyle } from "@api/Styles";
 import { Flex } from "@components/Flex";
 import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, React, SelectedChannelStore, showToast, Text, Toasts, UserStore } from "@webpack/common";
+import { Button, React, SelectedChannelStore, showToast, Text, TextInput, Toasts, UserStore } from "@webpack/common";
 
 import { GhostController } from "./ghost";
 import { GHOST_ACCESSORIES, GHOST_ACCESSORY_LEVELS, GHOST_ACCESSORY_THUMBS } from "./ghostArt";
+import { startHearts, stopHearts } from "./hearts";
 import { PetController } from "./pet";
 import { ACCESSORIES, ACCESSORY_URIS } from "./sprites";
-import { addXp, DAILY_MSG_XP_CAP, getSave, levelFor, loadSave, MAX_LEVEL, nextLevelXp, PetProfile, updateSave } from "./state";
+import { addXp, DAILY_MSG_XP_CAP, DAILY_PET_XP, getSave, levelFor, loadSave, MAX_LEVEL, nextLevelXp, PetProfile, updateSave } from "./state";
 import style from "./style.css?managed";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
@@ -24,7 +25,24 @@ const ModalHeader = ModalHeaderRaw as React.ComponentType<any>;
 const ModalContent = ModalContentRaw as React.ComponentType<any>;
 const ModalCloseButton = ModalCloseButtonRaw as React.ComponentType<any>;
 
-const CAT_ACCESSORY_LEVELS: Record<string, number> = { bow: 2, scarf: 3, hat: 4, crown: 5 };
+const CAT_ACCESSORY_LEVELS: Record<string, number> = { bow: 2, scarf: 3, hat: 4, crown: 5, flower: 6, glasses: 7, bell: 8, wizardHat: 9, star: 10 };
+
+const TINTS: Record<string, string> = {
+    pink: "",
+    blue: "hue-rotate(220deg) saturate(1.1)",
+    purple: "hue-rotate(300deg) saturate(1.05)",
+    mint: "hue-rotate(168deg) saturate(0.85) brightness(1.05)"
+};
+
+const AURAS: Record<string, string> = {
+    pink: "rgba(255, 95, 166, 0.45)",
+    blue: "rgba(138, 209, 255, 0.5)",
+    purple: "rgba(176, 123, 216, 0.5)",
+    mint: "rgba(120, 220, 170, 0.45)",
+    none: "transparent"
+};
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 interface AccessorySet {
     registry: Record<string, { label: string; }>;
@@ -73,6 +91,12 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Fall asleep when nothing happens for a while",
         default: true
+    },
+    nametag: {
+        type: OptionType.BOOLEAN,
+        description: "Show a name tag above your pet (set the name in the pet menu)",
+        default: false,
+        onChange: () => restartController()
     }
 });
 
@@ -82,8 +106,18 @@ const currentProfile = (): PetProfile => settings.store.style === "ghost" ? "gho
 
 function onPet() {
     const profile = currentProfile();
-    updateSave(profile, { pets: getSave(profile).pets + 1 });
-    addXp(profile, 2).then(notifyLevel);
+    const today = new Date().toDateString();
+    const save = getSave(profile);
+    const firstToday = save.lastPetDay !== today;
+    if (firstToday) {
+        const yesterday = new Date(Date.now() - 864e5).toDateString();
+        const streak = save.lastPetDay === yesterday ? save.streak + 1 : 1;
+        updateSave(profile, { pets: save.pets + 1, lastPetDay: today, streak }).then(() => controller?.setLastPetDay(today));
+        showToast(`Daily pet! 🐱 ${streak} day streak.`, Toasts.Type.SUCCESS);
+    } else {
+        updateSave(profile, { pets: save.pets + 1 });
+    }
+    addXp(profile, firstToday ? DAILY_PET_XP : 2).then(notifyLevel);
 }
 
 function buildController(): PetController | GhostController {
@@ -100,7 +134,12 @@ function buildController(): PetController | GhostController {
 
 function startController() {
     controller = buildController();
-    controller.setEquipped(getSave(currentProfile()).equipped);
+    const save = getSave(currentProfile());
+    controller.setEquipped(save.equipped);
+    controller.setName(settings.store.nametag ? save.name : "");
+    controller.setTint(TINTS[save.tint] ?? "");
+    controller.setAura(AURAS[save.aura] ?? AURAS.pink);
+    controller.setLastPetDay(save.lastPetDay);
     controller.start();
 }
 
@@ -128,11 +167,18 @@ function PetModal({ rootProps }: { rootProps: any; }) {
     const level = levelFor(save.xp);
     const next = nextLevelXp(level);
     const progress = next === null ? 1 : Math.min(1, save.xp / next);
+    const [name, setName] = React.useState(save.name);
 
     async function equip(id: string | null) {
         await updateSave(profile, { equipped: id });
         controller?.setEquipped(id);
         forceUpdate();
+    }
+
+    function renameTo(value: string) {
+        setName(value);
+        updateSave(profile, { name: value });
+        controller?.setName(settings.store.nametag ? value : "");
     }
 
     return (
@@ -154,6 +200,11 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                     </Text>
                     <Text variant="text-sm/normal" style={{ opacity: 0.8, marginTop: 4 }}>
                         Petted {save.pets} time{save.pets === 1 ? "" : "s"}.
+                    </Text>
+                    <Text variant="text-sm/normal" style={{ opacity: 0.8, marginTop: 4 }}>
+                        {save.lastPetDay === new Date().toDateString()
+                            ? `Petted today ✓ — ${save.streak} day streak.`
+                            : "Pet me today for a bonus! 🐾"}
                     </Text>
 
                     <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Accessories</Text>
@@ -183,6 +234,47 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                                 </Button>
                             );
                         })}
+                    </Flex>
+
+                    <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Name</Text>
+                    <TextInput
+                        value={name}
+                        placeholder={isGhost ? "Name your ghost…" : "Name your kitty…"}
+                        maxLength={20}
+                        onChange={renameTo}
+                    />
+                    {!settings.store.nametag && (
+                        <Text variant="text-sm/normal" style={{ opacity: 0.6, marginTop: 4 }}>
+                            Turn on the name tag in this plugin's settings to show it above your pet.
+                        </Text>
+                    )}
+
+                    <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Colour</Text>
+                    <Flex style={{ gap: 8, flexWrap: "wrap" }}>
+                        {Object.keys(TINTS).map(id => (
+                            <Button
+                                key={id}
+                                size={Button.Sizes.SMALL}
+                                color={save.tint === id ? Button.Colors.BRAND : Button.Colors.PRIMARY}
+                                onClick={async () => { await updateSave(profile, { tint: id }); controller?.setTint(TINTS[id]); forceUpdate(); }}
+                            >
+                                {cap(id)}
+                            </Button>
+                        ))}
+                    </Flex>
+
+                    <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Aura</Text>
+                    <Flex style={{ gap: 8, flexWrap: "wrap" }}>
+                        {Object.keys(AURAS).map(id => (
+                            <Button
+                                key={id}
+                                size={Button.Sizes.SMALL}
+                                color={save.aura === id ? Button.Colors.BRAND : Button.Colors.PRIMARY}
+                                onClick={async () => { await updateSave(profile, { aura: id }); controller?.setAura(AURAS[id]); forceUpdate(); }}
+                            >
+                                {cap(id)}
+                            </Button>
+                        ))}
                     </Flex>
                 </div>
             </ModalContent>
@@ -233,6 +325,7 @@ export default definePlugin({
 
     async start() {
         enableStyle(style);
+        startHearts();
         await loadSave("cat");
         await loadSave("ghost");
         startController();
@@ -241,6 +334,7 @@ export default definePlugin({
     stop() {
         controller?.stop();
         controller = null;
+        stopHearts();
         disableStyle(style);
     }
 });

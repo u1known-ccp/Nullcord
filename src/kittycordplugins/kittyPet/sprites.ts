@@ -78,6 +78,57 @@ export const ACCESSORIES: Record<string, { label: string; grid: string[]; x: num
             "yyyyyy",
             "yyyyyy"
         ]
+    },
+    flower: {
+        label: "Daisy",
+        x: 18, y: 5,
+        grid: [
+            ".w.",
+            "wyw",
+            ".w."
+        ]
+    },
+    glasses: {
+        label: "Glasses",
+        x: 9, y: 12,
+        grid: [
+            "ooo.ooo",
+            "o.ooo.o",
+            "ooo.ooo"
+        ]
+    },
+    bell: {
+        label: "Bell collar",
+        x: 15, y: 19,
+        grid: [
+            ".y.",
+            "yyy",
+            "yyy",
+            ".o."
+        ]
+    },
+    wizardHat: {
+        label: "Wizard hat",
+        x: 12, y: 0,
+        grid: [
+            "...y...",
+            "...b...",
+            "..bbb..",
+            "..bbb..",
+            ".bbbbb.",
+            "bbbbbbb"
+        ]
+    },
+    star: {
+        label: "Lucky star",
+        x: 13, y: 1,
+        grid: [
+            "..y..",
+            "..y..",
+            "yyyyy",
+            ".yyy.",
+            ".y.y."
+        ]
     }
 };
 

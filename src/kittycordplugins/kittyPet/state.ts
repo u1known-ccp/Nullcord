@@ -20,11 +20,17 @@ export interface PetSave {
     msgDay: string;
     msgXp: number;
     notifiedLevel: number;
+    name: string;
+    tint: string;
+    aura: string;
+    lastPetDay: string;
+    streak: number;
 }
 
-export const LEVEL_XP = [0, 40, 120, 280, 600];
+export const LEVEL_XP = [0, 40, 120, 280, 520, 850, 1300, 1880, 2600, 3500];
 export const MAX_LEVEL = LEVEL_XP.length;
 export const DAILY_MSG_XP_CAP = 30;
+export const DAILY_PET_XP = 12;
 
 export function levelFor(xp: number): number {
     let level = 1;
@@ -38,7 +44,7 @@ export function nextLevelXp(level: number): number | null {
     return level >= MAX_LEVEL ? null : LEVEL_XP[level];
 }
 
-const defaults = (): PetSave => ({ xp: 0, pets: 0, equipped: null, msgDay: "", msgXp: 0, notifiedLevel: 1 });
+const defaults = (): PetSave => ({ xp: 0, pets: 0, equipped: null, msgDay: "", msgXp: 0, notifiedLevel: 1, name: "", tint: "pink", aura: "pink", lastPetDay: "", streak: 0 });
 
 const saves: Record<PetProfile, PetSave> = { cat: defaults(), ghost: defaults() };
 let writeQueue: Promise<unknown> = Promise.resolve();
