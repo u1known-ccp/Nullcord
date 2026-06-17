@@ -7,10 +7,10 @@
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { ApplicationCommandInputType, sendBotMessage } from "@api/Commands";
 import definePlugin from "@utils/types";
-import { findByProps } from "@webpack";
+import { findByPropsLazy } from "@webpack";
 import { React } from "@webpack/common";
 
-const TypingActions = findByProps("startTyping", "stopTyping");
+const TypingActions = findByPropsLazy("startTyping", "stopTyping");
 
 const active = new Set<string>();
 const listeners = new Set<() => void>();
