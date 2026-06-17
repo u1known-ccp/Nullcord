@@ -4,24 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: local voice-state patch + local Flux dispatch only, no network/token/eval).
+// Ported to Kittycord and audited (clean: local voice-state patch only, no network/token/eval).
 // Original author kept as inline credit.
 
 import { ApplicationCommandInputType, sendBotMessage } from "@api/Commands";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
 import definePlugin from "@utils/types";
 import { findByProps } from "@webpack";
-import { ContextMenuApi, FluxDispatcher, Menu, React, UserStore } from "@webpack/common";
+import { ContextMenuApi, Menu, React } from "@webpack/common";
 
 let isGhostActive = false;
 let configFakeMute = true;
 let configFakeDeafen = true;
 let configFakeVideo = false;
-let configFakeLive = false;
-let configFakeSpeaking = false;
-
-const SPEAKING_VOICE = 1 << 0;
-let speakingTimer: ReturnType<typeof setInterval> | null = null;
 
 const getVoiceChannelId = (): string | undefined => findByProps("getVoiceChannelId")?.getVoiceChannelId?.();
 
@@ -32,21 +27,6 @@ const syncState = () => {
         vm.toggleSelfMute();
     }
 };
-
-function refreshSpeaking() {
-    const shouldRun = isGhostActive && configFakeSpeaking;
-    if (shouldRun && !speakingTimer) {
-        speakingTimer = setInterval(() => {
-            const id = UserStore.getCurrentUser()?.id;
-            const channelId = getVoiceChannelId();
-            if (!id || !channelId) return;
-            FluxDispatcher.dispatch({ type: "SPEAKING", userId: id, speakingFlags: SPEAKING_VOICE, context: channelId });
-        }, 250);
-    } else if (!shouldRun && speakingTimer) {
-        clearInterval(speakingTimer);
-        speakingTimer = null;
-    }
-}
 
 function FakeDeafenIcon({ className }: { className?: string; }) {
     return (
@@ -109,28 +89,6 @@ function GhostContextMenu() {
                     }}
                 />
             </Menu.MenuGroup>
-            <Menu.MenuGroup label="Experimental — may only show to you">
-                <Menu.MenuCheckboxItem
-                    id="opt-live"
-                    label="Fake Live"
-                    checked={configFakeLive}
-                    action={() => {
-                        configFakeLive = !configFakeLive;
-                        syncState();
-                        forceUpdate();
-                    }}
-                />
-                <Menu.MenuCheckboxItem
-                    id="opt-speaking"
-                    label="Fake Speaking"
-                    checked={configFakeSpeaking}
-                    action={() => {
-                        configFakeSpeaking = !configFakeSpeaking;
-                        refreshSpeaking();
-                        forceUpdate();
-                    }}
-                />
-            </Menu.MenuGroup>
         </Menu.Menu>
     );
 }
@@ -142,7 +100,6 @@ function FakeDeafenUserButton({ iconForeground, hideTooltips, nameplate }: UserA
             onClick={() => {
                 isGhostActive = !isGhostActive;
                 syncState();
-                refreshSpeaking();
                 forceUpdate();
             }}
             onContextMenu={(e: React.MouseEvent) => ContextMenuApi.openContextMenu(e, () => <GhostContextMenu />)}
@@ -158,7 +115,7 @@ function FakeDeafenUserButton({ iconForeground, hideTooltips, nameplate }: UserA
 
 export default definePlugin({
     name: "FakeVoice",
-    description: "Appear muted, deafened or with your camera on to others while you stay in control. Right-click the user-area button for options (camera shows to everyone; live & speaking are experimental). Also /fakemute and /fakedeafen.",
+    description: "Appear muted, deafened or with your camera on to others while you stay in control. Right-click the user-area button for options, or use /fakemute, /fakedeafen and /fakecamera.",
     authors: [{ name: "Kittycord", id: 0n }, { name: "mushzi", id: 449282863582412850n }],
     dependencies: ["CommandsAPI", "UserAreaAPI"],
 
@@ -169,14 +126,6 @@ export default definePlugin({
                 match: /self_mute:([^,]+),self_deaf:([^,]+),self_video:([^,]+)/,
                 replace: "self_mute:$self.toggle($1,'mute'),self_deaf:$self.toggle($2,'deaf'),self_video:$self.toggle($3,'video')"
             }
-        },
-        {
-            find: "}voiceStateUpdate(",
-            replacement: {
-                match: /self_stream:([^,}]+)/,
-                replace: "self_stream:$self.toggle($1,'stream')",
-                noWarn: true
-            }
         }
     ],
 
@@ -186,7 +135,6 @@ export default definePlugin({
             case "mute": return configFakeMute ? true : val;
             case "deaf": return configFakeDeafen ? true : val;
             case "video": return configFakeVideo ? true : val;
-            case "stream": return configFakeLive ? true : val;
             default: return val;
         }
     },
@@ -244,10 +192,4 @@ export default definePlugin({
             },
         },
     ],
-
-    stop() {
-        if (speakingTimer) clearInterval(speakingTimer);
-        speakingTimer = null;
-        isGhostActive = false;
-    }
 });
