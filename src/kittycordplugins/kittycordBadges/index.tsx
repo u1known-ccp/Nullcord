@@ -11,7 +11,8 @@ import { BRAND_BADGE_ICON } from "../../branding";
 
 // Discord user IDs of Kittycord developers. Add more here as the team grows.
 const KITTYCORD_DEVELOPERS = new Set<string>([
-    "432588595845398548" // CenturyRV - creator
+    "432588595845398548", // CenturyRV - Founder and lead developer
+    "1030766914047332443" // Willibe - Developer and Bot maintainer
 ]);
 
 const DeveloperBadge: ProfileBadge = {
