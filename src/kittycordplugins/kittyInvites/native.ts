@@ -36,7 +36,8 @@ function referralPaths(): string[] {
 export async function consumeReferralCode(_: IpcMainInvokeEvent): Promise<string | null> {
     for (const path of referralPaths()) {
         try {
-            const code = JSON.parse(readFileSync(path, "utf-8"))?.code;
+            const raw = readFileSync(path, "utf-8");
+            const code = JSON.parse((raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw).trim())?.code;
             try { unlinkSync(path); } catch { /* best effort */ }
             if (typeof code === "string" && CODE_RE.test(code.toLowerCase())) return code.toLowerCase();
         } catch { /* not present here */ }

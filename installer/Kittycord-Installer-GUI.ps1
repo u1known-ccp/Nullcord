@@ -1371,7 +1371,9 @@ function Save-CreatorCode {
             if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
             $ts = [int64]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())
             $json = '{"code":"' + $code + '","ts":' + $ts + '}'
-            Set-Content -Path (Join-Path $dir "referral.json") -Value $json -Encoding UTF8
+            # Write BOM-less UTF-8: PowerShell 5.1's "Set-Content -Encoding UTF8" prepends a BOM, which
+            # makes the client's JSON.parse of referral.json fail, so the code would never be counted.
+            [System.IO.File]::WriteAllText((Join-Path $dir "referral.json"), $json, (New-Object System.Text.UTF8Encoding($false)))
         }
     } catch { }
 }
