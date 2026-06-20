@@ -19,6 +19,7 @@
 import { generateTextCss } from "@components/BaseText";
 import { generateMarginCss } from "@components/margins";
 import { classNameFactory as _classNameFactory, classNameToSelector, createAndAppendStyle } from "@utils/css";
+import { isOverlayWindow } from "@utils/overlay";
 
 // Backwards compat for Vesktop
 /** @deprecated Import this from `@utils/css` instead */
@@ -104,6 +105,10 @@ export function enableStyle(name: string) {
     const style = requireStyle(name);
 
     if (style.dom?.isConnected)
+        return false;
+
+    // Never inject managed styles (incl. theme plugins) into Discord's in-game overlay window.
+    if (isOverlayWindow())
         return false;
 
     if (!style.dom) {
