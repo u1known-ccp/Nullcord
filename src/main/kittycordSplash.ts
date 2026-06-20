@@ -56,15 +56,23 @@ const SPLASH_JS = `
 })();`;
 
 // Overlay for the MAIN client loading screen: covers Discord's "Did you know" screen, then fades
-// out once the app UI (server list / app chrome) appears, or after a hard timeout as a safety net.
+// out once the app UI (server list / app chrome) appears, or after a short timeout as a safety net.
+// It never covers Discord's login/auth screens and never blocks input, so it can't trap the user.
 const LOADING_JS = `
 (function () {
     try {
         if (window.__kcLoader) return;
         window.__kcLoader = true;
+
+        function isAuthRoute() {
+            var p = (location.pathname || "").split("/")[1] || "";
+            return p === "login" || p === "register" || p === "verify" || p === "reset" || p === "handoff" || p === "oauth2" || p === "authorize";
+        }
+        if (isAuthRoute()) return;
+
         var css = document.createElement("style");
         css.textContent =
-            "#kc-loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:${KITTY_BG};z-index:2147483647;font-family:'gg sans','Segoe UI',sans-serif;transition:opacity .45s ease;animation:kc-in .5s ease both}" +
+            "#kc-loading{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:${KITTY_BG};z-index:2147483647;font-family:'gg sans','Segoe UI',sans-serif;transition:opacity .45s ease;animation:kc-in .5s ease both}" +
             "#kc-loading .kc-stage{position:relative;width:128px;height:128px;display:flex;align-items:center;justify-content:center}" +
             "#kc-loading .kc-halo{position:absolute;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle, rgba(255,95,166,.32) 0%, rgba(255,95,166,.10) 42%, transparent 70%);filter:blur(7px);animation:kc-breathe 3.4s ease-in-out infinite}" +
             "#kc-loading .kc-logo{position:relative;width:104px;height:104px;border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);animation:kc-float 3.4s ease-in-out infinite}" +
@@ -104,18 +112,29 @@ const LOADING_JS = `
             setTimeout(function () { tip.textContent = tips[ti]; tip.style.opacity = ".85"; }, 350);
         }, 2600);
 
+        function appReady() {
+            return document.querySelector('[class*="guilds_"]') ||
+                document.querySelector('[class*="base_"]') ||
+                document.querySelector('[class*="sidebar_"]') ||
+                document.querySelector('[class*="chat_"]') ||
+                document.querySelector('[class*="channels_"]');
+        }
+        function authVisible() {
+            return document.querySelector('input[type="password"]') ||
+                document.querySelector('input[name="email"]') ||
+                document.querySelector('[class*="authBox"]') ||
+                document.querySelector('[class*="qrCode"]');
+        }
+        function done() {
+            clearInterval(iv);
+            clearInterval(tipIv);
+            var el = document.getElementById("kc-loading");
+            if (el) { el.style.opacity = "0"; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 500); }
+        }
+
         var start = Date.now();
         var iv = setInterval(function () {
-            var ready =
-                document.querySelector('[class*="guilds_"]') ||
-                document.querySelector('[class*="base_"]') ||
-                document.querySelector('[class*="sidebar_"]');
-            if (ready || (Date.now() - start) > 25000) {
-                clearInterval(iv);
-                clearInterval(tipIv);
-                var el = document.getElementById("kc-loading");
-                if (el) { el.style.opacity = "0"; setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 500); }
-            }
+            if (appReady() || authVisible() || isAuthRoute() || (Date.now() - start) > 8000) done();
         }, 200);
     } catch (e) {}
 })();`;
