@@ -9,9 +9,12 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { OwnerCrownIcon } from "@components/Icons";
 import SettingsPlugin from "@plugins/_core/settings";
 import { removeFromArray } from "@utils/misc";
+import { openModal } from "@utils/modal";
 import definePlugin, { type PluginNative } from "@utils/types";
 import { Button, IconUtils, React, showToast, Text, TextInput, Toasts, UserStore, UserUtils } from "@webpack/common";
 
+import { INVITE_STATS_FILENAME, renderInviteStatsCard } from "../_shared/inviteStatsCard";
+import { ShareFileModal } from "../_shared/ShareFileModal";
 import style from "./style.css?managed";
 
 const Native = VencordNative?.pluginHelpers?.KittyInvites as PluginNative<typeof import("./native")> | undefined;
@@ -34,6 +37,32 @@ async function tryClaim() {
         }
     } catch { /* transient — retry on the next connection */ } finally {
         claiming = false;
+    }
+}
+
+async function openInviteStatsShare() {
+    const me = UserStore.getCurrentUser();
+    if (!Native || !me) {
+        showToast("Invite stats are available on the Kittycord desktop app.", Toasts.Type.FAILURE);
+        return;
+    }
+    try {
+        const mine = await Native.getMe(me.id);
+        const name = (me as any).globalName || me.username;
+        const avatar = IconUtils.getUserAvatarURL(me, false, 128);
+        const blob = await renderInviteStatsCard(name, avatar, mine.invites, mine.rank);
+        const file = new File([blob], INVITE_STATS_FILENAME, { type: "image/png" });
+        openModal(props => (
+            <ShareFileModal
+                rootProps={props}
+                title="Share your invite stats"
+                blurb="Show off how many friends you've brought to Kittycord."
+                buildFile={() => file}
+                defaultNote={`I've invited ${mine.invites} ${mine.invites === 1 ? "friend" : "friends"} to Kittycord 🐱 kittycord.dev`}
+            />
+        ));
+    } catch {
+        showToast("Couldn't build your card — try again.", Toasts.Type.FAILURE);
     }
 }
 
@@ -164,6 +193,12 @@ export default definePlugin({
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Friends", "Fun"],
     enabledByDefault: true,
+
+    toolboxActions: {
+        "Share invite stats"() {
+            openInviteStatsShare();
+        }
+    },
 
     flux: {
         CONNECTION_OPEN() {
