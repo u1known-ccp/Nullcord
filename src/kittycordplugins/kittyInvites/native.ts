@@ -33,16 +33,21 @@ function referralPaths(): string[] {
     return paths;
 }
 
-export async function consumeReferralCode(_: IpcMainInvokeEvent): Promise<string | null> {
+export async function readReferralCode(_: IpcMainInvokeEvent): Promise<string | null> {
     for (const path of referralPaths()) {
         try {
             const raw = readFileSync(path, "utf-8");
             const code = JSON.parse((raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw).trim())?.code;
-            try { unlinkSync(path); } catch { /* best effort */ }
             if (typeof code === "string" && CODE_RE.test(code.toLowerCase())) return code.toLowerCase();
         } catch { /* not present here */ }
     }
     return null;
+}
+
+export async function clearReferralCode(_: IpcMainInvokeEvent): Promise<void> {
+    for (const path of referralPaths()) {
+        try { unlinkSync(path); } catch { /* best effort */ }
+    }
 }
 
 export async function setCode(_: IpcMainInvokeEvent, id: unknown, code: unknown): Promise<{ ok: true; } | { ok: false; error: string; }> {
@@ -62,19 +67,24 @@ export async function setCode(_: IpcMainInvokeEvent, id: unknown, code: unknown)
     }
 }
 
-export async function claim(_: IpcMainInvokeEvent, inviteeId: unknown, code: unknown): Promise<boolean> {
-    if (typeof inviteeId !== "string" || !SNOWFLAKE_RE.test(inviteeId)) return false;
-    if (typeof code !== "string" || !CODE_RE.test(code.toLowerCase())) return false;
+export type ClaimResult = "ok" | "rejected" | "error";
+
+export async function claim(_: IpcMainInvokeEvent, inviteeId: unknown, code: unknown): Promise<ClaimResult> {
+    if (typeof inviteeId !== "string" || !SNOWFLAKE_RE.test(inviteeId)) return "rejected";
+    if (typeof code !== "string" || !CODE_RE.test(code.toLowerCase())) return "rejected";
     try {
         const res = await fetch(`${ENDPOINT}/invites/claim`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ inviteeId, code: code.toLowerCase() })
         });
-        const body = await res.json().catch(() => ({})) as { ok?: boolean; };
-        return body.ok === true;
+        if (res.ok) {
+            const body = await res.json().catch(() => ({})) as { ok?: boolean; };
+            return body.ok === true ? "ok" : "rejected";
+        }
+        return res.status >= 500 || res.status === 429 ? "error" : "rejected";
     } catch {
-        return false;
+        return "error";
     }
 }
 

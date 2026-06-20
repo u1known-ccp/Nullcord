@@ -17,16 +17,24 @@ import style from "./style.css?managed";
 const Native = VencordNative?.pluginHelpers?.KittyInvites as PluginNative<typeof import("./native")> | undefined;
 
 let claimed = false;
+let claiming = false;
 
 async function tryClaim() {
-    if (claimed || !Native) return;
+    if (claimed || claiming || !Native) return;
     const me = UserStore.getCurrentUser();
     if (!me) return;
-    claimed = true;
+    claiming = true;
     try {
-        const code = await Native.consumeReferralCode();
-        if (code) await Native.claim(me.id, code);
-    } catch { /* best effort */ }
+        const code = await Native.readReferralCode();
+        if (!code) { claimed = true; return; }
+        const status = await Native.claim(me.id, code);
+        if (status === "ok" || status === "rejected") {
+            claimed = true;
+            await Native.clearReferralCode();
+        }
+    } catch { /* transient — retry on the next connection */ } finally {
+        claiming = false;
+    }
 }
 
 function InvitesTab() {
@@ -76,12 +84,14 @@ function InvitesTab() {
     async function doClaim() {
         if (!Native || !me) return;
         setClaiming(true);
-        const ok = await Native.claim(me.id, claimInput.trim());
+        const status = await Native.claim(me.id, claimInput.trim());
         setClaiming(false);
-        if (ok) {
+        if (status === "ok") {
             showToast("Thanks — your inviter just got the credit! 🐱", Toasts.Type.SUCCESS);
             setClaimInput("");
             load();
+        } else if (status === "error") {
+            showToast("Couldn't reach the server — check your connection and try again.", Toasts.Type.FAILURE);
         } else {
             showToast("Couldn't count that — wrong code, your own code, or you were already counted.", Toasts.Type.FAILURE);
         }
