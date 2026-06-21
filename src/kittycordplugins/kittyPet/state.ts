@@ -25,12 +25,16 @@ export interface PetSave {
     aura: string;
     lastPetDay: string;
     streak: number;
+    playDay: string;
+    playXp: number;
 }
 
 export const LEVEL_XP = [0, 40, 120, 280, 520, 850, 1300, 1880, 2600, 3500];
 export const MAX_LEVEL = LEVEL_XP.length;
 export const DAILY_MSG_XP_CAP = 30;
 export const DAILY_PET_XP = 12;
+export const DAILY_PLAY_XP_CAP = 10;
+export const PLAY_XP = 3;
 
 export function levelFor(xp: number): number {
     let level = 1;
@@ -44,7 +48,7 @@ export function nextLevelXp(level: number): number | null {
     return level >= MAX_LEVEL ? null : LEVEL_XP[level];
 }
 
-const defaults = (): PetSave => ({ xp: 0, pets: 0, equipped: null, msgDay: "", msgXp: 0, notifiedLevel: 1, name: "", tint: "pink", aura: "pink", lastPetDay: "", streak: 0 });
+const defaults = (): PetSave => ({ xp: 0, pets: 0, equipped: null, msgDay: "", msgXp: 0, notifiedLevel: 1, name: "", tint: "pink", aura: "pink", lastPetDay: "", streak: 0, playDay: "", playXp: 0 });
 
 const saves: Record<PetProfile, PetSave> = { cat: defaults(), ghost: defaults() };
 let writeQueue: Promise<unknown> = Promise.resolve();
@@ -72,14 +76,33 @@ export function updateSave(profile: PetProfile, patch: Partial<PetSave>): Promis
     });
 }
 
+function withXp(save: PetSave, amount: number, extra?: Partial<PetSave>): { save: PetSave; leveled: number | null; } {
+    const before = levelFor(save.xp);
+    const xp = save.xp + amount;
+    const after = levelFor(xp);
+    const leveled = after > before && after > save.notifiedLevel ? after : null;
+    return { save: { ...save, ...extra, xp, notifiedLevel: leveled ?? save.notifiedLevel }, leveled };
+}
+
 export function addXp(profile: PetProfile, amount: number): Promise<number | null> {
     return enqueue(async () => {
-        const before = levelFor(saves[profile].xp);
-        const xp = saves[profile].xp + amount;
-        const after = levelFor(xp);
-        const leveledUp = after > before && after > saves[profile].notifiedLevel;
-        saves[profile] = { ...saves[profile], xp, notifiedLevel: leveledUp ? after : saves[profile].notifiedLevel };
+        const { save, leveled } = withXp(saves[profile], amount);
+        saves[profile] = save;
         await set(KEYS[profile], saves[profile]);
-        return leveledUp ? after : null;
+        return leveled;
+    });
+}
+
+export function grantPlayXp(profile: PetProfile): Promise<number | null> {
+    return enqueue(async () => {
+        const today = new Date().toDateString();
+        const cur = saves[profile];
+        const spent = cur.playDay === today ? cur.playXp : 0;
+        if (spent >= DAILY_PLAY_XP_CAP) return null;
+        const grant = Math.min(PLAY_XP, DAILY_PLAY_XP_CAP - spent);
+        const { save, leveled } = withXp(cur, grant, { playDay: today, playXp: spent + grant });
+        saves[profile] = save;
+        await set(KEYS[profile], saves[profile]);
+        return leveled;
     });
 }

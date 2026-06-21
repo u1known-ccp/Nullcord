@@ -25,6 +25,7 @@ const FEATURES: Feature[] = [
     { plugin: "KittycordStudio", action: "Open Studio", label: "Theme Studio" },
     { plugin: "KittycordCosmetics", action: "Style your name", label: "Name style" },
     { plugin: "KittyPet", action: "Open KittyPet", label: "KittyPet" },
+    { plugin: "KittyPet", action: "Play with KittyPet", label: "Play with KittyPet" },
     { plugin: "MiniGames", action: "Start a game", label: "Play a game" },
     { plugin: "KittycordWrapped", action: "Open Kittycord Wrapped", label: "Wrapped" },
     { plugin: "ShareSetup", action: "Open Kittycord friends", label: "Kittycord friends" },

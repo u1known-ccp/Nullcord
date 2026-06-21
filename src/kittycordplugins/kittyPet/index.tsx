@@ -16,7 +16,7 @@ import { GHOST_ACCESSORIES, GHOST_ACCESSORY_LEVELS, GHOST_ACCESSORY_THUMBS } fro
 import { startHearts, stopHearts } from "./hearts";
 import { PetController } from "./pet";
 import { ACCESSORIES, ACCESSORY_URIS } from "./sprites";
-import { addXp, DAILY_MSG_XP_CAP, DAILY_PET_XP, getSave, levelFor, loadSave, MAX_LEVEL, nextLevelXp, PetProfile, updateSave } from "./state";
+import { addXp, DAILY_MSG_XP_CAP, DAILY_PET_XP, getSave, grantPlayXp, levelFor, loadSave, MAX_LEVEL, nextLevelXp, PetProfile, updateSave } from "./state";
 import style from "./style.css?managed";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
@@ -25,13 +25,16 @@ const ModalHeader = ModalHeaderRaw as React.ComponentType<any>;
 const ModalContent = ModalContentRaw as React.ComponentType<any>;
 const ModalCloseButton = ModalCloseButtonRaw as React.ComponentType<any>;
 
-const CAT_ACCESSORY_LEVELS: Record<string, number> = { bow: 2, scarf: 3, hat: 4, crown: 5, flower: 6, glasses: 7, bell: 8, wizardHat: 9, star: 10 };
+const CAT_ACCESSORY_LEVELS: Record<string, number> = { bow: 2, scarf: 3, hat: 4, crown: 5, flower: 6, glasses: 7, bell: 8, wizardHat: 9, star: 10, bowtie: 3, topHat: 5, headphones: 7 };
 
 const TINTS: Record<string, string> = {
     pink: "",
     blue: "hue-rotate(220deg) saturate(1.1)",
     purple: "hue-rotate(300deg) saturate(1.05)",
-    mint: "hue-rotate(168deg) saturate(0.85) brightness(1.05)"
+    mint: "hue-rotate(168deg) saturate(0.85) brightness(1.05)",
+    peach: "hue-rotate(40deg) saturate(1.2) brightness(1.08)",
+    lavender: "hue-rotate(260deg) saturate(0.9) brightness(1.05)",
+    gold: "hue-rotate(78deg) saturate(1.2) brightness(1.05)"
 };
 
 const AURAS: Record<string, string> = {
@@ -39,6 +42,8 @@ const AURAS: Record<string, string> = {
     blue: "rgba(138, 209, 255, 0.5)",
     purple: "rgba(176, 123, 216, 0.5)",
     mint: "rgba(120, 220, 170, 0.45)",
+    gold: "rgba(255, 214, 107, 0.5)",
+    lavender: "rgba(200, 170, 240, 0.5)",
     none: "transparent"
 };
 
@@ -120,6 +125,12 @@ function onPet() {
     addXp(profile, firstToday ? DAILY_PET_XP : 2).then(notifyLevel);
 }
 
+function onPlay() {
+    if (!controller) return;
+    controller.lure(controller.getDropPoint());
+    grantPlayXp(currentProfile()).then(notifyLevel);
+}
+
 function buildController(): PetController | GhostController {
     const getConfig = () => ({
         size: settings.store.size,
@@ -151,11 +162,15 @@ function restartController() {
 
 function notifyLevel(level: number | null) {
     if (level === null) return;
-    const set = ACCESSORY_SETS[currentProfile()];
-    const unlocked = Object.entries(set.levels).find(([, l]) => l === level)?.[0];
-    const note = unlocked ? ` You unlocked the ${set.registry[unlocked].label.toLowerCase()}!` : "";
-    const name = currentProfile() === "ghost" ? "ghost" : "kitty";
-    showToast(`Your ${name} reached level ${level}!${note}`, Toasts.Type.SUCCESS);
+    controller?.celebrate(level);
+    const profile = currentProfile();
+    const set = ACCESSORY_SETS[profile];
+    const unlocked = Object.entries(set.levels)
+        .filter(([, l]) => l === level)
+        .map(([id]) => set.registry[id].label.toLowerCase());
+    const who = getSave(profile).name || (profile === "ghost" ? "Your ghost" : "Your kitty");
+    const note = unlocked.length ? ` ${who} unlocked the ${unlocked.join(" and ")}!` : "";
+    showToast(`🎉 Level ${level}!${note}`, Toasts.Type.SUCCESS);
 }
 
 function PetModal({ rootProps }: { rootProps: any; }) {
@@ -206,6 +221,12 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                             ? `Petted today ✓ — ${save.streak} day streak.`
                             : "Pet me today for a bonus! 🐾"}
                     </Text>
+
+                    <Flex style={{ gap: 8, marginTop: 12 }}>
+                        <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => onPlay()}>
+                            {isGhost ? "🎾 Play" : "🍪 Play"}
+                        </Button>
+                    </Flex>
 
                     <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Accessories</Text>
                     <Flex style={{ gap: 8, flexWrap: "wrap" }}>
@@ -292,6 +313,9 @@ export default definePlugin({
     toolboxActions: {
         "Open KittyPet"() {
             openModal(props => <PetModal rootProps={props} />);
+        },
+        "Play with KittyPet"() {
+            onPlay();
         }
     },
 
@@ -320,6 +344,19 @@ export default definePlugin({
             const me = UserStore.getCurrentUser();
             if (!me || userId === me.id) return;
             if (channelId === SelectedChannelStore.getChannelId()) controller.react("typing");
+        },
+        MESSAGE_REACTION_ADD({ optimistic, channelId, userId }: { optimistic?: boolean; channelId?: string; userId?: string; }) {
+            if (optimistic || !controller) return;
+            const me = UserStore.getCurrentUser();
+            if (!me || userId === me.id) return;
+            if (channelId === SelectedChannelStore.getChannelId()) controller.react("reaction");
+        },
+        STREAM_CREATE(e: string | { streamKey?: string; }) {
+            if (!controller) return;
+            const key = typeof e === "string" ? e : e?.streamKey;
+            if (!key) return;
+            const me = UserStore.getCurrentUser();
+            if (me && key.endsWith(me.id)) controller.react("stream");
         }
     },
 

@@ -129,6 +129,34 @@ export const ACCESSORIES: Record<string, { label: string; grid: string[]; x: num
             ".yyy.",
             ".y.y."
         ]
+    },
+    bowtie: {
+        label: "Bow tie",
+        x: 14, y: 19,
+        grid: [
+            "r...r",
+            "rrprr",
+            "r...r"
+        ]
+    },
+    topHat: {
+        label: "Top hat",
+        x: 13, y: 0,
+        grid: [
+            ".oooo.",
+            ".oooo.",
+            "pppppp",
+            "oooooo"
+        ]
+    },
+    headphones: {
+        label: "Headphones",
+        x: 12, y: 3,
+        grid: [
+            ".pppppp.",
+            "oo....oo",
+            "oo....oo"
+        ]
     }
 };
 

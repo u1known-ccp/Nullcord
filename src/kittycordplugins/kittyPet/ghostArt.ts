@@ -4,9 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-export type GhostExpression = "idle" | "blink" | "happy" | "alert" | "sleep";
+export type GhostExpression = "idle" | "blink" | "happy" | "alert" | "sleep" | "love";
 
 const EYE = "#3a2230";
+
+const heart = (cx: number, cy: number) =>
+    `<path d="M${cx} ${cy + 2} C${cx - 1.4} ${cy + 0.3} ${cx - 2.1} ${cy - 0.9} ${cx - 1.1} ${cy - 1.5} C${cx - 0.4} ${cy - 1.9} ${cx} ${cy - 1.2} ${cx} ${cy - 0.7} C${cx} ${cy - 1.2} ${cx + 0.4} ${cy - 1.9} ${cx + 1.1} ${cy - 1.5} C${cx + 2.1} ${cy - 0.9} ${cx + 1.4} ${cy + 0.3} ${cx} ${cy + 2} Z" fill="#ff5fa6"/>`;
 
 const BODY = "<path d=\"M6 16 C6 8 11 4 16 4 C21 4 26 8 26 16 L26 24 Q23.5 29 21 24 Q18.5 29 16 24 Q13.5 29 11 24 Q8.5 29 6 24 Z\" fill=\"#ffe9f4\" fill-opacity=\"0.94\" stroke=\"#ff8ac4\" stroke-width=\"1.2\"/>";
 
@@ -22,6 +25,8 @@ function eyesFor(expression: GhostExpression): string {
             return `<ellipse cx="12.5" cy="14.6" rx="2.4" ry="3.1" fill="${EYE}"/><ellipse cx="19.5" cy="14.6" rx="2.4" ry="3.1" fill="${EYE}"/><circle cx="13.4" cy="13.6" r="0.8" fill="#ffe9f4"/><circle cx="20.4" cy="13.6" r="0.8" fill="#ffe9f4"/><ellipse cx="16" cy="20.2" rx="1.5" ry="1.9" fill="${EYE}"/>`;
         case "sleep":
             return `<path d="M10.6 15 Q12.5 17.2 14.4 15" fill="none" stroke="${EYE}" stroke-width="1.4" stroke-linecap="round"/><path d="M17.6 15 Q19.5 17.2 21.4 15" fill="none" stroke="${EYE}" stroke-width="1.4" stroke-linecap="round"/>`;
+        case "love":
+            return heart(12.5, 14.6) + heart(19.5, 14.6);
         default:
             return `<ellipse cx="12.5" cy="15" rx="2" ry="2.7" fill="${EYE}"/><ellipse cx="19.5" cy="15" rx="2" ry="2.7" fill="${EYE}"/><circle cx="13.3" cy="14.1" r="0.7" fill="#ffe9f4"/><circle cx="20.3" cy="14.1" r="0.7" fill="#ffe9f4"/>`;
     }
@@ -63,6 +68,18 @@ export const GHOST_ACCESSORIES: Record<string, { label: string; svg: string; }> 
     star: {
         label: "Lucky star",
         svg: "<path d=\"M16 1 Q16.7 4.3 20 5 Q16.7 5.7 16 9 Q15.3 5.7 12 5 Q15.3 4.3 16 1 Z\" fill=\"#ffd46b\"/>"
+    },
+    headphones: {
+        label: "Headphones",
+        svg: "<path d=\"M9 9 Q16 1.5 23 9\" fill=\"none\" stroke=\"#3a2230\" stroke-width=\"1.6\"/><rect x=\"7.3\" y=\"8.5\" width=\"3\" height=\"5\" rx=\"1.3\" fill=\"#ff5fa6\"/><rect x=\"21.7\" y=\"8.5\" width=\"3\" height=\"5\" rx=\"1.3\" fill=\"#ff5fa6\"/>"
+    },
+    monocle: {
+        label: "Monocle",
+        svg: "<circle cx=\"19.5\" cy=\"15\" r=\"3.6\" fill=\"none\" stroke=\"#ffd46b\" stroke-width=\"1.2\"/><path d=\"M19.5 18.6 Q20.4 22.5 22.5 23.5\" fill=\"none\" stroke=\"#ffd46b\" stroke-width=\"0.8\"/>"
+    },
+    partyHat: {
+        label: "Party hat",
+        svg: "<path d=\"M16 0.5 L11.5 7.5 L20.5 7.5 Z\" fill=\"#ff5fa6\"/><circle cx=\"16\" cy=\"0.8\" r=\"1.1\" fill=\"#ffd46b\"/><circle cx=\"15\" cy=\"5.5\" r=\"0.7\" fill=\"#ffe9f4\"/><circle cx=\"17.3\" cy=\"6.4\" r=\"0.7\" fill=\"#ffe9f4\"/><circle cx=\"16\" cy=\"3.6\" r=\"0.7\" fill=\"#ffe9f4\"/>"
     }
 };
 
@@ -75,7 +92,10 @@ export const GHOST_ACCESSORY_LEVELS: Record<string, number> = {
     bowTie: 7,
     sunglasses: 8,
     topHat: 9,
-    star: 10
+    star: 10,
+    headphones: 3,
+    monocle: 5,
+    partyHat: 7
 };
 
 const THUMB_VIEWBOX: Record<string, string> = {
@@ -87,7 +107,10 @@ const THUMB_VIEWBOX: Record<string, string> = {
     bowTie: "10 20 12 7",
     sunglasses: "8 12 16 6",
     topHat: "9 0 14 8",
-    star: "11 0 10 10"
+    star: "11 0 10 10",
+    headphones: "6 1 20 13",
+    monocle: "15 11 11 14",
+    partyHat: "10 0 12 8"
 };
 
 function toUri(viewBox: string, inner: string): string {

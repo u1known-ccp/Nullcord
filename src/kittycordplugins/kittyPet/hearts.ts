@@ -9,10 +9,13 @@ import { COL } from "../_shared/canvasKit";
 interface Heart {
     x: number;
     y: number;
+    vx: number;
     vy: number;
     life: number;
     max: number;
     size: number;
+    glyph: string;
+    color: string;
 }
 
 let canvas: HTMLCanvasElement | null = null;
@@ -66,10 +69,37 @@ export function spawnHearts(x: number, y: number, count: number) {
         hearts.push({
             x: x + (Math.random() - 0.5) * 22,
             y: y - Math.random() * 8,
+            vx: 0,
             vy: -(26 + Math.random() * 14),
             life: -i * 0.07,
             max: 0.9,
-            size: 13 + Math.random() * 4
+            size: 13 + Math.random() * 4,
+            glyph: "♥",
+            color: COL.pink
+        });
+    }
+    last = performance.now();
+    if (raf === null) raf = requestAnimationFrame(tick);
+}
+
+const BURST_GLYPHS = ["♥", "✨", "★"];
+
+export function burst(x: number, y: number, count: number) {
+    if (!canvas || !ctx) return;
+    if (document.documentElement.classList.contains("kc-perf-noanim")) return;
+    for (let i = 0; i < count; i++) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.5;
+        const speed = 45 + Math.random() * 70;
+        hearts.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: -i * 0.015,
+            max: 1.1 + Math.random() * 0.3,
+            size: 12 + Math.random() * 9,
+            glyph: BURST_GLYPHS[i % BURST_GLYPHS.length],
+            color: Math.random() < 0.5 ? COL.pink : COL.pinkHi
         });
     }
     last = performance.now();
@@ -97,19 +127,20 @@ function tick(now: number) {
         }
 
         ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        ctx.fillStyle = COL.pink;
         for (let i = hearts.length - 1; i >= 0; i--) {
             const h = hearts[i];
             h.life += dt;
             if (h.life < 0) continue;
+            h.x += h.vx * dt;
             h.y += h.vy * dt;
             if (h.life >= h.max) {
                 hearts.splice(i, 1);
                 continue;
             }
             ctx.globalAlpha = 1 - h.life / h.max;
+            ctx.fillStyle = h.color;
             ctx.font = `${h.size}px sans-serif`;
-            ctx.fillText("♥", h.x, h.y);
+            ctx.fillText(h.glyph, h.x, h.y);
         }
         ctx.globalAlpha = 1;
 

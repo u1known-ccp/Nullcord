@@ -71,6 +71,34 @@
     z-index: 2001;
 }
 
+.kc-pet-treat {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1999;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 30%));
+    animation: kc-treat-pop 0.25s ease-out;
+}
+
+@keyframes kc-treat-pop {
+    0% {
+        opacity: 0;
+        scale: 0.3;
+    }
+
+    60% {
+        scale: 1.15;
+    }
+
+    100% {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
 .kc-pet::before {
     content: "";
     position: absolute;

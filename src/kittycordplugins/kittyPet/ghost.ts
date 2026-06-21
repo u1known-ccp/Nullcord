@@ -5,7 +5,7 @@
  */
 
 import { buildGhostUri, GHOST_ACCESSORIES, GhostExpression } from "./ghostArt";
-import { spawnHearts } from "./hearts";
+import { burst, spawnHearts } from "./hearts";
 import { PetConfig, PetHooks } from "./pet";
 
 const BLINK_MIN = 3000;
@@ -49,6 +49,8 @@ export class GhostController {
     private renderedName = "";
     private lastPetDay = "";
     private renderedWants: boolean | null = null;
+    private luring = false;
+    private treatEl: HTMLDivElement | null = null;
 
     constructor(hooks: PetHooks) {
         this.hooks = hooks;
@@ -86,6 +88,7 @@ export class GhostController {
     stop() {
         if (this.raf !== null) cancelAnimationFrame(this.raf);
         this.raf = null;
+        this.removeTreat();
         this.container.remove();
     }
 
@@ -122,13 +125,19 @@ export class GhostController {
         }
     }
 
-    react(kind: "mention" | "message" | "typing") {
+    react(kind: "mention" | "message" | "typing" | "reaction" | "stream") {
         if (!this.hooks.getConfig().reactions) return;
         this.sleeping = false;
         if (kind === "mention") {
             this.setTemp("happy", 1500);
             const { size } = this.hooks.getConfig();
             spawnHearts(this.x + size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
+        } else if (kind === "stream") {
+            this.setTemp("love", 1500);
+            const { size } = this.hooks.getConfig();
+            spawnHearts(this.x + size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
+        } else if (kind === "reaction") {
+            this.setTemp("alert", 700);
         } else {
             this.setTemp("alert", kind === "message" ? 700 : 500);
         }
@@ -136,10 +145,52 @@ export class GhostController {
 
     pet() {
         this.sleeping = false;
-        this.setTemp("happy", 1600);
+        this.setTemp("love", 1600);
         const { size } = this.hooks.getConfig();
         spawnHearts(this.x + size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
         this.hooks.onPet();
+    }
+
+    lure(point: { x: number; y: number; }) {
+        if (document.documentElement.classList.contains("kc-perf-noanim")) return;
+        this.sleeping = false;
+        const tx = Math.min(Math.max(point.x, this.minX), this.maxX);
+        const ty = Math.min(Math.max(point.y, this.minY), this.maxY);
+        const { size } = this.hooks.getConfig();
+        this.spawnTreat(tx, ty, size);
+        this.targetX = tx;
+        this.targetY = ty;
+        this.luring = true;
+        this.state = "fly";
+    }
+
+    getDropPoint(): { x: number; y: number; } {
+        const x = this.minX + Math.random() * Math.max(0, this.maxX - this.minX);
+        const y = this.minY + Math.random() * Math.max(0, this.maxY - this.minY);
+        return { x, y };
+    }
+
+    celebrate(_level: number) {
+        this.sleeping = false;
+        this.setTemp("love", 2000);
+        const { size } = this.hooks.getConfig();
+        burst(this.x + size * 0.5, this.y, 16);
+    }
+
+    private spawnTreat(x: number, y: number, size: number) {
+        this.removeTreat();
+        const el = document.createElement("div");
+        el.className = "kc-pet-treat";
+        el.textContent = Math.random() < 0.5 ? "🍪" : "🎾";
+        el.style.fontSize = `${Math.round(size * 0.7)}px`;
+        el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+        document.body.appendChild(el);
+        this.treatEl = el;
+    }
+
+    private removeTreat() {
+        this.treatEl?.remove();
+        this.treatEl = null;
     }
 
     private setTemp(expr: GhostExpression, ms: number) {
@@ -209,6 +260,12 @@ export class GhostController {
                 this.state = "idle";
                 this.idleSince = now;
                 this.nextHopAt = now + 1200 + Math.random() * 2600;
+                if (this.luring) {
+                    this.luring = false;
+                    this.removeTreat();
+                    this.setTemp("love", 1600);
+                    spawnHearts(this.x + cfg.size * 0.5, this.y, 3 + Math.floor(Math.random() * 3));
+                }
             }
             return;
         }
