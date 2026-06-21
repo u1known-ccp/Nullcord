@@ -32,6 +32,7 @@ const KITTY_KEYFRAMES =
 const SPLASH_JS = `
 (function () {
     try {
+        if (window.__OVERLAY__) return;
         if (document.getElementById("kc-splash")) return;
         var css = document.createElement("style");
         css.textContent =
@@ -61,6 +62,10 @@ const SPLASH_JS = `
 const LOADING_JS = `
 (function () {
     try {
+        // Discord's in-game overlay renders the full app from a normal discord.com URL (no /overlay in
+        // the path) and is marked only by window.__OVERLAY__. Never mount the loading backdrop there or
+        // it turns the transparent always-on-top overlay opaque and covers the game.
+        if (window.__OVERLAY__ || (location.href || "").indexOf("/overlay") !== -1) return;
         if (window.__kcLoader) return;
         window.__kcLoader = true;
 
@@ -134,7 +139,7 @@ const LOADING_JS = `
 
         var start = Date.now();
         var iv = setInterval(function () {
-            if (appReady() || authVisible() || isAuthRoute() || (Date.now() - start) > 8000) done();
+            if (window.__OVERLAY__ || appReady() || authVisible() || isAuthRoute() || (Date.now() - start) > 8000) done();
         }, 200);
     } catch (e) {}
 })();`;
