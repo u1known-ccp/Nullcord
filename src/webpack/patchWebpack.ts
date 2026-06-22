@@ -66,6 +66,11 @@ export function getFactoryPatchedBy(moduleId: PropertyKey, webpackRequire = wreq
 
 const logger = new Logger("WebpackPatcher", "#8caaee");
 
+export const patchResilience = {
+    erroredPatches: 0,
+    noEffectPatches: 0
+};
+
 /** Whether we tried to fallback to the WebpackRequire of the factory, or disabled patches */
 let wreqFallbackApplied = false;
 
@@ -571,6 +576,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 if (newCode === code) {
                     if (!(patch.noWarn || replacement.noWarn)) {
                         logger.warn(`Patch by ${patch.plugin} had no effect (Module id is ${String(moduleId)}): ${replacement.match}`);
+                        patchResilience.noEffectPatches++;
                         if (IS_DEV) {
                             logger.debug("Function Source:\n", code);
                         }
@@ -620,6 +626,7 @@ function patchFactory(moduleId: PropertyKey, originalFactory: AnyModuleFactory):
                 const shouldSuppressError = patch.plugin === "ContextMenuAPI" && err instanceof SyntaxError && err.message.includes("arguments");
                 if (!shouldSuppressError) {
                     logger.error(`Patch by ${patch.plugin} errored (Module id is ${String(moduleId)}): ${replacement.match}\n`, err);
+                    patchResilience.erroredPatches++;
 
                     if (IS_COMPANION_TEST)
                         reporterData.failedPatches.erroredPatch.push({
