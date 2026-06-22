@@ -10,11 +10,13 @@ import definePlugin, { OptionType } from "@utils/types";
 
 import style from "./style.css?managed";
 
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
 function apply() {
     const cl = document.documentElement.classList;
     const { ultra } = settings.store;
     cl.toggle("kc-perf-ultra", ultra);
-    cl.toggle("kc-perf-noanim", ultra || settings.store.noAnimations);
+    cl.toggle("kc-perf-noanim", ultra || settings.store.noAnimations || (settings.store.followSystemReducedMotion && reducedMotionQuery.matches));
     cl.toggle("kc-perf-noblur", ultra || settings.store.noBlur);
     cl.toggle("kc-perf-nodeco", ultra || settings.store.hideAvatarDecorations);
     cl.toggle("kc-perf-noplate", ultra || settings.store.hideNameplates);
@@ -31,6 +33,12 @@ const settings = definePluginSettings({
     noAnimations: {
         type: OptionType.BOOLEAN,
         description: "Turn off UI animations and transitions (big win on low-end PCs)",
+        default: true,
+        onChange: apply
+    },
+    followSystemReducedMotion: {
+        type: OptionType.BOOLEAN,
+        description: "Automatically turn off animations when your system asks for reduced motion.",
         default: true,
         onChange: apply
     },
@@ -70,10 +78,12 @@ export default definePlugin({
     start() {
         enableStyle(style);
         apply();
+        reducedMotionQuery.addEventListener("change", apply);
     },
 
     stop() {
         disableStyle(style);
+        reducedMotionQuery.removeEventListener("change", apply);
         const cl = document.documentElement.classList;
         cl.remove("kc-perf-ultra", "kc-perf-noanim", "kc-perf-noblur", "kc-perf-nodeco", "kc-perf-noplate", "kc-perf-nofx");
     }
