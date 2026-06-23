@@ -36,7 +36,7 @@ import { debounce } from "@shared/debounce";
 import { IS_WINDOWS } from "@utils/constants";
 import { createAndAppendStyle } from "@utils/css";
 import { StartAt } from "@utils/types";
-import { SettingsRouter } from "@webpack/common";
+import { SettingsRouter, showToast, Toasts } from "@webpack/common";
 
 import { get as dsGet, set as dsSet } from "./api/DataStore";
 import { popNotice, showNotice } from "./api/Notices";
@@ -121,6 +121,16 @@ async function syncSettings() {
 
 let notifiedForUpdatesThisSession = false;
 
+async function updateAndRelaunch() {
+    showToast("Getting the latest Kittycord update…", Toasts.Type.MESSAGE);
+    try {
+        if (await checkForUpdates()) await update();
+    } catch (err) {
+        UpdateLogger.error("Failed to pull the latest update before restarting", err);
+    }
+    relaunch();
+}
+
 async function runUpdateCheck() {
     if (IS_UPDATER_DISABLED) return;
     // Once we've notified (or auto-updated + notified) this session, stop re-checking, so the periodic
@@ -152,7 +162,7 @@ async function runUpdateCheck() {
                 showNotice(
                     "Kittycord has been updated!",
                     "Restart",
-                    relaunch
+                    updateAndRelaunch
                 );
             }
             return;
