@@ -10,6 +10,16 @@ export interface StudioColors {
     accentHi: string;
     text: string;
     muted: string;
+    accent2?: string;
+    accent3?: string;
+}
+
+export type StudioBgKind = "none" | "hosted" | "url";
+
+export interface StudioBg {
+    kind: StudioBgKind;
+    id?: string;
+    url?: string;
 }
 
 export interface StudioParams {
@@ -17,13 +27,44 @@ export interface StudioParams {
     name: string;
     colors: StudioColors;
     roundness: number;
-    glass: boolean;
     sparkles: boolean;
+    bg: StudioBg;
+    pattern: string;
+    font: string;
+    opacity: number;
+    blur: number;
 }
 
 export const HEX_RE = /^#[0-9a-f]{6}$/i;
 export const NAME_RE = /^[\w\-'!&. ]{1,40}$/;
 export const MAX_ROUNDNESS = 24;
+export const MAX_BLUR = 24;
+export const MAX_BG_URL_LEN = 300;
+export const BG_URL_RE = /^https:\/\/[^\s"'<>]+$/i;
+
+export const ASSET_ENDPOINT = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
+
+export const BG_IDS: readonly string[] = ["petals", "aurora", "grid", "stars", "nebula", "dawn"];
+export const PATTERN_IDS: readonly string[] = ["dots", "diagonal", "hearts", "paws", "lattice"];
+
+export interface FontChoice {
+    label: string;
+    family: string;
+    stack: string;
+}
+
+export const FONTS: Record<string, FontChoice> = {
+    jersey: { label: "Jersey", family: "KC Jersey", stack: "'KC Jersey', 'gg sans', sans-serif" },
+    nunito: { label: "Nunito", family: "KC Nunito", stack: "'KC Nunito', 'gg sans', sans-serif" },
+    quicksand: { label: "Quicksand", family: "KC Quicksand", stack: "'KC Quicksand', 'gg sans', sans-serif" },
+    comfortaa: { label: "Comfortaa", family: "KC Comfortaa", stack: "'KC Comfortaa', 'gg sans', sans-serif" },
+    baloo: { label: "Baloo", family: "KC Baloo", stack: "'KC Baloo', 'gg sans', sans-serif" }
+};
+export const FONT_IDS: readonly string[] = Object.keys(FONTS);
+
+export const bgAssetUrl = (id: string) => `${ASSET_ENDPOINT}/bg/assets/${id}`;
+export const patternAssetUrl = (id: string) => `${ASSET_ENDPOINT}/pattern/assets/${id}`;
+export const fontAssetUrl = (id: string) => `${ASSET_ENDPOINT}/fonts/${id}.woff2`;
 
 const MARKER_RE = /\/\* kc-studio:([A-Za-z0-9+/=]+) \*\//;
 
@@ -39,20 +80,53 @@ export function defaultParams(): StudioParams {
             muted: "#9a7389"
         },
         roundness: 14,
-        glass: true,
-        sparkles: true
+        sparkles: true,
+        bg: { kind: "none" },
+        pattern: "",
+        font: "",
+        opacity: 78,
+        blur: 0
     };
+}
+
+function clampInt(value: unknown, min: number, max: number, fallback: number): number {
+    const n = Math.round(Number(value));
+    if (!Number.isFinite(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+}
+
+function migrateGlass(raw: any): { opacity: number; blur: number; } {
+    const hasOpacity = raw.opacity !== undefined && raw.opacity !== null;
+    const hasBlur = raw.blur !== undefined && raw.blur !== null;
+    if (!hasOpacity && !hasBlur && raw.glass !== undefined)
+        return { opacity: raw.glass ? 78 : 100, blur: 0 };
+    return { opacity: clampInt(raw.opacity, 0, 100, 100), blur: clampInt(raw.blur, 0, MAX_BLUR, 0) };
+}
+
+function sanitizeBg(raw: any): StudioBg {
+    if (!raw || typeof raw !== "object") return { kind: "none" };
+    if (raw.kind === "hosted" && BG_IDS.includes(String(raw.id))) return { kind: "hosted", id: String(raw.id) };
+    if (raw.kind === "url") {
+        const url = String(raw.url ?? "");
+        if (url.startsWith("/img?url=") && url.length <= 1000) return { kind: "url", url };
+        if (url.length <= MAX_BG_URL_LEN && BG_URL_RE.test(url)) return { kind: "url", url };
+    }
+    return { kind: "none" };
 }
 
 export function sanitizeParams(raw: any): StudioParams {
     if (!raw || typeof raw !== "object" || !raw.colors || typeof raw.colors !== "object")
         throw new Error("That is not a valid Studio theme.");
 
-    const colors: Record<string, string> = {};
+    const colors: StudioColors = { bg: "", accent: "", accentHi: "", text: "", muted: "" };
     for (const key of ["bg", "accent", "accentHi", "text", "muted"] as const) {
         const value = String(raw.colors[key] ?? "").toLowerCase();
         if (!HEX_RE.test(value)) throw new Error("That is not a valid Studio theme.");
         colors[key] = value;
+    }
+    for (const key of ["accent2", "accent3"] as const) {
+        const value = String(raw.colors[key] ?? "").toLowerCase();
+        if (value && HEX_RE.test(value)) colors[key] = value;
     }
 
     const name = String(raw.name ?? "").trim().slice(0, 40);
@@ -62,13 +136,19 @@ export function sanitizeParams(raw: any): StudioParams {
     if (!Number.isFinite(roundness) || roundness < 0 || roundness > MAX_ROUNDNESS)
         throw new Error("That is not a valid Studio theme.");
 
+    const { opacity, blur } = migrateGlass(raw);
+
     return {
         v: 1,
         name,
-        colors: colors as unknown as StudioColors,
+        colors,
         roundness,
-        glass: Boolean(raw.glass),
-        sparkles: Boolean(raw.sparkles)
+        sparkles: Boolean(raw.sparkles),
+        bg: sanitizeBg(raw.bg),
+        pattern: PATTERN_IDS.includes(String(raw.pattern)) ? String(raw.pattern) : "",
+        font: FONT_IDS.includes(String(raw.font)) ? String(raw.font) : "",
+        opacity,
+        blur
     };
 }
 
@@ -115,6 +195,8 @@ export interface DerivedPalette {
     surfaceHighest: string;
     accent: string;
     accentHi: string;
+    accent2: string;
+    accent3: string;
     accentStrong: string;
     accentDeep: string;
     text: string;
@@ -123,13 +205,15 @@ export interface DerivedPalette {
 }
 
 export function derivePalette(params: StudioParams): DerivedPalette {
-    const { bg, accent, accentHi, text, muted } = params.colors;
+    const { bg, accent, accentHi, accent2, accent3, text, muted } = params.colors;
     return {
         bg: [-1, 0, 3, 5, 8, 11].map(d => shiftLightness(bg, d)),
         line: shiftLightness(bg, 14),
         surfaceHighest: shiftLightness(bg, 17),
         accent,
         accentHi,
+        accent2: accent2 || accent,
+        accent3: accent3 || accentHi,
         accentStrong: shiftLightness(accent, -4),
         accentDeep: shiftLightness(accent, -9),
         text,
@@ -138,23 +222,118 @@ export function derivePalette(params: StudioParams): DerivedPalette {
     };
 }
 
-function sparkleBackdrop(p: DerivedPalette, bg1: string): string {
-    const a = encodeURIComponent(p.accent);
-    const hi = encodeURIComponent(p.accentHi);
-    const accentRgb = hexToRgbTriplet(p.accent);
-    const hiRgb = hexToRgbTriplet(p.accentHi);
+function resolveBgUrl(url: string): string {
+    if (!url) return "";
+    return url.startsWith("/") ? ASSET_ENDPOINT + url : url;
+}
+
+function appMountBackdrop(p: DerivedPalette, bg1: string, params: StudioParams): string {
+    const layers: string[] = [];
+
+    if (params.sparkles) {
+        const a = encodeURIComponent(p.accent);
+        const hi = encodeURIComponent(p.accentHi);
+        const accentRgb = hexToRgbTriplet(p.accent);
+        const hiRgb = hexToRgbTriplet(p.accentHi);
+        layers.push(
+            `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='${a}' stroke-opacity='.32' stroke-width='.7'%3E%3Cpath d='M100 8 192 100 100 192 8 100Z'/%3E%3Cpath d='M100 30 170 100 100 170 30 100Z' stroke-dasharray='3 4' stroke-opacity='.55'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.22' stroke-width='.6'%3E%3Ccircle cx='170' cy='30' r='92'/%3E%3Ccircle cx='170' cy='30' r='76' stroke-dasharray='2 5'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.6' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M28 44h12M34 38v12'/%3E%3Cpath d='M58 132h9M62.5 127.5v9'/%3E%3Cpath d='M148 152h9M152.5 147.5v9'/%3E%3C/g%3E%3C/svg%3E") no-repeat right -140px top -160px / 640px 640px`,
+            `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='${hi}' stroke-width='.7'%3E%3Ccircle cx='100' cy='100' r='88' stroke-opacity='.30' stroke-dasharray='3 5'/%3E%3Ccircle cx='100' cy='100' r='62' stroke-opacity='.18'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.5' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M150 60h10M155 55v10'/%3E%3C/g%3E%3C/svg%3E") no-repeat left -200px bottom -220px / 560px 560px`,
+            `radial-gradient(1000px 620px at 10% -12%, rgb(${accentRgb} / 13%), transparent 62%)`,
+            `radial-gradient(880px 700px at 98% 34%, rgb(${hiRgb} / 9%), transparent 58%)`
+        );
+    }
+
+    if (params.pattern)
+        layers.push(`url("${patternAssetUrl(params.pattern)}") repeat`);
+
+    if (params.bg.kind !== "none") {
+        const url = params.bg.kind === "hosted" ? bgAssetUrl(params.bg.id ?? "") : resolveBgUrl(params.bg.url ?? "");
+        if (url) layers.push(`url("${url}") no-repeat center / cover fixed`);
+    }
+
+    if (!layers.length) return "";
+
+    layers.push(bg1);
     return `#app-mount {
-    background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='${a}' stroke-opacity='.32' stroke-width='.7'%3E%3Cpath d='M100 8 192 100 100 192 8 100Z'/%3E%3Cpath d='M100 30 170 100 100 170 30 100Z' stroke-dasharray='3 4' stroke-opacity='.55'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.22' stroke-width='.6'%3E%3Ccircle cx='170' cy='30' r='92'/%3E%3Ccircle cx='170' cy='30' r='76' stroke-dasharray='2 5'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.6' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M28 44h12M34 38v12'/%3E%3Cpath d='M58 132h9M62.5 127.5v9'/%3E%3Cpath d='M148 152h9M152.5 147.5v9'/%3E%3C/g%3E%3C/svg%3E") no-repeat right -140px top -160px / 640px 640px,
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cg stroke='${hi}' stroke-width='.7'%3E%3Ccircle cx='100' cy='100' r='88' stroke-opacity='.30' stroke-dasharray='3 5'/%3E%3Ccircle cx='100' cy='100' r='62' stroke-opacity='.18'/%3E%3C/g%3E%3Cg stroke='${hi}' stroke-opacity='.5' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M150 60h10M155 55v10'/%3E%3C/g%3E%3C/svg%3E") no-repeat left -200px bottom -220px / 560px 560px,
-        radial-gradient(1000px 620px at 10% -12%, rgb(${accentRgb} / 13%), transparent 62%),
-        radial-gradient(880px 700px at 98% 34%, rgb(${hiRgb} / 9%), transparent 58%),
-        ${bg1};
+    background: ${layers.join(",\n        ")};
 }
 
 #app-mount [class*="bg_"] {
     background: transparent;
 }`;
+}
+
+function fontFaceCss(id: string): string {
+    const f = FONTS[id];
+    if (!f) return "";
+    return `@font-face {
+    font-family: "${f.family}";
+    src: url("${fontAssetUrl(id)}") format("woff2");
+    font-display: swap;
+}
+
+:root {
+    --font-primary: ${f.stack};
+    --font-display: ${f.stack};
+}
+`;
+}
+
+function blurCss(blur: number): string {
+    if (blur <= 0) return "";
+    return `[class*="chatContent"],
+[class*="messagesWrapper"],
+[class*="sidebar_"],
+[class*="guilds_"] {
+    backdrop-filter: blur(${blur}px);
+}
+
+[class*="menu_"],
+[class*="layerContainer"],
+[class*="popout"],
+[role="menu"] {
+    backdrop-filter: none !important;
+}`;
+}
+
+function perfFallback(bg0: string, bg1: string, bg2: string, bg3: string): string {
+    const opaque = `--background-primary: ${bg3};
+        --background-secondary: ${bg2};
+        --background-secondary-alt: ${bg2};
+        --background-tertiary: ${bg1};
+        --background-base-lowest: ${bg0};
+        --background-base-lower: ${bg1};
+        --background-base-low: ${bg2};
+        --bg-overlay-chat: ${bg3};
+        --bg-base-primary: ${bg3};
+        --bg-base-secondary: ${bg2};
+        --bg-base-tertiary: ${bg1};`;
+    return `@media (prefers-reduced-transparency: reduce) {
+    .theme-dark,
+    .theme-darker,
+    .theme-midnight,
+    .visual-refresh.theme-dark,
+    .visual-refresh .theme-dark {
+        ${opaque}
+    }
+
+    #app-mount { background: ${bg1}; }
+    [class*="chatContent"], [class*="messagesWrapper"], [class*="sidebar_"], [class*="guilds_"] { backdrop-filter: none; }
+}
+
+html.kc-perf-noblur .theme-dark,
+html.kc-perf-noblur .theme-darker,
+html.kc-perf-noblur .theme-midnight,
+html.kc-perf-noblur .visual-refresh.theme-dark,
+html.kc-perf-noblur .visual-refresh .theme-dark {
+        ${opaque}
+}
+
+html.kc-perf-noblur #app-mount { background: ${bg1}; }
+html.kc-perf-noblur [class*="chatContent"],
+html.kc-perf-noblur [class*="messagesWrapper"],
+html.kc-perf-noblur [class*="sidebar_"],
+html.kc-perf-noblur [class*="guilds_"] { backdrop-filter: none; }`;
 }
 
 export function encodeMarker(params: StudioParams): string {
@@ -188,8 +367,10 @@ export function generateCss(params: StudioParams): string {
     const bg2Rgb = hexToRgbTriplet(bg2);
     const bg3Rgb = hexToRgbTriplet(bg3);
 
+    const opacity = clampInt(params.opacity, 0, 100, 78);
+    const blur = clampInt(params.blur, 0, MAX_BLUR, 0);
     const surface = (rgb: string, alpha: number, solid: string) =>
-        params.glass ? `rgb(${rgb} / ${alpha}%)` : solid;
+        opacity >= 100 ? solid : `rgb(${rgb} / ${Math.round(alpha * opacity / 78)}%)`;
 
     const primary = surface(bg3Rgb, 78, bg3);
     const secondary = surface(bg2Rgb, 72, bg2);
@@ -206,7 +387,7 @@ export function generateCss(params: StudioParams): string {
 
 ${encodeMarker(params)}
 
-:root {
+${fontFaceCss(params.font)}:root {
     --kc-bg-0: ${bg0};
     --kc-bg-1: ${bg1};
     --kc-bg-2: ${bg2};
@@ -217,6 +398,8 @@ ${encodeMarker(params)}
     --kc-pink: ${p.accent};
     --kc-pink-strong: ${p.accentStrong};
     --kc-pink-hi: ${p.accentHi};
+    --kc-accent-2: ${p.accent2};
+    --kc-accent-3: ${p.accent3};
     --kc-blush: ${p.blush};
     --kc-faint: ${p.muted};
 }
@@ -265,7 +448,7 @@ ${encodeMarker(params)}
     --header-secondary: var(--kc-blush);
     --text-normal: ${p.text};
     --text-muted: var(--kc-faint);
-    --text-link: var(--kc-pink-hi);
+    --text-link: var(--kc-accent-3);
     --channels-default: var(--kc-faint);
     --channel-icon: var(--kc-faint);
     --interactive-normal: var(--kc-blush);
@@ -298,7 +481,7 @@ ${encodeMarker(params)}
     --scrollbar-auto-scrollbar-color-track: transparent;
 }
 
-${params.sparkles ? sparkleBackdrop(p, bg1) : ""}
+${appMountBackdrop(p, bg1, params)}
 
 [class*="channelTextArea"] [class*="themedBackground"],
 [class*="channelTextArea"] [class*="scrollableContainer"] {
@@ -317,7 +500,7 @@ ${params.sparkles ? sparkleBackdrop(p, bg1) : ""}
 
 [class*="sidebar"] [class*="unreadMentionsIndicator"] span,
 span[class*="unread_"] {
-    background: var(--kc-pink) !important;
+    background: var(--kc-accent-2) !important;
 }
 
 [class*="embedFull"],
@@ -341,5 +524,9 @@ code[class*="inline"] {
 [class*="notice"][class*="colorDefault"] {
     background: var(--kc-bg-5);
 }
+
+${blurCss(blur)}
+
+${perfFallback(bg0, bg1, bg2, bg3)}
 `;
 }

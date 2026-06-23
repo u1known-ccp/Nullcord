@@ -15,7 +15,7 @@ import { ShareFileModal } from "../_shared/ShareFileModal";
 import { openGallery, openPublish } from "./GalleryModal";
 import { buildThemeFile } from "./share";
 import { enableTheme, galleryAvailable, getThemes, isThemeEnabled, loadThemes, removeTheme, saveTheme } from "./store";
-import { defaultParams, derivePalette, HEX_RE, MAX_ROUNDNESS, NAME_RE, type StudioParams } from "./template";
+import { ASSET_ENDPOINT, BG_IDS, BG_URL_RE, bgAssetUrl, defaultParams, derivePalette, FONT_IDS, FONTS, HEX_RE, MAX_BG_URL_LEN, MAX_BLUR, MAX_ROUNDNESS, NAME_RE, PATTERN_IDS, sanitizeParams, type StudioBg, type StudioParams } from "./template";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
 const ModalRoot = ModalRootRaw as ComponentType<any>;
@@ -29,9 +29,16 @@ const COLOR_FIELDS: { key: keyof StudioParams["colors"]; label: string; hint: st
     { key: "bg", label: "Background", hint: "the base of everything" },
     { key: "accent", label: "Accent", hint: "buttons, mentions, highlights" },
     { key: "accentHi", label: "Accent light", hint: "links and bright touches" },
+    { key: "accent2", label: "Accent 2", hint: "unread badges and dots" },
+    { key: "accent3", label: "Accent 3", hint: "links on hover" },
     { key: "text", label: "Text", hint: "main text color" },
     { key: "muted", label: "Muted", hint: "quiet labels and channels" }
 ];
+
+const COLOR_FALLBACK: Partial<Record<keyof StudioParams["colors"], keyof StudioParams["colors"]>> = {
+    accent2: "accent",
+    accent3: "accentHi"
+};
 
 function ColorRow({ label, hint, value, onChange }: { label: string; hint: string; value: string; onChange(v: string): void; }) {
     const [draft, setDraft] = React.useState(value);
@@ -66,37 +73,52 @@ function ColorRow({ label, hint, value, onChange }: { label: string; hint: strin
 export function PreviewPane({ params }: { params: StudioParams; }) {
     const p = derivePalette(params);
     const r = Math.max(4, params.roundness - 4);
+    const a = Math.min(100, Math.max(0, params.opacity)) / 100;
+    const surf = (hex: string) => {
+        if (a >= 1) return hex;
+        const n = hex.replace("#", "");
+        return `rgba(${parseInt(n.slice(0, 2), 16)}, ${parseInt(n.slice(2, 4), 16)}, ${parseInt(n.slice(4, 6), 16)}, ${a})`;
+    };
+    const bgRaw = params.bg.kind === "hosted" ? bgAssetUrl(params.bg.id ?? "") : params.bg.kind === "url" ? (params.bg.url ?? "") : "";
+    const bgUrl = bgRaw.startsWith("/") ? ASSET_ENDPOINT + bgRaw : bgRaw;
+    const font = params.font && FONTS[params.font] ? FONTS[params.font].stack : undefined;
 
     return (
-        <div style={{ background: p.bg[1], borderRadius: 12, border: `1px solid ${p.line}`, overflow: "hidden", display: "flex", height: 240 }}>
-            <div style={{ width: 56, background: p.bg[0], padding: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
-                {[p.accent, p.bg[5], p.bg[5]].map((c, i) => (
-                    <div key={i} style={{ width: 32, height: 32, borderRadius: i === 0 ? 12 : 16, background: c }} />
-                ))}
-            </div>
-            <div style={{ width: 110, background: p.bg[2], padding: "10px 8px" }}>
-                <div style={{ color: p.text, fontWeight: 700, fontSize: 12, marginBottom: 10 }}>cat café 🐱</div>
-                {["general", "kitty-pics", "mod-talk"].map((c, i) => (
-                    <div key={c} style={{ color: i === 1 ? p.text : p.muted, background: i === 1 ? `${p.accent}22` : "transparent", borderRadius: 6, fontSize: 11, padding: "4px 6px", marginBottom: 2 }}>
-                        # {c}
-                    </div>
-                ))}
-            </div>
-            <div style={{ flex: 1, background: p.bg[3], display: "flex", flexDirection: "column", padding: 10 }}>
-                <div style={{ flex: 1, fontSize: 11 }}>
-                    <div style={{ marginBottom: 8 }}>
-                        <span style={{ color: p.accentHi, fontWeight: 600 }}>mochi</span>
-                        <span style={{ color: p.text }}> — this theme is so pretty!</span>
-                    </div>
-                    <div style={{ marginBottom: 8 }}>
-                        <span style={{ color: p.blush, fontWeight: 600 }}>luna</span>
-                        <span style={{ color: p.text }}> — made it myself in </span>
-                        <span style={{ color: p.accentHi, background: `${p.accent}24`, borderRadius: 4, padding: "0 3px" }}>@Kittycord Studio</span>
-                    </div>
-                    <div style={{ color: p.muted }}>mochi is typing…</div>
+        <div style={{ position: "relative", background: p.bg[1], borderRadius: 12, border: `1px solid ${p.line}`, overflow: "hidden", height: 240, fontFamily: font }}>
+            {bgUrl && <div style={{ position: "absolute", inset: 0, backgroundImage: `url("${bgUrl}")`, backgroundSize: "cover", backgroundPosition: "center" }} />}
+            <div style={{ position: "relative", display: "flex", height: "100%" }}>
+                <div style={{ width: 56, background: surf(p.bg[0]), padding: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+                    {[p.accent, p.bg[5], p.bg[5]].map((c, i) => (
+                        <div key={i} style={{ position: "relative", width: 32, height: 32, borderRadius: i === 0 ? 12 : 16, background: c }}>
+                            {i === 2 && <div style={{ position: "absolute", right: -2, bottom: -2, width: 12, height: 12, borderRadius: 999, background: p.accent2, border: `2px solid ${p.bg[0]}` }} />}
+                        </div>
+                    ))}
                 </div>
-                <div style={{ background: p.bg[4], border: `1px solid ${p.line}`, borderRadius: r, color: p.muted, fontSize: 11, padding: "7px 10px" }}>
-                    Message #kitty-pics
+                <div style={{ width: 110, background: surf(p.bg[2]), padding: "10px 8px" }}>
+                    <div style={{ color: p.text, fontWeight: 700, fontSize: 12, marginBottom: 10 }}>cat café 🐱</div>
+                    {["general", "kitty-pics", "mod-talk"].map((c, i) => (
+                        <div key={c} style={{ color: i === 1 ? p.text : p.muted, background: i === 1 ? `${p.accent}22` : "transparent", borderRadius: 6, fontSize: 11, padding: "4px 6px", marginBottom: 2 }}>
+                            # {c}
+                        </div>
+                    ))}
+                </div>
+                <div style={{ flex: 1, background: surf(p.bg[3]), display: "flex", flexDirection: "column", padding: 10 }}>
+                    <div style={{ flex: 1, fontSize: 11 }}>
+                        <div style={{ marginBottom: 8 }}>
+                            <span style={{ color: p.accentHi, fontWeight: 600 }}>mochi</span>
+                            <span style={{ color: p.text }}> — check out </span>
+                            <span style={{ color: p.accent3 }}>kittycord.dev</span>
+                        </div>
+                        <div style={{ marginBottom: 8 }}>
+                            <span style={{ color: p.blush, fontWeight: 600 }}>luna</span>
+                            <span style={{ color: p.text }}> — made it myself in </span>
+                            <span style={{ color: p.accentHi, background: `${p.accent}24`, borderRadius: 4, padding: "0 3px" }}>@Kittycord Studio</span>
+                        </div>
+                        <div style={{ color: p.muted }}>mochi is typing…</div>
+                    </div>
+                    <div style={{ background: surf(p.bg[4]), border: `1px solid ${p.line}`, borderRadius: r, color: p.muted, fontSize: 11, padding: "7px 10px" }}>
+                        Message #kitty-pics
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,13 +126,21 @@ export function PreviewPane({ params }: { params: StudioParams; }) {
 }
 
 function EditorModal({ rootProps, initial, initialFileName, onSaved }: { rootProps: any; initial: StudioParams; initialFileName?: string; onSaved(): void; }) {
-    const [params, setParams] = React.useState<StudioParams>(initial);
+    const [params, setParams] = React.useState<StudioParams>(() => {
+        try { return sanitizeParams(initial); } catch { return defaultParams(); }
+    });
     const [busy, setBusy] = React.useState(false);
 
+    const p = derivePalette(params);
     const nameValid = NAME_RE.test(params.name.trim());
+    const bgUrlValid = params.bg.kind !== "url" || (!!params.bg.url && params.bg.url.length <= MAX_BG_URL_LEN && BG_URL_RE.test(params.bg.url));
 
     function setColor(key: keyof StudioParams["colors"], value: string) {
         setParams(prev => ({ ...prev, colors: { ...prev.colors, [key]: value } }));
+    }
+
+    function setBg(bg: StudioBg) {
+        setParams(prev => ({ ...prev, bg }));
     }
 
     async function save() {
@@ -150,9 +180,11 @@ function EditorModal({ rootProps, initial, initialFileName, onSaved }: { rootPro
                 )}
 
                 <Text variant="text-sm/semibold" style={{ margin: "14px 0 2px" }}>Colors</Text>
-                {COLOR_FIELDS.map(f => (
-                    <ColorRow key={f.key} label={f.label} hint={f.hint} value={params.colors[f.key]} onChange={v => setColor(f.key, v)} />
-                ))}
+                {COLOR_FIELDS.map(f => {
+                    const fallback = COLOR_FALLBACK[f.key];
+                    const value = params.colors[f.key] || (fallback && params.colors[fallback]) || "#000000";
+                    return <ColorRow key={f.key} label={f.label} hint={f.hint} value={value} onChange={v => setColor(f.key, v)} />;
+                })}
 
                 <Text variant="text-sm/semibold" style={{ margin: "14px 0 8px" }}>Roundness</Text>
                 <Slider
@@ -165,13 +197,88 @@ function EditorModal({ rootProps, initial, initialFileName, onSaved }: { rootPro
                     onValueRender={(v: number) => `${Math.round(v)}px`}
                 />
 
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 6px" }}>Background</Text>
+                <Flex style={{ gap: 6 }}>
+                    {([["none", "None"], ["hosted", "Curated"], ["url", "Custom URL"]] as const).map(([k, label]) => (
+                        <Button
+                            key={k}
+                            size={Button.Sizes.SMALL}
+                            color={params.bg.kind === k ? Button.Colors.BRAND : Button.Colors.PRIMARY}
+                            onClick={() => setBg(k === "hosted" ? { kind: "hosted", id: BG_IDS[0] } : k === "url" ? { kind: "url", url: "" } : { kind: "none" })}
+                        >
+                            {label}
+                        </Button>
+                    ))}
+                </Flex>
+                {params.bg.kind === "hosted" && (
+                    <Flex style={{ gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                        {BG_IDS.map(id => (
+                            <div
+                                key={id}
+                                role="button"
+                                onClick={() => setBg({ kind: "hosted", id })}
+                                style={{ width: 54, height: 38, borderRadius: 8, cursor: "pointer", backgroundImage: `url("${bgAssetUrl(id)}")`, backgroundSize: "cover", backgroundPosition: "center", border: params.bg.id === id ? `2px solid ${p.accent}` : "2px solid var(--background-modifier-accent)" }}
+                            />
+                        ))}
+                    </Flex>
+                )}
+                {params.bg.kind === "url" && (
+                    <div style={{ marginTop: 8 }}>
+                        <TextInput value={params.bg.url ?? ""} onChange={(v: string) => setBg({ kind: "url", url: v })} placeholder="https://example.com/wallpaper.png" maxLength={MAX_BG_URL_LEN} />
+                        {!bgUrlValid && (params.bg.url ?? "").length > 0 && (
+                            <Text variant="text-xs/normal" style={{ opacity: 0.7, marginTop: 4 }}>Use a direct https image link.</Text>
+                        )}
+                        <Text variant="text-xs/normal" style={{ opacity: 0.6, marginTop: 4 }}>
+                            Anyone who applies a shared theme loads this through Kittycord, not your link directly.
+                        </Text>
+                    </div>
+                )}
+
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 6px" }}>Pattern</Text>
+                <Flex style={{ gap: 6, flexWrap: "wrap" }}>
+                    <Button size={Button.Sizes.SMALL} color={!params.pattern ? Button.Colors.BRAND : Button.Colors.PRIMARY} onClick={() => setParams(prev => ({ ...prev, pattern: "" }))}>None</Button>
+                    {PATTERN_IDS.map(id => (
+                        <Button key={id} size={Button.Sizes.SMALL} color={params.pattern === id ? Button.Colors.BRAND : Button.Colors.PRIMARY} onClick={() => setParams(prev => ({ ...prev, pattern: id }))}>{id}</Button>
+                    ))}
+                </Flex>
+
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 6px" }}>Font</Text>
+                <Flex style={{ gap: 6, flexWrap: "wrap" }}>
+                    <Button size={Button.Sizes.SMALL} color={!params.font ? Button.Colors.BRAND : Button.Colors.PRIMARY} onClick={() => setParams(prev => ({ ...prev, font: "" }))}>Default</Button>
+                    {FONT_IDS.map(id => (
+                        <Button key={id} size={Button.Sizes.SMALL} color={params.font === id ? Button.Colors.BRAND : Button.Colors.PRIMARY} onClick={() => setParams(prev => ({ ...prev, font: id }))}>{FONTS[id].label}</Button>
+                    ))}
+                </Flex>
+
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 8px" }}>Surface opacity</Text>
+                <Slider
+                    initialValue={params.opacity}
+                    minValue={0}
+                    maxValue={100}
+                    markers={[0, 25, 50, 75, 100]}
+                    stickToMarkers={false}
+                    onValueChange={(v: number) => setParams(prev => ({ ...prev, opacity: Math.round(v) }))}
+                    onValueRender={(v: number) => `${Math.round(v)}%`}
+                />
+                <Text variant="text-xs/normal" style={{ opacity: 0.6, marginTop: 4 }}>
+                    100% is fully solid and lightest on your PC. Lower it to let the backdrop and background show through.
+                </Text>
+
+                <Text variant="text-sm/semibold" style={{ margin: "16px 0 8px" }}>Backdrop blur</Text>
+                <Slider
+                    initialValue={params.blur}
+                    minValue={0}
+                    maxValue={MAX_BLUR}
+                    markers={[0, 6, 12, 18, 24]}
+                    stickToMarkers={false}
+                    onValueChange={(v: number) => setParams(prev => ({ ...prev, blur: Math.round(v) }))}
+                    onValueRender={(v: number) => `${Math.round(v)}px`}
+                />
+                <Text variant="text-xs/normal" style={{ opacity: 0.6, marginTop: 4 }}>
+                    Frosts the chat and sidebars. Turns off automatically in Performance Mode.
+                </Text>
+
                 <div style={{ marginTop: 14 }}>
-                    <FormSwitch
-                        title="Frosted glass"
-                        description="Slightly translucent surfaces that let the backdrop shimmer through."
-                        value={params.glass}
-                        onChange={v => setParams(prev => ({ ...prev, glass: v }))}
-                    />
                     <FormSwitch
                         title="Sparkle backdrop"
                         description="Paints soft glows, diamonds and sparkles behind everything."
