@@ -123,6 +123,58 @@
     background: transparent;
 }
 
+/* ---- low-overdraw fallback -------------------------------------------------------------
+   The shimmer above works by layering translucent surfaces over the painted #app-mount, and
+   that overdraw is what makes weak GPUs stutter while scrolling. When the user asks for reduced
+   transparency, or has PerformanceMode on, keep the exact same colors but make the big surfaces
+   opaque and drop the painted backdrop — identical palette, none of the per-scroll compositing.
+   The alpha values above are literally the --kc-bg-* tokens, so this changes nothing but the cost. */
+@media (prefers-reduced-transparency: reduce) {
+    .theme-dark,
+    .theme-darker,
+    .theme-midnight,
+    .visual-refresh.theme-dark,
+    .visual-refresh .theme-dark {
+        --background-primary: var(--kc-bg-3);
+        --background-secondary: var(--kc-bg-2);
+        --background-secondary-alt: var(--kc-bg-2);
+        --background-tertiary: var(--kc-bg-1);
+        --background-base-lowest: var(--kc-bg-0);
+        --background-base-lower: var(--kc-bg-1);
+        --background-base-low: var(--kc-bg-2);
+        --bg-overlay-chat: var(--kc-bg-3);
+        --bg-base-primary: var(--kc-bg-3);
+        --bg-base-secondary: var(--kc-bg-2);
+        --bg-base-tertiary: var(--kc-bg-1);
+    }
+
+    #app-mount {
+        background: var(--kc-bg-1);
+    }
+}
+
+html.kc-perf-noblur .theme-dark,
+html.kc-perf-noblur .theme-darker,
+html.kc-perf-noblur .theme-midnight,
+html.kc-perf-noblur .visual-refresh.theme-dark,
+html.kc-perf-noblur .visual-refresh .theme-dark {
+    --background-primary: var(--kc-bg-3);
+    --background-secondary: var(--kc-bg-2);
+    --background-secondary-alt: var(--kc-bg-2);
+    --background-tertiary: var(--kc-bg-1);
+    --background-base-lowest: var(--kc-bg-0);
+    --background-base-lower: var(--kc-bg-1);
+    --background-base-low: var(--kc-bg-2);
+    --bg-overlay-chat: var(--kc-bg-3);
+    --bg-base-primary: var(--kc-bg-3);
+    --bg-base-secondary: var(--kc-bg-2);
+    --bg-base-tertiary: var(--kc-bg-1);
+}
+
+html.kc-perf-noblur #app-mount {
+    background: var(--kc-bg-1);
+}
+
 /* The message box paints its own inner background, so variables alone don't reach it. */
 [class*="channelTextArea"] [class*="themedBackground"],
 [class*="channelTextArea"] [class*="scrollableContainer"] {
