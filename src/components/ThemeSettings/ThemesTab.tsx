@@ -51,6 +51,8 @@ import type { UserstyleHeader } from "usercss-meta";
 
 import Plugins from "~plugins";
 
+import { openStudio } from "../../kittycordplugins/kittycordStudio/StudioModal";
+
 const PinIcon = findComponentByCodeLazy("1-.06-.63L6.16");
 const HomeIcon = findComponentByCodeLazy("m2.4 8.4 8.38-6.46a2");
 const RefreshIcon = findComponentByCodeLazy("M21 2a1 1 0 0 1 1 1v6");
@@ -836,6 +838,13 @@ function ThemesTab() {
             </Paragraph>
 
             <QuickActionCard>
+                {isPluginEnabled("KittycordStudio") && (
+                    <QuickAction
+                        text="Open Theme Studio"
+                        action={() => openStudio()}
+                        Icon={PaintbrushIcon}
+                    />
+                )}
                 {IS_WEB ? (
                     <QuickAction
                         text={
