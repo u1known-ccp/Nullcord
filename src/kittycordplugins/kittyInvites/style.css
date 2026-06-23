@@ -20,6 +20,44 @@
     flex: 1;
 }
 
+.kc-inv-boardhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 10px;
+}
+
+.kc-inv-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+    background: var(--background-tertiary);
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.kc-inv-seg {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color .12s ease, background .12s ease;
+}
+
+.kc-inv-seg:hover {
+    color: var(--header-primary);
+}
+
+.kc-inv-seg-on,
+.kc-inv-seg-on:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #ff5fa6, #ff8ac4);
+}
+
 .kc-inv-board {
     display: flex;
     flex-direction: column;

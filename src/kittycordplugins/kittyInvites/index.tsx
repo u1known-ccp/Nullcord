@@ -15,6 +15,7 @@ import { Button, IconUtils, React, showToast, Text, TextInput, Toasts, UserStore
 
 import { INVITE_STATS_FILENAME, renderInviteStatsCard } from "../_shared/inviteStatsCard";
 import { ShareFileModal } from "../_shared/ShareFileModal";
+import type { MyInvites } from "./native";
 import style from "./style.css?managed";
 
 const Native = VencordNative?.pluginHelpers?.KittyInvites as PluginNative<typeof import("./native")> | undefined;
@@ -66,11 +67,18 @@ async function openInviteStatsShare() {
     }
 }
 
+function daysLeft(end: number): string {
+    const days = Math.ceil((end - Date.now()) / 86_400_000);
+    return days <= 1 ? "less than a day" : `${days} days`;
+}
+
 function InvitesTab() {
     const me = UserStore.getCurrentUser();
     const [code, setCode] = React.useState("");
-    const [mine, setMine] = React.useState<{ code: string | null; invites: number; rank: number | null; invitedBy: string | null; }>({ code: null, invites: 0, rank: null, invitedBy: null });
+    const [mine, setMine] = React.useState<MyInvites>({ code: null, invites: 0, rank: null, invitedBy: null, seasonInvites: 0, seasonRank: null, season: null });
     const [board, setBoard] = React.useState<{ id: string; n: number; }[]>([]);
+    const [seasonBoard, setSeasonBoard] = React.useState<{ id: string; n: number; }[]>([]);
+    const [seasonMode, setSeasonMode] = React.useState(true);
     const [saving, setSaving] = React.useState(false);
     const [claimInput, setClaimInput] = React.useState("");
     const [claiming, setClaiming] = React.useState(false);
@@ -87,12 +95,13 @@ function InvitesTab() {
 
     async function load() {
         if (!Native || !me) return;
-        const [m, b] = await Promise.all([Native.getMe(me.id), Native.getLeaderboard(100)]);
+        const [m, b, sb] = await Promise.all([Native.getMe(me.id), Native.getLeaderboard(100), Native.getLeaderboard(100, "current")]);
         setMine(m);
         if (m.code) setCode(m.code);
         if (m.invitedBy) ensureUser(m.invitedBy);
         setBoard(b);
-        for (const e of b) ensureUser(e.id);
+        setSeasonBoard(sb);
+        for (const e of [...b, ...sb]) ensureUser(e.id);
     }
 
     React.useEffect(() => { load(); }, []);
@@ -140,9 +149,13 @@ function InvitesTab() {
                     </Button>
                 </div>
                 <Text variant="text-sm/normal" style={{ opacity: .75, marginTop: 10 }}>
-                    {mine.invites > 0
-                        ? `You've invited ${mine.invites} ${mine.invites === 1 ? "person" : "people"} — rank #${mine.rank}. 🐱`
-                        : "No invites yet — set a code and share it to climb the board."}
+                    {seasonMode
+                        ? (mine.seasonInvites > 0
+                            ? `This season you've invited ${mine.seasonInvites} ${mine.seasonInvites === 1 ? "person" : "people"} — rank #${mine.seasonRank}. 🐱`
+                            : "No invites this season yet — share your code to climb this month's board.")
+                        : (mine.invites > 0
+                            ? `You've invited ${mine.invites} ${mine.invites === 1 ? "person" : "people"} all-time — rank #${mine.rank}. 🐱`
+                            : "No invites yet — set a code and share it to climb the board.")}
                 </Text>
 
                 {mine.invitedBy ? (
@@ -164,12 +177,25 @@ function InvitesTab() {
                 )}
             </div>
 
-            <Text variant="heading-lg/semibold" style={{ margin: "20px 0 10px" }}>Top inviters</Text>
+            <div className="kc-inv-boardhead">
+                <Text variant="heading-lg/semibold">{seasonMode ? "This season" : "All-time"} top inviters</Text>
+                <div className="kc-inv-toggle">
+                    <button type="button" className={"kc-inv-seg" + (seasonMode ? " kc-inv-seg-on" : "")} onClick={() => setSeasonMode(true)}>Season</button>
+                    <button type="button" className={"kc-inv-seg" + (!seasonMode ? " kc-inv-seg-on" : "")} onClick={() => setSeasonMode(false)}>All-time</button>
+                </div>
+            </div>
+            {seasonMode && mine.season && (
+                <Text variant="text-sm/normal" style={{ opacity: .7, margin: "0 0 10px" }}>
+                    {mine.season.label} — {daysLeft(mine.season.end)} left. The board resets next month, so it's anyone's to win. 🐱
+                </Text>
+            )}
             <div className="kc-inv-board">
-                {board.length === 0 && (
-                    <Text variant="text-sm/normal" style={{ opacity: .6 }}>Nobody on the board yet — be the first!</Text>
+                {(seasonMode ? seasonBoard : board).length === 0 && (
+                    <Text variant="text-sm/normal" style={{ opacity: .6 }}>
+                        {seasonMode ? "No invites yet this season — be the first!" : "Nobody on the board yet — be the first!"}
+                    </Text>
                 )}
-                {board.map((e, i) => {
+                {(seasonMode ? seasonBoard : board).map((e, i) => {
                     const user = UserStore.getUser(e.id);
                     const name = userName(e.id);
                     const avatar = user ? IconUtils.getUserAvatarURL(user, false, 64) : undefined;
@@ -189,7 +215,7 @@ function InvitesTab() {
 
 export default definePlugin({
     name: "KittyInvites",
-    description: "See who invited the most people to Kittycord. Claim your own creator code and climb the all-time leaderboard.",
+    description: "See who invited the most people to Kittycord. Claim your own creator code and climb the monthly leaderboard.",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Friends", "Fun"],
     enabledByDefault: true,
