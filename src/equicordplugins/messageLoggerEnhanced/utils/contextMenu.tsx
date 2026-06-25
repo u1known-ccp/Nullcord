@@ -75,8 +75,7 @@ export const contextMenuPath: NavContextMenuPatchCallback = (children, props) =>
             props.navId === "message"
             && (props.message?.deleted || props.message?.editHistory?.length > 0)
         ) {
-            children.push(
-                <Menu.MenuSeparator />,
+            const removeMessagePermanent = (
                 <Menu.MenuItem
                     id="remove-message-permanent"
                     label={props.message?.deleted ? "Remove Message (Permanent)" : "Remove Message History (Permanent)"}
@@ -102,6 +101,13 @@ export const contextMenuPath: NavContextMenuPatchCallback = (children, props) =>
                     }
                 />
             );
+
+            const removeTemporaryIndex = children.findIndex(child => child?.props?.id === "ml-remove-history");
+            if (removeTemporaryIndex !== -1) {
+                children.splice(removeTemporaryIndex + 1, 0, removeMessagePermanent);
+            } else {
+                children.push(<Menu.MenuSeparator />, removeMessagePermanent);
+            }
         }
 
         children.push(
