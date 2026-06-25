@@ -31,7 +31,8 @@ const ROLES: TeamRole[] = [
         link: "https://github.com/KittyCord-Production/Kittycord",
         members: [
             "432588595845398548", // CenturyRV - Founder and lead developer
-            "1030766914047332443" // Willibe - Developer and Bot maintainer
+            "1030766914047332443", // Willibe - Developer and Bot maintainer
+            "1014383756972400711" // Kuro - Bug Hunter and System Administrator
         ]
     },
     {
