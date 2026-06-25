@@ -9,6 +9,7 @@ import ErrorBoundary from "@components/ErrorBoundary";
 import { PaintbrushIcon } from "@components/Icons";
 import SettingsPlugin from "@plugins/_core/settings";
 import { removeFromArray } from "@utils/misc";
+import { isOverlayWindow } from "@utils/overlay";
 import definePlugin, { type PluginNative } from "@utils/types";
 import { Button, React, showToast, Text, Toasts, UserStore } from "@webpack/common";
 
@@ -42,7 +43,7 @@ async function refresh() {
 function useKittyDekoDecoration(user?: { id?: string; }) {
     const id = user?.id;
     const deco_ = React.useSyncExternalStore(subscribe, () => (id ? deko.get(id) : undefined));
-    return React.useMemo(() => (deco_ ? { asset: assetUrl(deco_), skuId: KITTY_DEKO_SKU } : null), [deco_]);
+    return React.useMemo(() => (deco_ && !isOverlayWindow() ? { asset: assetUrl(deco_), skuId: KITTY_DEKO_SKU } : null), [deco_]);
 }
 
 function avatarUrl(): string {
@@ -206,6 +207,7 @@ export default definePlugin({
 
     getKittyDekoAvatarDecorationURL({ avatarDecoration }: { avatarDecoration: { asset?: string; skuId?: string; } | null; }) {
         try {
+            if (isOverlayWindow()) return undefined;
             if (avatarDecoration?.skuId === KITTY_DEKO_SKU) return avatarDecoration.asset;
         } catch {
             return undefined;
