@@ -7,11 +7,13 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, renameSync, rmdirSync, statSync, unlinkSync, writeFileSync } from "original-fs";
 import { basename, dirname, join } from "path";
 
-const STUB_PACKAGE = JSON.stringify({ name: "discord", main: "index.js" });
+const STUB_PACKAGE = JSON.stringify({ name: "discord", main: "index.js", private: true });
 const VERSION_PREFIX = "app-";
 
 const makeStubIndex = (patcherPath: string) =>
-    `require(${JSON.stringify(patcherPath)});`;
+    `try {\n    require(${JSON.stringify(patcherPath)});\n} catch (err) {\n    console.error("[Kittycord] Failed to load patcher, starting vanilla Discord:", err);\n    require("../_app.asar");\n}\n`;
+
+export const getPatcherJsPath = () => join(__dirname, "patcher.js");
 
 /** `_app.asar` next to `app.asar` marks any patched install. */
 export const isAlreadyPatched = (resources: string) =>
@@ -29,33 +31,34 @@ export const isAlreadyPatched = (resources: string) =>
  * back any disk changes already made.
  */
 export const patchResourcesDir = (resources: string, patcherJsPath: string): boolean => {
-    const app = join(resources, "app.asar");
-    const _app = join(resources, "_app.asar");
+    const asar = join(resources, "app.asar");
+    const _asar = join(resources, "_app.asar");
+    const shim = join(resources, "app");
 
     if (isAlreadyPatched(resources)) return false;
-    if (!existsSync(app)) return false;
+    if (!existsSync(asar)) return false;
     try {
-        if (lstatSync(app).isDirectory()) return false;
+        if (lstatSync(asar).isDirectory()) return false;
     } catch {
         return false;
     }
 
     const undo: Array<() => void> = [];
     try {
-        renameSync(app, _app);
-        undo.push(() => renameSync(_app, app));
+        renameSync(asar, _asar);
+        undo.push(() => renameSync(_asar, asar));
 
-        mkdirSync(app);
+        mkdirSync(shim);
         undo.push(() => {
-            const indexPath = join(app, "index.js");
-            const pkgPath = join(app, "package.json");
+            const indexPath = join(shim, "index.js");
+            const pkgPath = join(shim, "package.json");
             if (existsSync(indexPath)) unlinkSync(indexPath);
             if (existsSync(pkgPath)) unlinkSync(pkgPath);
-            rmdirSync(app);
+            rmdirSync(shim);
         });
 
-        writeFileSync(join(app, "package.json"), STUB_PACKAGE);
-        writeFileSync(join(app, "index.js"), makeStubIndex(patcherJsPath));
+        writeFileSync(join(shim, "package.json"), STUB_PACKAGE);
+        writeFileSync(join(shim, "index.js"), makeStubIndex(patcherJsPath));
         return true;
     } catch (err) {
         for (let i = undo.length - 1; i >= 0; i--) {

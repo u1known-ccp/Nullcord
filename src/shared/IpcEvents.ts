@@ -56,6 +56,7 @@ export const enum IpcEvents {
     TRAY_REPAIR = "VencordTrayRepair",
     TRAY_CHECK_UPDATES = "VencordTrayCheckUpdates",
     TRAY_ABOUT = "VencordTrayAbout",
+    REPATCH_HOST = "VencordRepatchHost",
     SUPPORTS_WINDOWS_MATERIAL = "VencordSupportsWindowsMaterial",
 
     GET_TELEMETRY_CONSENT = "KittycordGetTelemetryConsent",

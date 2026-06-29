@@ -30,6 +30,7 @@ import { release } from "os";
 import { join, normalize } from "path";
 
 import { registerCspIpcHandlers } from "./csp/manager";
+import { repatchNow } from "./retainPatch";
 import { ALLOWED_PROTOCOLS, QUICK_CSS_PATH, SETTINGS_DIR, THEMES_DIR } from "./utils/constants";
 import { makeLinksOpenExternally } from "./utils/externalLinks";
 
@@ -192,6 +193,8 @@ if (IS_DISCORD_DESKTOP) {
     ipcMain.on(IpcEvents.PRELOAD_GET_RENDERER_JS, e => {
         e.returnValue = readFileSync(join(__dirname, "renderer.js"), "utf-8");
     });
+
+    ipcMain.handle(IpcEvents.REPATCH_HOST, () => repatchNow());
 }
 
 ipcMain.on(IpcEvents.SUPPORTS_WINDOWS_MATERIAL, e => {

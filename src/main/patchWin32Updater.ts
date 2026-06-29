@@ -10,14 +10,14 @@
  */
 
 import { app } from "electron";
-import { dirname, join } from "path";
+import { dirname } from "path";
 
-import { findStaleSibling, patchResourcesDir } from "./applyHostPatch";
+import { findStaleSibling, getPatcherJsPath, patchResourcesDir } from "./applyHostPatch";
 
 app.on("before-quit", () => {
     try {
         const stale = findStaleSibling(dirname(process.execPath));
-        if (stale) patchResourcesDir(stale, join(__dirname, "patcher.js"));
+        if (stale) patchResourcesDir(stale, getPatcherJsPath());
     } catch (err) {
         console.error("[Kittycord] Failed to repatch latest host update", err);
     }

@@ -23,7 +23,7 @@
 import Module from "module";
 import { basename, dirname, join, resolve as resolvePath, sep } from "path";
 
-import { findStaleSibling, patchResourcesDir } from "./applyHostPatch";
+import { findStaleSibling, getPatcherJsPath, patchResourcesDir } from "./applyHostPatch";
 
 interface DiscordVersions {
     current_host?: number[];
@@ -69,8 +69,6 @@ const error = (...args: unknown[]) => console.error("[Kittycord:HostUpdate]", ..
 
 const hookedUpdaters = new WeakSet<DiscordHostUpdater>();
 let hooked = false;
-
-const getPatcherJsPath = () => join(__dirname, "patcher.js");
 
 /**
  * resolve `resources/` for a given discord version directory.

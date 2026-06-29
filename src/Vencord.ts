@@ -202,6 +202,7 @@ function initTrayIpc() {
 
     VencordNative.tray.onRepair(async () => {
         try {
+            await VencordNative.tray.repairHost();
             await update();
             relaunch();
         } catch (err) {

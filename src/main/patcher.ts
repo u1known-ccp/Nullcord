@@ -94,6 +94,11 @@ if (!IS_VANILLA) {
     if (process.platform === "win32" && !IS_VESKTOP && !IS_EQUIBOP) {
         /* before-quit fallback for the rare case the hook above never sees discord_desktop_core get required */
         require("./patchWin32Updater");
+        try {
+            require("./retainPatch").installRetainPatch();
+        } catch (err) {
+            console.error("[Kittycord] Failed to install retain patch", err);
+        }
     }
     if (process.platform === "win32") {
 

@@ -161,5 +161,6 @@ window.VencordNative = {
         setUpdateState: NOOP,
         onCheckUpdates: NOOP,
         onRepair: NOOP,
+        repairHost: () => Promise.resolve(false),
     },
 };
