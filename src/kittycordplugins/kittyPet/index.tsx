@@ -155,6 +155,7 @@ function onPlay() {
 }
 
 function updateCursorTracking() {
+    document.documentElement.classList.toggle("kc-pet-following", settings.store.followCursor);
     if (settings.store.followCursor) startCursorTracking();
     else stopCursorTracking();
 }
@@ -406,6 +407,7 @@ export default definePlugin({
         controller = null;
         stopHearts();
         stopCursorTracking();
+        document.documentElement.classList.remove("kc-pet-following");
         disableStyle(style);
     }
 });

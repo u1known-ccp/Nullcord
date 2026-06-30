@@ -148,3 +148,8 @@
         opacity: 1;
     }
 }
+
+.kc-pet-following .kc-pet,
+.kc-pet-following .kc-ghost {
+    pointer-events: none;
+}
