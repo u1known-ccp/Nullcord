@@ -10,11 +10,12 @@
 import "./styles.css";
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
+import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import { EquicordDevs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByPropsLazy } from "@webpack";
-import { React, UserStore,useState, useStateFromStores } from "@webpack/common";
+import { Menu, React, SelectedChannelStore, UserStore, useState, useStateFromStores } from "@webpack/common";
 
 const StreamStore = findByPropsLazy("getActiveStreamForUser", "getAllActiveStreams");
 const StreamerModeStore = findByPropsLazy("hidePersonalInformation");
@@ -29,12 +30,42 @@ const settings = definePluginSettings({
                 enableStreamProof();
             }
         }
+    },
+    exemptChannels: {
+        type: OptionType.STRING,
+        description: "Channel IDs (comma-separated) that stay visible while StreamProof is active. Right-click a chat to toggle it.",
+        default: ""
     }
 });
 
 let clickHandler: ((e: MouseEvent) => void) | null = null;
 let streamProofActive = false;
 let wasStreaming = false;
+
+function getExemptChannels(): string[] {
+    return settings.store.exemptChannels.split(",").map(id => id.trim()).filter(Boolean);
+}
+
+function isChannelExempt(channelId?: string | null): boolean {
+    return !!channelId && getExemptChannels().includes(channelId);
+}
+
+function toggleExemptChannel(channelId: string) {
+    const list = getExemptChannels();
+    const index = list.indexOf(channelId);
+    if (index === -1) list.push(channelId);
+    else list.splice(index, 1);
+    settings.store.exemptChannels = list.join(",");
+    updateChannelExempt();
+}
+
+function updateChannelExempt() {
+    if (!streamProofActive) {
+        document.body.classList.remove("stream-proof-channel-exempt");
+        return;
+    }
+    document.body.classList.toggle("stream-proof-channel-exempt", isChannelExempt(SelectedChannelStore.getChannelId()));
+}
 
 function isStreaming(): boolean {
     try {
@@ -69,6 +100,7 @@ function enableStreamProof() {
     if (streamProofActive) return;
     streamProofActive = true;
     document.body.classList.add("stream-proof-enabled");
+    updateChannelExempt();
     if (!clickHandler) {
         clickHandler = (e: MouseEvent) => {
             const target = e.target as HTMLElement | null;
@@ -88,6 +120,7 @@ function disableStreamProof() {
     if (!streamProofActive) return;
     streamProofActive = false;
     document.body.classList.remove("stream-proof-enabled");
+    document.body.classList.remove("stream-proof-channel-exempt");
     if (clickHandler) {
         document.removeEventListener("click", clickHandler, true);
         clickHandler = null;
@@ -135,6 +168,30 @@ const StreamProofButton: ChatBarButtonFactory = ({ isMainChat }) => {
     );
 };
 
+function ExemptMenuItem(channelId: string) {
+    const exempt = isChannelExempt(channelId);
+    return (
+        <Menu.MenuItem
+            id="stream-proof-exempt"
+            label={exempt ? "Include in StreamProof" : "Exclude from StreamProof"}
+            icon={exempt ? EyeSlashIcon : EyeIcon}
+            action={() => toggleExemptChannel(channelId)}
+        />
+    );
+}
+
+const channelExemptPatch: NavContextMenuPatchCallback = (children, props) => {
+    const id = props?.channel?.id;
+    if (!id) return;
+    children.push(ExemptMenuItem(id));
+};
+
+const userExemptPatch: NavContextMenuPatchCallback = (children, props) => {
+    const channel = props?.channel;
+    if (!channel?.id || channel.type !== 1) return;
+    children.push(ExemptMenuItem(channel.id));
+};
+
 export default definePlugin({
     name: "StreamProof",
     description: "Blurs your messages, links, images, files and DMs (but not the screen share / voice grid) while streaming. Click an item to reveal it. Toggle via the chat bar button.",
@@ -147,13 +204,21 @@ export default definePlugin({
         render: StreamProofButton,
     },
 
+    contextMenus: {
+        "channel-context": channelExemptPatch,
+        "thread-context": channelExemptPatch,
+        "gdm-context": channelExemptPatch,
+        "user-context": userExemptPatch
+    },
+
     flux: {
         STREAM_START() { handleStreamChange(); },
         STREAM_STOP() { handleStreamChange(); },
         STREAM_CREATE() { handleStreamChange(); },
         STREAM_DELETE() { handleStreamChange(); },
         STREAMER_MODE_UPDATE() { handleStreamChange(); },
-        RTC_CONNECTION_STATE() { handleStreamChange(); }
+        RTC_CONNECTION_STATE() { handleStreamChange(); },
+        CHANNEL_SELECT() { updateChannelExempt(); }
     },
 
     start() {

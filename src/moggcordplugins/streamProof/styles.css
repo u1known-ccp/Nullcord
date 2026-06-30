@@ -61,3 +61,30 @@
 .stream-proof-enabled [class*="markup_"]:not(.stream-proof-revealed) a {
     pointer-events: none;
 }
+
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="messageContent_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="markup_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [id^="message-accessories-"] article,
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="imageWrapper_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="embedWrapper_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="attachment_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="chatContent_"] [class*="video_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="message_"] [class*="video_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="newMosaicStyle_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="stickerAsset_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="wrapperPaused_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="wrapperPlaying_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="voiceMessage_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="audioAttachment_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="wrapperAudio_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="mediaBarInteraction_"],
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="fileUpload_"] {
+    filter: none !important;
+    cursor: auto !important;
+    user-select: auto;
+}
+
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="messageContent_"] a,
+body.stream-proof-enabled.stream-proof-channel-exempt [class*="markup_"] a {
+    pointer-events: auto;
+}
