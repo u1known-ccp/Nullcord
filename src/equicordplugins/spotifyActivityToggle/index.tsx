@@ -7,7 +7,6 @@
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
 import { UserAreaButton, UserAreaRenderProps } from "@api/UserArea";
-import equicordToolbox from "@equicordplugins/equicordToolbox";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { Constants, Menu, RestAPI, useEffect, useState } from "@webpack/common";
@@ -48,7 +47,7 @@ function SpotifyActivityToggleButton({ iconForeground, hideTooltips, nameplate }
         return () => { forceUpdate = null; };
     }, []);
 
-    if (!isLoaded || !spotifyId || location !== "PANEL" && isPluginEnabled(equicordToolbox.name)) return null;
+    if (!isLoaded || !spotifyId || location !== "PANEL" && isPluginEnabled("KittycordMenu")) return null;
 
     return (
         <UserAreaButton
@@ -77,10 +76,10 @@ const settings = definePluginSettings({
         description: "Where to show the Spotify toggle button.",
         options: [
             { label: "Next to Mute/Deafen", value: "PANEL", default: true },
-            { label: "Equicord Toolbox", value: "TOOLBOX" }
+            { label: "Kittycord", value: "TOOLBOX" }
         ],
         get hidden() {
-            return !isPluginEnabled(equicordToolbox.name);
+            return !isPluginEnabled("KittycordMenu");
         }
     },
 });

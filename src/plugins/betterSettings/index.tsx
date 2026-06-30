@@ -7,7 +7,6 @@
 import { definePluginSettings } from "@api/Settings";
 import { disableStyle, enableStyle } from "@api/Styles";
 import { AchievementsIcon, AppsIcon, CreditCardIcon, EquicordIcon, GameControllerIcon, HammerAndChiselIcon, MainSettingsIcon, PencilSparkleIcon, UserIcon } from "@components/Icons";
-import { buildPluginMenuEntries, buildThemeMenuEntries } from "@equicordplugins/equicordToolbox/menu";
 import { Devs } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
 import { getIntlMessage } from "@utils/discord";
@@ -18,6 +17,7 @@ import { findCssClassesLazy } from "@webpack";
 import { ComponentDispatch, FocusLock, Menu, useEffect, useRef } from "@webpack/common";
 import type { HTMLAttributes, ReactNode } from "react";
 
+import { buildPluginMenuEntries, buildThemeMenuEntries } from "../../kittycordplugins/kittycordMenu/menu";
 import fullHeightStyle from "./fullHeightContext.css?managed";
 
 const cl = classNameFactory("");

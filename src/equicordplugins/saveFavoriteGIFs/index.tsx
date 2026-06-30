@@ -8,7 +8,6 @@ import { ApplicationCommandInputType } from "@api/Commands";
 import { showNotification } from "@api/Notifications";
 import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings } from "@api/Settings";
-import equicordToolbox from "@equicordplugins/equicordToolbox";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { saveFile } from "@utils/web";
@@ -102,12 +101,12 @@ async function saveWorkingGifs() {
 
 const settings = definePluginSettings({
     showToolboxButton: {
-        description: "Show 'Save Favorite GIFs' button in Equicord Toolbox (Requires Reload)",
+        description: "Show 'Save Favorite GIFs' button in the Kittycord menu (Requires Reload)",
         type: OptionType.BOOLEAN,
         default: true,
         restartNeeded: true,
         get hidden() {
-            return !isPluginEnabled(equicordToolbox.name);
+            return !isPluginEnabled("KittycordMenu");
         }
     }
 });

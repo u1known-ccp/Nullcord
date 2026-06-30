@@ -11,12 +11,11 @@ import { isPluginEnabled } from "@api/PluginManager";
 import { definePluginSettings, migratePluginToSettings, Settings } from "@api/Settings";
 import { ShieldIcon, WarningIcon } from "@components/Icons";
 import customRPC from "@plugins/customRPC";
-import { Devs, EquicordDevs, GUILD_ID, SUPPORT_CHANNEL_ID, SUPPORT_CHANNEL_IDS, VC_SUPPORT_CHANNEL_IDS } from "@utils/constants";
-import { isAnyPluginDev } from "@utils/misc";
+import { Devs, EquicordDevs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { StandingState } from "@vencord/discord-types/enums";
 import { findByCodeLazy, findStoreLazy } from "@webpack";
-import { Alerts, ApplicationCommandIndexStore, NavigationRouter, React, SettingsRouter, UserGuildSettingsStore, UserStore, useStateFromStores, VoiceStateStore } from "@webpack/common";
+import { ApplicationCommandIndexStore, React, SettingsRouter, UserGuildSettingsStore, UserStore, useStateFromStores, VoiceStateStore } from "@webpack/common";
 import { ComponentType } from "react";
 
 import { PluginButtons } from "./pluginButtons";
@@ -25,8 +24,6 @@ import { PluginCards } from "./pluginCards";
 migratePluginToSettings(true, "EquicordHelper", "NoBulletPoints", "noBulletPoints");
 migratePluginToSettings(true, "EquicordHelper", "NoModalAnimation", "noModalAnimation");
 migratePluginToSettings(true, "EquicordHelper", "GuildTagSettings", "disableAdoptTagPrompt");
-
-let clicked = false;
 
 const SafetyHubStore = findStoreLazy("SafetyHubStore");
 const fetchSafetyHub: () => Promise<void> = findByCodeLazy("SAFETY_HUB_FETCH_START");
@@ -357,29 +354,6 @@ export default definePlugin({
                 <PluginCards message={props.message} />
             </>
         );
-    },
-    flux: {
-        async CHANNEL_SELECT({ channelId }) {
-            const isSupportChannel = SUPPORT_CHANNEL_IDS.includes(channelId);
-            if (!isSupportChannel) return;
-
-            const selfId = UserStore.getCurrentUser()?.id;
-            if (!selfId || isAnyPluginDev(selfId)) return;
-            if (VC_SUPPORT_CHANNEL_IDS.includes(channelId) && !clicked) {
-                return Alerts.show({
-                    title: "Vencord Support Channel Warning",
-                    body: "Before asking for help. Check updates and if this issue is actually caused by Equicord!",
-                    confirmText: "Equicord Support",
-                    onConfirm() {
-                        NavigationRouter.transitionTo(`/channels/${GUILD_ID}/${SUPPORT_CHANNEL_ID}`);
-                    },
-                    cancelText: "Okay continue",
-                    onCancel() {
-                        clicked = true;
-                    },
-                });
-            }
-        },
     },
     commands: [
         {

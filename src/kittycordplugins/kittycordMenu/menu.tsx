@@ -1,39 +1,17 @@
 /*
- * Vencord, a Discord client mod
+ * Kittycord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { isPluginEnabled, isSettingDisabled, isSettingHidden, plugins } from "@api/PluginManager";
 import { Settings, useSettings } from "@api/Settings";
-import { openPluginModal, openSettingsTabModal, PluginsTab, ThemesTab } from "@components/settings";
+import { openPluginModal, openSettingsTabModal, ThemesTab } from "@components/settings";
 import { useAwaiter } from "@utils/react";
 import { wordsFromCamel, wordsToTitle } from "@utils/text";
 import { OptionType, Plugin } from "@utils/types";
 import { Menu, showToast, useMemo, useState } from "@webpack/common";
 import type { ReactNode } from "react";
-
-import { settings } from ".";
-
-function buildPluginMenu() {
-    const { showPluginMenu } = settings.use(["showPluginMenu"]);
-
-    // has to be here due to hooks
-    const pluginEntries = buildPluginMenuEntries();
-
-    if (!showPluginMenu) return null;
-
-    return (
-        <Menu.MenuItem
-            id="plugins"
-            label="Plugins"
-            action={() => openSettingsTabModal(PluginsTab)}
-        >
-            {pluginEntries}
-        </Menu.MenuItem>
-    );
-}
 
 export function buildPluginMenuEntries(includeEmpty = false) {
     const pluginSettings = useSettings().plugins;
@@ -243,10 +221,12 @@ export function buildThemeMenuEntries() {
     );
 }
 
-function buildCustomPluginEntries() {
+export function buildCustomPluginEntries(exclude?: Set<string>) {
     const pluginEntries = [] as { plugin: Plugin, node: ReactNode; }[];
 
     for (const plugin of Object.values(plugins)) {
+        if (exclude?.has(plugin.name)) continue;
+
         if (plugin.toolboxActions && isPluginEnabled(plugin.name)) {
             const entries = typeof plugin.toolboxActions === "function"
                 ? plugin.toolboxActions()
@@ -294,24 +274,4 @@ function buildCustomPluginEntries() {
     ));
 
     return <Menu.MenuGroup>{submenuEntries}</Menu.MenuGroup>;
-}
-
-export function renderPopout(onClose: () => void) {
-    return (
-        <Menu.Menu
-            navId="vc-toolbox"
-            onClose={onClose}
-        >
-            <Menu.MenuItem
-                id="notifications"
-                label="Open Notification Log"
-                action={openNotificationLogModal}
-            />
-
-            {buildThemeMenu()}
-            {buildPluginMenu()}
-
-            {buildCustomPluginEntries()}
-        </Menu.Menu >
-    );
 }

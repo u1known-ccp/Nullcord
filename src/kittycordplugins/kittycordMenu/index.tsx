@@ -5,12 +5,14 @@
  */
 
 import { addHeaderBarButton, HeaderBarButton, removeHeaderBarButton } from "@api/HeaderBar";
+import { openNotificationLogModal } from "@api/Notifications/notificationLog";
 import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { openSettingsTabModal, PluginsTab } from "@components/settings";
 import definePlugin from "@utils/types";
 import { Menu, Popout, useRef, useState } from "@webpack/common";
 
 import { BRAND_ICON } from "../../branding";
+import { buildCustomPluginEntries, buildPluginMenuEntries, buildThemeMenu } from "./menu";
 
 interface Feature {
     plugin: string;
@@ -51,6 +53,8 @@ function resolveAction(feature: Feature): (() => void) | null {
     return typeof fn === "function" ? fn : null;
 }
 
+const CURATED_PLUGINS = new Set(FEATURES.map(feature => feature.plugin));
+
 function renderMenu(onClose: () => void) {
     return (
         <Menu.Menu navId="kittycord-menu" onClose={onClose}>
@@ -59,8 +63,8 @@ function renderMenu(onClose: () => void) {
                     const action = resolveAction(feature);
                     return (
                         <Menu.MenuItem
-                            id={`kittycord-menu-${feature.plugin}`}
-                            key={feature.plugin}
+                            id={`kittycord-menu-${feature.plugin}-${feature.label}`}
+                            key={`${feature.plugin}-${feature.label}`}
                             label={action ? feature.label : `${feature.label} (off)`}
                             disabled={!action}
                             action={action ? () => { onClose(); action(); } : undefined}
@@ -68,12 +72,24 @@ function renderMenu(onClose: () => void) {
                     );
                 })}
             </Menu.MenuGroup>
+
             <Menu.MenuSeparator />
+
             <Menu.MenuItem
-                id="kittycord-menu-settings"
-                label="Kittycord plugins…"
-                action={() => { onClose(); openSettingsTabModal(PluginsTab); }}
+                id="kittycord-menu-notification-log"
+                label="Notification Log"
+                action={openNotificationLogModal}
             />
+            {buildThemeMenu()}
+            <Menu.MenuItem
+                id="kittycord-menu-plugins"
+                label="Plugins"
+                action={() => openSettingsTabModal(PluginsTab)}
+            >
+                {buildPluginMenuEntries()}
+            </Menu.MenuItem>
+
+            {buildCustomPluginEntries(CURATED_PLUGINS)}
         </Menu.Menu>
     );
 }
