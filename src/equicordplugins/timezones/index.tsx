@@ -193,38 +193,44 @@ const TimestampComponent = ErrorBoundary.wrap(({ userId, timestamp, type }: Prop
         };
     }, [type]);
 
-    if (!timezone) return null;
+    const known = timezone != null;
+    const tz = timezone ?? getSystemTimezone();
 
-    const shortTime = getTime(timezone, currentTime, {
-        ...(settings.store.showDate && { month: "short", day: "numeric" }),
-        hour: "numeric",
-        minute: "numeric"
-    });
-    let displayTime = shortTime;
+    if (!known && !(settings.store.showDate && type === "message")) return null;
+
+    let displayTime: string;
     let isLocal = false;
 
-    if (settings.store.showTimezoneInfo) {
-        const userTimezone = getSystemTimezone();
-        if (timezone === userTimezone) {
-            if (settings.store.showDate) {
-                displayTime = shortTime;
+    if (!known) {
+        displayTime = getTime(tz, currentTime, { month: "short", day: "numeric" });
+    } else {
+        const shortTime = getTime(tz, currentTime, {
+            ...(settings.store.showDate && { month: "short", day: "numeric" }),
+            hour: "numeric",
+            minute: "numeric"
+        });
+        displayTime = shortTime;
+
+        if (settings.store.showTimezoneInfo) {
+            const userTimezone = getSystemTimezone();
+            if (tz === userTimezone) {
+                if (!settings.store.showDate) {
+                    displayTime = "local";
+                    isLocal = true;
+                }
             } else {
-                displayTime = "local";
-                isLocal = true;
+                const timezoneInfo = getTimezoneAbbreviation(tz, currentTime);
+                displayTime = `${shortTime} ${timezoneInfo || tz}`;
             }
-        } else {
-            const timezoneInfo = getTimezoneAbbreviation(timezone, currentTime);
-            displayTime = `${shortTime} ${timezoneInfo || timezone}`;
         }
     }
 
-    const longTime = getTime(timezone, currentTime, {
+    const longTime = getTime(tz, currentTime, {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
-        hour: "numeric",
-        minute: "numeric"
+        ...(known && { hour: "numeric", minute: "numeric" })
     });
 
     const tooltipText = isLocal ? `${longTime} (Your local timezone)` : longTime;
