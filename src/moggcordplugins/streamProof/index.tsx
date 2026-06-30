@@ -34,37 +34,91 @@ const settings = definePluginSettings({
     exemptChannels: {
         type: OptionType.STRING,
         description: "Channel IDs (comma-separated) that stay visible while StreamProof is active. Right-click a chat to toggle it.",
-        default: ""
+        default: "",
+        onChange: () => updateBlur()
+    },
+    autoProofChannels: {
+        type: OptionType.STRING,
+        description: "Channel IDs (comma-separated) that are always blurred when you open them, even if StreamProof is off. Right-click a chat to toggle it.",
+        default: "",
+        onChange: () => updateBlur()
     }
 });
+
+const MAIN_SELECTORS = "[class*=\"messageContent_\"], [class*=\"markup_\"], [class*=\"imageWrapper_\"], [class*=\"embedWrapper_\"], [id^=\"message-accessories-\"] article, [class*=\"attachment_\"], [class*=\"video_\"], [class*=\"voiceMessage_\"], [class*=\"wrapperPaused_\"], [class*=\"wrapperPlaying_\"], [class*=\"audioAttachment_\"], [class*=\"fileUpload_\"], [class*=\"wrapperAudio_\"], [class*=\"mediaBarInteraction_\"], [class*=\"newMosaicStyle_\"], [class*=\"stickerAsset_\"]";
+const DM_SELECTOR = "[class*=\"channel_\"][class*=\"interactive_\"]";
+
+type ChannelMode = "default" | "exempt" | "auto";
 
 let clickHandler: ((e: MouseEvent) => void) | null = null;
 let streamProofActive = false;
 let wasStreaming = false;
 
-function getExemptChannels(): string[] {
-    return settings.store.exemptChannels.split(",").map(id => id.trim()).filter(Boolean);
+function getList(value: string): string[] {
+    return value.split(",").map(id => id.trim()).filter(Boolean);
 }
 
-function isChannelExempt(channelId?: string | null): boolean {
-    return !!channelId && getExemptChannels().includes(channelId);
+function isExempt(channelId?: string | null): boolean {
+    return !!channelId && getList(settings.store.exemptChannels).includes(channelId);
 }
 
-function toggleExemptChannel(channelId: string) {
-    const list = getExemptChannels();
-    const index = list.indexOf(channelId);
-    if (index === -1) list.push(channelId);
-    else list.splice(index, 1);
-    settings.store.exemptChannels = list.join(",");
-    updateChannelExempt();
+function isAutoProof(channelId?: string | null): boolean {
+    return !!channelId && getList(settings.store.autoProofChannels).includes(channelId);
 }
 
-function updateChannelExempt() {
-    if (!streamProofActive) {
-        document.body.classList.remove("stream-proof-channel-exempt");
-        return;
-    }
-    document.body.classList.toggle("stream-proof-channel-exempt", isChannelExempt(SelectedChannelStore.getChannelId()));
+function channelMode(channelId: string): ChannelMode {
+    if (isAutoProof(channelId)) return "auto";
+    if (isExempt(channelId)) return "exempt";
+    return "default";
+}
+
+function setChannelMode(channelId: string, mode: ChannelMode) {
+    const exempt = getList(settings.store.exemptChannels).filter(id => id !== channelId);
+    const auto = getList(settings.store.autoProofChannels).filter(id => id !== channelId);
+    if (mode === "exempt") exempt.push(channelId);
+    if (mode === "auto") auto.push(channelId);
+    settings.store.exemptChannels = exempt.join(",");
+    settings.store.autoProofChannels = auto.join(",");
+    updateBlur();
+}
+
+function shouldBlur(channelId?: string | null): boolean {
+    if (isAutoProof(channelId)) return true;
+    return streamProofActive && !isExempt(channelId);
+}
+
+function installClickHandler() {
+    if (clickHandler) return;
+    clickHandler = (e: MouseEvent) => {
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        const body = document.body.classList;
+        const selector = body.contains("stream-proof-hide")
+            ? (body.contains("stream-proof-enabled") ? `${MAIN_SELECTORS}, ${DM_SELECTOR}` : MAIN_SELECTORS)
+            : (body.contains("stream-proof-enabled") ? DM_SELECTOR : "");
+        if (!selector) return;
+        const targetElement = target.closest(selector);
+        if (targetElement && !targetElement.classList.contains("stream-proof-revealed")) {
+            targetElement.classList.add("stream-proof-revealed");
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+    document.addEventListener("click", clickHandler, true);
+}
+
+function removeClickHandler() {
+    if (!clickHandler) return;
+    document.removeEventListener("click", clickHandler, true);
+    clickHandler = null;
+}
+
+function updateBlur() {
+    const id = SelectedChannelStore.getChannelId();
+    document.body.classList.toggle("stream-proof-enabled", streamProofActive);
+    document.body.classList.toggle("stream-proof-hide", shouldBlur(id));
+    if (streamProofActive || isAutoProof(id)) installClickHandler();
+    else removeClickHandler();
 }
 
 function isStreaming(): boolean {
@@ -99,32 +153,13 @@ function handleStreamChange() {
 function enableStreamProof() {
     if (streamProofActive) return;
     streamProofActive = true;
-    document.body.classList.add("stream-proof-enabled");
-    updateChannelExempt();
-    if (!clickHandler) {
-        clickHandler = (e: MouseEvent) => {
-            const target = e.target as HTMLElement | null;
-            if (!target) return;
-            const targetElement = target.closest("[class*=\"messageContent_\"], [class*=\"markup_\"], [class*=\"imageWrapper_\"], [class*=\"embedWrapper_\"], [id^=\"message-accessories-\"] article, [class*=\"attachment_\"], [class*=\"video_\"], [class*=\"voiceMessage_\"], [class*=\"wrapperPaused_\"], [class*=\"wrapperPlaying_\"], [class*=\"audioAttachment_\"], [class*=\"fileUpload_\"], [class*=\"wrapperAudio_\"], [class*=\"mediaBarInteraction_\"], [class*=\"newMosaicStyle_\"], [class*=\"stickerAsset_\"], [class*=\"channel_\"][class*=\"interactive_\"]");
-            if (targetElement && !targetElement.classList.contains("stream-proof-revealed")) {
-                targetElement.classList.add("stream-proof-revealed");
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        };
-        document.addEventListener("click", clickHandler, true);
-    }
+    updateBlur();
 }
 
 function disableStreamProof() {
     if (!streamProofActive) return;
     streamProofActive = false;
-    document.body.classList.remove("stream-proof-enabled");
-    document.body.classList.remove("stream-proof-channel-exempt");
-    if (clickHandler) {
-        document.removeEventListener("click", clickHandler, true);
-        clickHandler = null;
-    }
+    updateBlur();
     document.querySelectorAll(".stream-proof-revealed").forEach(el => el.classList.remove("stream-proof-revealed"));
 }
 
@@ -168,28 +203,45 @@ const StreamProofButton: ChatBarButtonFactory = ({ isMainChat }) => {
     );
 };
 
-function ExemptMenuItem(channelId: string) {
-    const exempt = isChannelExempt(channelId);
+function StreamProofMenu(channelId: string) {
+    const mode = channelMode(channelId);
     return (
-        <Menu.MenuItem
-            id="stream-proof-exempt"
-            label={exempt ? "Include in StreamProof" : "Exclude from StreamProof"}
-            icon={exempt ? EyeSlashIcon : EyeIcon}
-            action={() => toggleExemptChannel(channelId)}
-        />
+        <Menu.MenuItem id="stream-proof" label="StreamProof" icon={EyeSlashIcon}>
+            <Menu.MenuRadioItem
+                id="stream-proof-default"
+                group="stream-proof-mode"
+                label="Only while StreamProof is on"
+                checked={mode === "default"}
+                action={() => setChannelMode(channelId, "default")}
+            />
+            <Menu.MenuRadioItem
+                id="stream-proof-auto"
+                group="stream-proof-mode"
+                label="Always blur this chat"
+                checked={mode === "auto"}
+                action={() => setChannelMode(channelId, "auto")}
+            />
+            <Menu.MenuRadioItem
+                id="stream-proof-never"
+                group="stream-proof-mode"
+                label="Never blur this chat"
+                checked={mode === "exempt"}
+                action={() => setChannelMode(channelId, "exempt")}
+            />
+        </Menu.MenuItem>
     );
 }
 
-const channelExemptPatch: NavContextMenuPatchCallback = (children, props) => {
+const channelMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     const id = props?.channel?.id;
     if (!id) return;
-    children.push(ExemptMenuItem(id));
+    children.push(StreamProofMenu(id));
 };
 
-const userExemptPatch: NavContextMenuPatchCallback = (children, props) => {
+const userMenuPatch: NavContextMenuPatchCallback = (children, props) => {
     const channel = props?.channel;
     if (!channel?.id || channel.type !== 1) return;
-    children.push(ExemptMenuItem(channel.id));
+    children.push(StreamProofMenu(channel.id));
 };
 
 export default definePlugin({
@@ -205,10 +257,10 @@ export default definePlugin({
     },
 
     contextMenus: {
-        "channel-context": channelExemptPatch,
-        "thread-context": channelExemptPatch,
-        "gdm-context": channelExemptPatch,
-        "user-context": userExemptPatch
+        "channel-context": channelMenuPatch,
+        "thread-context": channelMenuPatch,
+        "gdm-context": channelMenuPatch,
+        "user-context": userMenuPatch
     },
 
     flux: {
@@ -218,15 +270,19 @@ export default definePlugin({
         STREAM_DELETE() { handleStreamChange(); },
         STREAMER_MODE_UPDATE() { handleStreamChange(); },
         RTC_CONNECTION_STATE() { handleStreamChange(); },
-        CHANNEL_SELECT() { updateChannelExempt(); }
+        CHANNEL_SELECT() { updateBlur(); }
     },
 
     start() {
         wasStreaming = isStreaming();
         if (settings.store.autoStreamProof && wasStreaming) enableStreamProof();
+        else updateBlur();
     },
     stop() {
-        disableStreamProof();
+        streamProofActive = false;
+        document.body.classList.remove("stream-proof-enabled", "stream-proof-hide");
+        removeClickHandler();
+        document.querySelectorAll(".stream-proof-revealed").forEach(el => el.classList.remove("stream-proof-revealed"));
         wasStreaming = false;
     }
 });
