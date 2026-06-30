@@ -15,7 +15,7 @@ const BODY = "<path d=\"M6 16 C6 8 11 4 16 4 C21 4 26 8 26 16 L26 24 Q23.5 29 21
 
 const CHEEKS = "<circle cx=\"9.5\" cy=\"18\" r=\"1.5\" fill=\"#ff8ac4\" opacity=\"0.5\"/><circle cx=\"22.5\" cy=\"18\" r=\"1.5\" fill=\"#ff8ac4\" opacity=\"0.5\"/>";
 
-function eyesFor(expression: GhostExpression): string {
+export function eyesFor(expression: GhostExpression): string {
     switch (expression) {
         case "blink":
             return `<rect x="10.8" y="14.4" width="3.4" height="1.5" rx="0.7" fill="${EYE}"/><rect x="17.8" y="14.4" width="3.4" height="1.5" rx="0.7" fill="${EYE}"/>`;

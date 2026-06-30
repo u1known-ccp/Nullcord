@@ -18,6 +18,7 @@ import { PetController } from "./pet";
 import { ACCESSORIES, ACCESSORY_URIS } from "./sprites";
 import { addXp, DAILY_MSG_XP_CAP, DAILY_PET_XP, getSave, grantPlayXp, levelFor, loadSave, MAX_LEVEL, nextLevelXp, PetProfile, updateSave } from "./state";
 import style from "./style.css?managed";
+import { buildTeddyUri, TEDDY_ACCESSORIES, TEDDY_ACCESSORY_LEVELS, TEDDY_ACCESSORY_THUMBS } from "./teddyArt";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
 const ModalRoot = ModalRootRaw as React.ComponentType<any>;
@@ -49,6 +50,12 @@ const AURAS: Record<string, string> = {
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+const PET_COPY: Record<PetProfile, { title: string; grown: string; play: string; namePlaceholder: string; who: string; }> = {
+    cat: { title: "KittyPet", grown: "Fully grown — what a good kitty.", play: "🍪 Play", namePlaceholder: "Name your kitty…", who: "Your kitty" },
+    ghost: { title: "KittyGhost", grown: "Fully grown — what a lovely little spirit.", play: "🎾 Play", namePlaceholder: "Name your ghost…", who: "Your ghost" },
+    teddy: { title: "KittyTeddy", grown: "Fully grown — what a cuddly bear.", play: "🍯 Play", namePlaceholder: "Name your teddy…", who: "Your teddy" }
+};
+
 interface AccessorySet {
     registry: Record<string, { label: string; }>;
     levels: Record<string, number>;
@@ -58,7 +65,8 @@ interface AccessorySet {
 
 const ACCESSORY_SETS: Record<PetProfile, AccessorySet> = {
     cat: { registry: ACCESSORIES, levels: CAT_ACCESSORY_LEVELS, thumbs: ACCESSORY_URIS, pixel: true },
-    ghost: { registry: GHOST_ACCESSORIES, levels: GHOST_ACCESSORY_LEVELS, thumbs: GHOST_ACCESSORY_THUMBS, pixel: false }
+    ghost: { registry: GHOST_ACCESSORIES, levels: GHOST_ACCESSORY_LEVELS, thumbs: GHOST_ACCESSORY_THUMBS, pixel: false },
+    teddy: { registry: TEDDY_ACCESSORIES, levels: TEDDY_ACCESSORY_LEVELS, thumbs: TEDDY_ACCESSORY_THUMBS, pixel: false }
 };
 
 const settings = definePluginSettings({
@@ -67,7 +75,8 @@ const settings = definePluginSettings({
         description: "Which pet you want",
         options: [
             { label: "Cat — walks along the bottom", value: "cat", default: true },
-            { label: "Ghost — drifts around the screen", value: "ghost" }
+            { label: "Ghost — drifts around the screen", value: "ghost" },
+            { label: "Teddy — drifts around the screen", value: "teddy" }
         ],
         onChange: () => restartController()
     },
@@ -107,7 +116,7 @@ const settings = definePluginSettings({
 
 let controller: PetController | GhostController | null = null;
 
-const currentProfile = (): PetProfile => settings.store.style === "ghost" ? "ghost" : "cat";
+const currentProfile = (): PetProfile => settings.store.style === "ghost" ? "ghost" : settings.store.style === "teddy" ? "teddy" : "cat";
 
 function onPet() {
     const profile = currentProfile();
@@ -138,9 +147,9 @@ function buildController(): PetController | GhostController {
         reactions: settings.store.reactions,
         sleepWhenIdle: settings.store.sleepWhenIdle
     });
-    return settings.store.style === "ghost"
-        ? new GhostController({ getConfig, onPet })
-        : new PetController({ getConfig, onPet });
+    if (settings.store.style === "ghost") return new GhostController({ getConfig, onPet });
+    if (settings.store.style === "teddy") return new GhostController({ getConfig, onPet }, { build: buildTeddyUri, accessories: TEDDY_ACCESSORIES });
+    return new PetController({ getConfig, onPet });
 }
 
 function startController() {
@@ -168,7 +177,7 @@ function notifyLevel(level: number | null) {
     const unlocked = Object.entries(set.levels)
         .filter(([, l]) => l === level)
         .map(([id]) => set.registry[id].label.toLowerCase());
-    const who = getSave(profile).name || (profile === "ghost" ? "Your ghost" : "Your kitty");
+    const who = getSave(profile).name || PET_COPY[profile].who;
     const note = unlocked.length ? ` ${who} unlocked the ${unlocked.join(" and ")}!` : "";
     showToast(`🎉 Level ${level}!${note}`, Toasts.Type.SUCCESS);
 }
@@ -176,7 +185,7 @@ function notifyLevel(level: number | null) {
 function PetModal({ rootProps }: { rootProps: any; }) {
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
     const profile = currentProfile();
-    const isGhost = profile === "ghost";
+    const copy = PET_COPY[profile];
     const set = ACCESSORY_SETS[profile];
     const save = getSave(profile);
     const level = levelFor(save.xp);
@@ -199,7 +208,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
     return (
         <ModalRoot {...rootProps} size={ModalSize.SMALL}>
             <ModalHeader>
-                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Your {isGhost ? "KittyGhost" : "KittyPet"}</Text>
+                <Text variant="heading-lg/semibold" style={{ flexGrow: 1 }}>Your {copy.title}</Text>
                 <ModalCloseButton onClick={rootProps.onClose} />
             </ModalHeader>
             <ModalContent>
@@ -210,7 +219,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                     </div>
                     <Text variant="text-sm/normal" style={{ opacity: 0.8 }}>
                         {next === null
-                            ? (isGhost ? "Fully grown — what a lovely little spirit." : "Fully grown — what a good kitty.")
+                            ? copy.grown
                             : `${save.xp} / ${next} XP — click your pet and chat to level up.`}
                     </Text>
                     <Text variant="text-sm/normal" style={{ opacity: 0.8, marginTop: 4 }}>
@@ -224,7 +233,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
 
                     <Flex style={{ gap: 8, marginTop: 12 }}>
                         <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={() => onPlay()}>
-                            {isGhost ? "🎾 Play" : "🍪 Play"}
+                            {copy.play}
                         </Button>
                     </Flex>
 
@@ -260,7 +269,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
                     <Text variant="heading-md/semibold" style={{ marginTop: 16, marginBottom: 8 }}>Name</Text>
                     <TextInput
                         value={name}
-                        placeholder={isGhost ? "Name your ghost…" : "Name your kitty…"}
+                        placeholder={copy.namePlaceholder}
                         maxLength={20}
                         onChange={renameTo}
                     />
@@ -305,7 +314,7 @@ function PetModal({ rootProps }: { rootProps: any; }) {
 
 export default definePlugin({
     name: "KittyPet",
-    description: "A tiny pet that lives in your Discord — pick a pixel cat that walks around the bottom, or a ghost that drifts around the screen on its own. It reacts to pings, can be petted, and levels up to unlock accessories. Each pet keeps its own level and accessories.",
+    description: "A tiny pet that lives in your Discord — pick a pixel cat that walks around the bottom, or a ghost or teddy bear that drifts around the screen on its own. It reacts to pings, can be petted, and levels up to unlock accessories. Each pet keeps its own level and accessories.",
     authors: [{ name: "Kittycord", id: 0n }],
     tags: ["Fun", "Customisation"],
     settings,
@@ -365,6 +374,7 @@ export default definePlugin({
         startHearts();
         await loadSave("cat");
         await loadSave("ghost");
+        await loadSave("teddy");
         startController();
     },
 

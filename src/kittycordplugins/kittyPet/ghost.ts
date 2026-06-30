@@ -8,12 +8,20 @@ import { buildGhostUri, GHOST_ACCESSORIES, GhostExpression } from "./ghostArt";
 import { burst, spawnHearts } from "./hearts";
 import { PetConfig, PetHooks } from "./pet";
 
+export interface PetArt {
+    build(opts: { expression: GhostExpression; accessory: string | null; }): string;
+    accessories: Record<string, unknown>;
+}
+
+const GHOST_ART: PetArt = { build: buildGhostUri, accessories: GHOST_ACCESSORIES };
+
 const BLINK_MIN = 3000;
 const BLINK_MAX = 6500;
 const SLEEP_AFTER = 18000;
 
 export class GhostController {
     private hooks: PetHooks;
+    private art: PetArt;
     private container: HTMLDivElement;
     private bob: HTMLDivElement;
     private body: HTMLImageElement;
@@ -52,8 +60,9 @@ export class GhostController {
     private luring = false;
     private treatEl: HTMLDivElement | null = null;
 
-    constructor(hooks: PetHooks) {
+    constructor(hooks: PetHooks, art: PetArt = GHOST_ART) {
         this.hooks = hooks;
+        this.art = art;
         this.container = document.createElement("div");
         this.container.className = "kc-ghost";
         this.bob = document.createElement("div");
@@ -93,7 +102,7 @@ export class GhostController {
     }
 
     setEquipped(accessory: string | null) {
-        this.equipped = accessory && GHOST_ACCESSORIES[accessory] ? accessory : null;
+        this.equipped = accessory && this.art.accessories[accessory] ? accessory : null;
     }
 
     setName(name: string) {
@@ -324,7 +333,7 @@ export class GhostController {
 
         const expr = this.currentExpression(performance.now());
         if (expr !== this.renderedExpr || this.equipped !== this.renderedAcc) {
-            this.body.src = buildGhostUri({ expression: expr, accessory: this.equipped });
+            this.body.src = this.art.build({ expression: expr, accessory: this.equipped });
             this.renderedExpr = expr;
             this.renderedAcc = this.equipped;
         }
