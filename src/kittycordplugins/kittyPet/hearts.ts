@@ -115,7 +115,7 @@ function tick(now: number) {
         const dt = Math.min(0.1, (now - last) / 1000);
         last = now;
 
-        if (document.documentElement.classList.contains("kc-perf-noanim")) {
+        if (document.documentElement.matches(".kc-perf-noanim, .kc-idle")) {
             hearts.length = 0;
             ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
             raf = null;

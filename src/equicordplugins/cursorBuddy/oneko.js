@@ -229,6 +229,12 @@ export default function oneko(options = {}) {
 
     function onAnimationFrame(timestamp) {
         if (!nekoEl.isConnected) return;
+        if (document.hidden || document.documentElement.classList.contains("kc-idle")) {
+            nekoEl.style.display = "none";
+            window.requestAnimationFrame(onAnimationFrame);
+            return;
+        }
+        nekoEl.style.display = "";
         try {
             if (lastMoveTimestamp === undefined) lastMoveTimestamp = timestamp;
             const dt = Math.min(0.05, (timestamp - lastMoveTimestamp) / 1000);

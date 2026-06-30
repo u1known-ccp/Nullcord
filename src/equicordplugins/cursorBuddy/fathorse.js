@@ -46,6 +46,14 @@ export default function fathorse(cfg) {
     function lifecycle() {
         if (!fathorse.parentElement) return;
 
+        if (document.hidden || document.documentElement.classList.contains("kc-idle")) {
+            fathorse.style.display = "none";
+            if (document.body.style.transform) document.body.style.transform = "";
+            requestAnimationFrame(lifecycle);
+            return;
+        }
+        fathorse.style.display = "";
+
         if (!lastFrame) lastFrame = Date.now();
         if ((Date.now() - lastFrame) >= hz) {
             frame();

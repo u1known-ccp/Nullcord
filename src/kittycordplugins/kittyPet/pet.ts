@@ -241,7 +241,7 @@ export class PetController {
 
     private onTick() {
         if (document.hidden) return;
-        if (document.documentElement.classList.contains("kc-perf-noanim")) {
+        if (document.documentElement.matches(".kc-perf-noanim, .kc-idle")) {
             this.container.style.display = "none";
             return;
         }

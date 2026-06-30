@@ -1,0 +1,13 @@
+.kc-idle-noanim *,
+.kc-idle-noanim *::before,
+.kc-idle-noanim *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+}
+
+.kc-idle-noblur * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
