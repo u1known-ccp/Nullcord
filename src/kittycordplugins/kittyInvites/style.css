@@ -58,6 +58,10 @@
     background: linear-gradient(135deg, #ff5fa6, #ff8ac4);
 }
 
+.kc-inv-search {
+    margin: 0 0 12px;
+}
+
 .kc-inv-board {
     display: flex;
     flex-direction: column;
@@ -94,10 +98,12 @@
     border-radius: 50%;
 }
 
-.kc-inv-board .kc-inv-row:nth-child(-n+3) .kc-inv-rank { color: #3a2230; }
-.kc-inv-board .kc-inv-row:nth-child(1) .kc-inv-rank { background: linear-gradient(135deg, #ffe28c, #f6b748); box-shadow: 0 2px 7px rgba(246, 183, 72, .45); }
-.kc-inv-board .kc-inv-row:nth-child(2) .kc-inv-rank { background: linear-gradient(135deg, #eef1f7, #c0c7d4); }
-.kc-inv-board .kc-inv-row:nth-child(3) .kc-inv-rank { background: linear-gradient(135deg, #f1b888, #d1824d); }
+.kc-inv-row.kc-inv-top1 .kc-inv-rank,
+.kc-inv-row.kc-inv-top2 .kc-inv-rank,
+.kc-inv-row.kc-inv-top3 .kc-inv-rank { color: #3a2230; }
+.kc-inv-row.kc-inv-top1 .kc-inv-rank { background: linear-gradient(135deg, #ffe28c, #f6b748); box-shadow: 0 2px 7px rgba(246, 183, 72, .45); }
+.kc-inv-row.kc-inv-top2 .kc-inv-rank { background: linear-gradient(135deg, #eef1f7, #c0c7d4); }
+.kc-inv-row.kc-inv-top3 .kc-inv-rank { background: linear-gradient(135deg, #f1b888, #d1824d); }
 
 .kc-inv-av {
     width: 40px;
@@ -109,9 +115,9 @@
 }
 
 /* Medal-coloured rings on the top 3 avatars. */
-.kc-inv-board .kc-inv-row:nth-child(1) .kc-inv-av { box-shadow: 0 0 0 2px #f6b748; }
-.kc-inv-board .kc-inv-row:nth-child(2) .kc-inv-av { box-shadow: 0 0 0 2px #c0c7d4; }
-.kc-inv-board .kc-inv-row:nth-child(3) .kc-inv-av { box-shadow: 0 0 0 2px #d1824d; }
+.kc-inv-row.kc-inv-top1 .kc-inv-av { box-shadow: 0 0 0 2px #f6b748; }
+.kc-inv-row.kc-inv-top2 .kc-inv-av { box-shadow: 0 0 0 2px #c0c7d4; }
+.kc-inv-row.kc-inv-top3 .kc-inv-av { box-shadow: 0 0 0 2px #d1824d; }
 
 .kc-inv-name {
     flex: 1;
@@ -123,7 +129,7 @@
 }
 
 /* A crown for the leader. */
-.kc-inv-board .kc-inv-row:nth-child(1) .kc-inv-name::before {
+.kc-inv-row.kc-inv-top1 .kc-inv-name::before {
     content: "👑 ";
 }
 
@@ -139,7 +145,7 @@
     border-radius: 999px;
 }
 
-.kc-inv-board .kc-inv-row:nth-child(1) .kc-inv-count {
+.kc-inv-row.kc-inv-top1 .kc-inv-count {
     color: #fff;
     background: linear-gradient(135deg, #ff5fa6, #ff8ac4);
     box-shadow: 0 2px 8px rgba(255, 95, 166, .38);
@@ -147,7 +153,7 @@
 
 /* The #1 row gets a soft "throne" tint; your own row gets a subtle highlight + accent stripe.
    Both use controlled Kittycord pink (not theme brand vars, which some themes turn into a loud fill). */
-.kc-inv-board .kc-inv-row:nth-child(1) {
+.kc-inv-row.kc-inv-top1 {
     background: linear-gradient(90deg, rgba(255, 95, 166, .16), var(--background-secondary) 62%);
 }
 

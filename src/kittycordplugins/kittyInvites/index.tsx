@@ -82,6 +82,7 @@ function InvitesTab() {
     const [saving, setSaving] = React.useState(false);
     const [claimInput, setClaimInput] = React.useState("");
     const [claiming, setClaiming] = React.useState(false);
+    const [query, setQuery] = React.useState("");
     const [, forceUpdate] = React.useReducer(x => x + 1, 0);
 
     const userName = (id: string) => {
@@ -134,6 +135,12 @@ function InvitesTab() {
             showToast("Couldn't count that — wrong code, your own code, or you were already counted.", Toasts.Type.FAILURE);
         }
     }
+
+    const list = seasonMode ? seasonBoard : board;
+    const q = query.trim().toLowerCase();
+    const rows = list
+        .map((e, i) => ({ e, rank: i + 1 }))
+        .filter(({ e }) => !q || userName(e.id).toLowerCase().includes(q));
 
     return (
         <ErrorBoundary noop>
@@ -189,19 +196,29 @@ function InvitesTab() {
                     {mine.season.label} — {daysLeft(mine.season.end)} left. The board resets next month, so it's anyone's to win. 🐱
                 </Text>
             )}
+            {list.length > 0 && (
+                <div className="kc-inv-search">
+                    <TextInput value={query} onChange={setQuery} placeholder="Search names…" />
+                </div>
+            )}
             <div className="kc-inv-board">
-                {(seasonMode ? seasonBoard : board).length === 0 && (
+                {list.length === 0 && (
                     <Text variant="text-sm/normal" style={{ opacity: .6 }}>
                         {seasonMode ? "No invites yet this season — be the first!" : "Nobody on the board yet — be the first!"}
                     </Text>
                 )}
-                {(seasonMode ? seasonBoard : board).map((e, i) => {
+                {list.length > 0 && rows.length === 0 && (
+                    <Text variant="text-sm/normal" style={{ opacity: .6 }}>
+                        No inviters match your search.
+                    </Text>
+                )}
+                {rows.map(({ e, rank }) => {
                     const user = UserStore.getUser(e.id);
                     const name = userName(e.id);
                     const avatar = user ? IconUtils.getUserAvatarURL(user, false, 64) : undefined;
                     return (
-                        <div className={"kc-inv-row" + (me && e.id === me.id ? " kc-inv-me" : "")} key={e.id}>
-                            <span className={"kc-inv-rank" + (i < 3 ? " kc-inv-top" : "")}>{i + 1}</span>
+                        <div className={"kc-inv-row" + (rank <= 3 ? ` kc-inv-top${rank}` : "") + (me && e.id === me.id ? " kc-inv-me" : "")} key={e.id}>
+                            <span className="kc-inv-rank">{rank}</span>
                             {avatar ? <img className="kc-inv-av" src={avatar} alt="" /> : <div className="kc-inv-av" />}
                             <span className="kc-inv-name">{name}</span>
                             <span className="kc-inv-count">{e.n}</span>
