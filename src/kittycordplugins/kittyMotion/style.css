@@ -1,0 +1,59 @@
+@keyframes kc-motion-in {
+    from {
+        opacity: var(--kc-motion-from-opacity, 1);
+        transform: translate3d(var(--kc-motion-tx, 0), var(--kc-motion-ty, 0), 0) scale(var(--kc-motion-scale, 1));
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+html.kc-motion-dir-up {
+    --kc-motion-ty: var(--kc-motion-distance);
+}
+
+html.kc-motion-dir-down {
+    --kc-motion-ty: calc(-1 * var(--kc-motion-distance));
+}
+
+html.kc-motion-dir-left {
+    --kc-motion-tx: var(--kc-motion-distance);
+}
+
+html.kc-motion-dir-right {
+    --kc-motion-tx: calc(-1 * var(--kc-motion-distance));
+}
+
+html.kc-motion-style-fade {
+    --kc-motion-from-opacity: 0;
+    --kc-motion-tx: 0;
+    --kc-motion-ty: 0;
+    --kc-motion-scale: 1;
+}
+
+html.kc-motion-style-slide {
+    --kc-motion-from-opacity: 1;
+    --kc-motion-scale: 1;
+}
+
+html.kc-motion-style-slidefade {
+    --kc-motion-from-opacity: 0;
+    --kc-motion-scale: 1;
+}
+
+html.kc-motion-style-scale {
+    --kc-motion-from-opacity: 0;
+    --kc-motion-tx: 0;
+    --kc-motion-ty: 0;
+    --kc-motion-scale: 0.96;
+}
+
+html.kc-motion.kc-motion-channels [class*="chatContent_"],
+html.kc-motion.kc-motion-servers [class*="sidebarList_"],
+html.kc-motion.kc-motion-settings [class*="standardSidebarView"] [class*="contentColumn"],
+html.kc-motion.kc-motion-modals [class*="layer_"] [class*="root_"],
+html.kc-motion.kc-motion-popouts [class*="layerContainer_"] [class*="popout_"] {
+    animation: kc-motion-in var(--kc-motion-duration, 220ms) var(--kc-motion-ease, ease) both;
+}
