@@ -19,15 +19,15 @@
 export const REACT_GLOBAL = "Vencord.Webpack.Common.React";
 
 // Equicord
-export const SUPPORT_CHANNEL_ID = "1297590739911573585";
-export const GUILD_ID = "1173279886065029291";
-export const DONOR_ROLE_ID = "1173316879083896912";
-export const CONTRIB_ROLE_ID = "1222677964760682556";
-export const EQUICORD_TEAM = "1173520023239786538";
-export const EQUICORD_HELPERS = "1326406112144265257";
+export const SUPPORT_CHANNEL_ID = "1512597352513278124";
+export const GUILD_ID = "1512587741144158238";
+export const DONOR_ROLE_ID = "1512596925260763236";
+export const CONTRIB_ROLE_ID = "1512596979404771338";
+export const EQUICORD_TEAM = "1521938363723026614";
+export const EQUICORD_HELPERS = "1512600034041008139";
 export const VENCORD_CONTRIB_ROLE_ID = "1173343399470964856";
-export const EQUIBOT_USER_ID = "1243063117852835941";
-export const KNOWN_ISSUES_CHANNEL_ID = "1466558228379992266";
+export const EQUIBOT_USER_ID = "1515724707024867438";
+export const KNOWN_ISSUES_CHANNEL_ID = "1515469228394938469";
 
 // Vencord
 export const VC_SUPPORT_CHANNEL_ID = "1026515880080842772";
@@ -1380,6 +1380,13 @@ export const EquicordDevs = Object.freeze({
     },
 } satisfies Record<string, Dev>);
 
+export const KittycordDevs = /* #__PURE__*/ Object.freeze({
+    Maxi: {
+        name: "Maxi",
+        id: 432588595845398548n
+    }
+} satisfies Record<string, Dev>);
+
 // iife so #__PURE__ works correctly
 export const VencordDevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
@@ -1392,6 +1399,14 @@ export const VencordDevsById = /* #__PURE__*/ (() =>
 export const EquicordDevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
         Object.entries(EquicordDevs)
+            .filter(d => d[1].id !== 0n)
+            .map(([_, v]) => [v.id, v] as const)
+    ))
+)() as Record<string, Dev>;
+
+export const KittycordDevsById = /* #__PURE__*/ (() =>
+    Object.freeze(Object.fromEntries(
+        Object.entries(KittycordDevs)
             .filter(d => d[1].id !== 0n)
             .map(([_, v]) => [v.id, v] as const)
     ))

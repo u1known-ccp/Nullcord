@@ -8,7 +8,7 @@ import { IpcMainInvokeEvent } from "electron";
 
 const ENDPOINT = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
 const SNOWFLAKE_RE = /^\d{17,20}$/;
-const ROLE_IDS = new Set(["kittycord-developer", "kittycord-staff", "kittycord-helper"]);
+const ROLE_IDS = new Set(["kittycord-developer", "kittycord-staff", "kittycord-helper", "kittycord-donor", "kittycord-contributor"]);
 
 export interface TeamMember {
     id: string;

@@ -14,6 +14,8 @@ const svgIcon = (svg: string) => "data:image/svg+xml," + encodeURIComponent(svg)
 const DEVELOPER_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2.5' y='4.5' width='19' height='15' rx='3.5' fill='#ff5fa6'/><path fill='none' stroke='#fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6.5 9.5 9.5 12l-3 2.5M12.5 15h5'/></svg>");
 const STAFF_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5l-8-3Z'/><path fill='none' stroke='#fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='m8.4 12 2.4 2.4 4.8-5.2'/></svg>");
 const HELPER_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/></svg>");
+const DONOR_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 20.7 4.3 13a5 5 0 0 1 7.05-7.05l.65.64.65-.64A5 5 0 0 1 19.7 13z'/><circle cx='8.6' cy='9.4' r='1.35' fill='#fff' opacity='.85'/></svg>");
+const CONTRIBUTOR_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
 
 interface TeamRole {
     id: string;
@@ -52,6 +54,20 @@ const ROLES: TeamRole[] = [
         members: [
             "1438522658114371708" // Sanchez - Helper and support team member
         ]
+    },
+    {
+        id: "kittycord-donor",
+        label: "Kittycord Donor",
+        icon: DONOR_ICON,
+        link: BRAND_WEBSITE,
+        members: []
+    },
+    {
+        id: "kittycord-contributor",
+        label: "Kittycord Contributor",
+        icon: CONTRIBUTOR_ICON,
+        link: "https://github.com/KittyCord-Production/Kittycord",
+        members: []
     }
 ];
 
@@ -81,7 +97,7 @@ const badges: ProfileBadge[] = ROLES.map(role => ({
 
 export default definePlugin({
     name: "KittycordBadges",
-    description: "Shows Kittycord team badges (Developer, Staff, Helper) on the profiles of the people who build and support Kittycord. Visible to everyone running Kittycord.",
+    description: "Shows Kittycord badges — team (Developer, Staff, Helper) and supporters (Donor, Contributor) — on the profiles of the people who build, support and back Kittycord. Visible to everyone running Kittycord.",
     authors: [{ name: "Kittycord", id: 0n }],
     dependencies: ["BadgeAPI"],
     required: true,
