@@ -11,6 +11,7 @@
 import amoledBlack from "file://themes/amoledBlack.theme.css";
 import lavender from "file://themes/lavender.theme.css";
 import midnight from "file://themes/midnight.theme.css";
+import midnightMagicGlass from "file://themes/MidnightMagicGlass.theme.css";
 import modern from "file://themes/modern.theme.css";
 import monoGlass from "file://themes/monoGlass.theme.css";
 import sakura from "file://themes/sakura.theme.css";
@@ -23,6 +24,7 @@ const BUNDLED_THEMES: Record<string, string> = {
     "MonoGlass.theme.css": monoGlass,
     "Sakura.theme.css": sakura,
     "Midnight.theme.css": midnight,
+    "MidnightMagicGlass.theme.css": midnightMagicGlass,
     "AMOLEDBlack.theme.css": amoledBlack,
     "Lavender.theme.css": lavender,
     "Modern.theme.css": modern
