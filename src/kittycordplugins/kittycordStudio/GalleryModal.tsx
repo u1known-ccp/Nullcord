@@ -10,6 +10,7 @@ import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRa
 import { Alerts, Button, React, showToast, Text, TextInput, Toasts, UserStore } from "@webpack/common";
 import type { ComponentType } from "react";
 
+import { BRAND_WEBSITE } from "../../branding";
 import { browseGallery, deleteGalleryTheme, enableTheme, type GallerySort, type GalleryTheme, isMyTheme, likeGalleryTheme, publishTheme, saveTheme } from "./store";
 import { derivePalette, NAME_RE, type StudioParams } from "./template";
 
@@ -57,6 +58,15 @@ function GalleryCard({ theme, onChanged }: { theme: GalleryTheme; onChanged(): v
         if (result !== null) setLikes(result);
     }
 
+    async function copyLink() {
+        try {
+            await navigator.clipboard.writeText(`${BRAND_WEBSITE}/en/t/?id=${theme.id}`);
+            showToast("Share link copied — anyone can preview this theme.", Toasts.Type.SUCCESS);
+        } catch {
+            showToast("Could not copy the link.", Toasts.Type.FAILURE);
+        }
+    }
+
     function remove() {
         Alerts.show({
             title: "Remove from gallery?",
@@ -88,6 +98,7 @@ function GalleryCard({ theme, onChanged }: { theme: GalleryTheme; onChanged(): v
             <Flex style={{ gap: 6, alignItems: "center" }}>
                 <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} disabled={busy} onClick={apply}>Apply</Button>
                 <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={like}>♥ {likes}</Button>
+                <Button size={Button.Sizes.SMALL} look={Button.Looks.LINK} onClick={copyLink}>Share</Button>
                 {mine && <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} look={Button.Looks.LINK} onClick={remove}>Remove</Button>}
             </Flex>
         </div>
