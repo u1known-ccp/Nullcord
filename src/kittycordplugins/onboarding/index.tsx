@@ -17,6 +17,7 @@ import { Button, React, showToast, Text, TextInput, Toasts, UserStore } from "@w
 import type { ComponentType } from "react";
 
 import { BRAND_WEBSITE } from "../../branding";
+import { applyShare, parseEnvelope, type ShareEnvelope } from "../shareSetup/utils";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
 const ModalRoot = ModalRootRaw as ComponentType<any>;
@@ -58,12 +59,22 @@ function applyPacks(chosen: Record<string, boolean>): boolean {
     return restartNeeded;
 }
 
+function shareSummary(env: ShareEnvelope): string {
+    const n = env.enabledPlugins.length;
+    if (env.scope === "css") return "themes & QuickCSS";
+    if (env.scope === "all") return `${n} plugins, themes & settings`;
+    return `${n} plugins & their settings`;
+}
+
 function OnboardingModal({ rootProps }: { rootProps: any; }) {
     const [chosen, setChosen] = React.useState<Record<string, boolean>>(
         Object.fromEntries(PACKS.map(p => [p.id, p.default] as [string, boolean]))
     );
     const [refCode, setRefCode] = React.useState("");
     const [refState, setRefState] = React.useState<"idle" | "saving" | "done" | "fail">("idle");
+    const fileRef = React.useRef<HTMLInputElement>(null);
+    const [pending, setPending] = React.useState<ShareEnvelope | null>(null);
+    const [importDone, setImportDone] = React.useState(false);
 
     async function claimReferral() {
         const me = UserStore.getCurrentUser();
@@ -72,6 +83,34 @@ function OnboardingModal({ rootProps }: { rootProps: any; }) {
         const status = await InvitesNative.claim(me.id, refCode.trim());
         setRefState(status === "ok" ? "done" : "fail");
         if (status === "ok") showToast("Thanks — your inviter just got the credit! 🐱", Toasts.Type.SUCCESS);
+    }
+
+    async function onPickFile() {
+        const file = fileRef.current?.files?.[0];
+        if (fileRef.current) fileRef.current.value = "";
+        if (!file) return;
+        try {
+            setPending(parseEnvelope(await file.text()));
+        } catch (e) {
+            showToast(String((e as Error)?.message ?? "That isn't a Kittycord setup file."), Toasts.Type.FAILURE);
+        }
+    }
+
+    async function importFriendSetup() {
+        if (!pending) return;
+        try {
+            await applyShare(pending);
+            set(SEEN_KEY, true);
+            setPending(null);
+            setImportDone(true);
+            showNotification({
+                title: "Setup imported — restart to finish",
+                body: "Click here to restart Discord now.",
+                onClick: () => (IS_WEB ? location.reload() : relaunch())
+            });
+        } catch (e) {
+            showToast(String((e as Error)?.message ?? "Import failed."), Toasts.Type.FAILURE);
+        }
     }
 
     function finish(apply: boolean) {
@@ -114,6 +153,29 @@ function OnboardingModal({ rootProps }: { rootProps: any; }) {
                 <Text variant="text-sm/normal" style={{ opacity: 0.75, margin: "12px 0" }}>
                     Tip: click the Kittycord button in the channel header for Modes, bookmarks, tags and “Share setup with a friend”.
                 </Text>
+
+                <div style={{ margin: "4px 0 12px" }}>
+                    <Text variant="text-md/semibold">Coming from a friend?</Text>
+                    <Text variant="text-sm/normal" style={{ opacity: 0.75, margin: "2px 0 6px" }}>
+                        If a friend sent you their Kittycord setup file, open it here to start with the same plugins and themes.
+                    </Text>
+                    {importDone ? (
+                        <Text variant="text-sm/normal" style={{ color: "var(--text-positive)" }}>Imported — restart to finish. 🐱</Text>
+                    ) : pending ? (
+                        <Flex style={{ gap: 8, alignItems: "center" }}>
+                            <Text variant="text-sm/normal" style={{ flexGrow: 1 }}>
+                                Found {pending.sender.username || "a friend"}'s setup — {shareSummary(pending)}.
+                            </Text>
+                            <Button color={Button.Colors.BRAND} size={Button.Sizes.SMALL} onClick={importFriendSetup}>Import</Button>
+                            <Button look={Button.Looks.LINK} color={Button.Colors.PRIMARY} size={Button.Sizes.SMALL} onClick={() => setPending(null)}>Cancel</Button>
+                        </Flex>
+                    ) : (
+                        <Button color={Button.Colors.PRIMARY} size={Button.Sizes.SMALL} onClick={() => fileRef.current?.click()}>
+                            Choose setup file…
+                        </Button>
+                    )}
+                    <input ref={fileRef} type="file" accept=".kcshare,application/json" style={{ display: "none" }} onChange={onPickFile} />
+                </div>
 
                 {InvitesNative && (
                     <div style={{ margin: "4px 0 12px" }}>

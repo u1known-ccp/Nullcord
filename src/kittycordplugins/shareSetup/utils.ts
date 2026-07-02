@@ -87,7 +87,7 @@ export function findShareAttachment(attachments: MessageAttachment[] | undefined
     return attachments?.find(a => a.filename?.toLowerCase().endsWith(FILE_SUFFIX)) ?? null;
 }
 
-function parseEnvelope(text: string): ShareEnvelope {
+export function parseEnvelope(text: string): ShareEnvelope {
     if (text.length > MAX_SHARE_BYTES) throw new Error("That setup file is too large.");
 
     let obj: any;
