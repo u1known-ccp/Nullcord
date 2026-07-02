@@ -38,7 +38,8 @@ const FEATURES: Feature[] = [
     { plugin: "InviteFriend", action: "Invite a friend", label: "Invite a friend" },
     { plugin: "KittyInvites", action: "Share invite stats", label: "Invite stats" },
     { plugin: "ShowOff", action: "Show off my Kittycord look", label: "Show off my look" },
-    { plugin: "Onboarding", action: "Run setup wizard", label: "Setup wizard" }
+    { plugin: "Onboarding", action: "Run setup wizard", label: "Setup wizard" },
+    { plugin: "KittycordDoctor", action: "Open Doctor", label: "Doctor" }
 ];
 
 function KittyIcon({ width = 20, height = 20 }: { width?: number; height?: number; }) {
