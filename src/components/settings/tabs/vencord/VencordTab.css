@@ -68,12 +68,18 @@
     overflow: hidden;
 }
 
+.vc-vencord-tab-hero-logo-wrap {
+    border-radius: 20px;
+    flex-shrink: 0;
+    line-height: 0;
+    box-shadow: 0 8px 24px -6px rgb(var(--kc-accent-glow, 255 95 166) / 50%);
+}
+
 .vc-vencord-tab-hero-logo {
     width: 76px;
     height: 76px;
     border-radius: 20px;
-    flex-shrink: 0;
-    box-shadow: 0 8px 24px -6px rgb(var(--kc-accent-glow, 255 95 166) / 50%);
+    filter: var(--kc-logo-filter, none);
 }
 
 .vc-vencord-tab-hero-title {

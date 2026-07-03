@@ -44,6 +44,7 @@ const buildSplashJs = (p: AccentPreset) => `
             "#kc-splash .kc-stage{position:relative;width:104px;height:104px;display:flex;align-items:center;justify-content:center}" +
             "#kc-splash .kc-halo{position:absolute;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle, rgb(${p.glow} / .30) 0%, rgb(${p.glow} / .09) 42%, transparent 70%);filter:blur(6px);animation:kc-breathe 3.4s ease-in-out infinite}" +
             "#kc-splash .kc-logo{position:relative;width:88px;height:88px;border-radius:22px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);animation:kc-float 3.4s ease-in-out infinite}" +
+            "#kc-splash .kc-logo img{filter:${p.logoFilter}}" +
             "#kc-splash .kc-name{color:${p.accent};font-size:25px;font-weight:800;letter-spacing:.4px;text-shadow:0 2px 16px rgb(${p.glow} / .35)}" +
             "#kc-splash .kc-dots{display:flex;gap:6px;margin-top:2px}" +
             "#kc-splash .kc-dots i{width:6px;height:6px;border-radius:50%;background:${p.accent};animation:kc-bounce 1s ease-in-out infinite}" +
@@ -85,6 +86,7 @@ const buildLoadingJs = (p: AccentPreset) => `
             "#kc-loading .kc-stage{position:relative;width:128px;height:128px;display:flex;align-items:center;justify-content:center}" +
             "#kc-loading .kc-halo{position:absolute;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle, rgb(${p.glow} / .32) 0%, rgb(${p.glow} / .10) 42%, transparent 70%);filter:blur(7px);animation:kc-breathe 3.4s ease-in-out infinite}" +
             "#kc-loading .kc-logo{position:relative;width:104px;height:104px;border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);animation:kc-float 3.4s ease-in-out infinite}" +
+            "#kc-loading .kc-logo img{filter:${p.logoFilter}}" +
             "#kc-loading .kc-name{color:${p.accent};font-size:31px;font-weight:800;letter-spacing:.4px;text-shadow:0 2px 18px rgb(${p.glow} / .35)}" +
             "#kc-loading .kc-bar{width:188px;height:3px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;position:relative}" +
             "#kc-loading .kc-bar span{position:absolute;top:0;left:-35%;height:100%;width:35%;border-radius:99px;background:linear-gradient(90deg,transparent,${p.accent} 50%,transparent);box-shadow:0 0 12px rgb(${p.glow} / .6);animation:kc-comet 1.25s ease-in-out infinite}" +

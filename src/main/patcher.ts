@@ -44,6 +44,12 @@ if (!IS_VANILLA) {
 
     patchTrayMenu();
 
+    try {
+        require("./styleSeed");
+    } catch (err) {
+        console.error("[Kittycord] Failed to apply style seed", err);
+    }
+
     // Rebrand Discord's startup splash window to Kittycord (best-effort, never throws).
     try {
         require("./kittycordSplash");

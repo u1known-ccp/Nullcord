@@ -303,7 +303,7 @@ initStyles();
 const accentStyleNode = createAndAppendStyle("vencord-kittycord-accent", coreStyleRootNode);
 function applyAccent() {
     const preset = ACCENT_PRESETS[Settings.kittycordAccent] ?? ACCENT_PRESETS.pink;
-    accentStyleNode.textContent = `:root{--kc-accent:${preset.accent};--kc-accent-soft:${preset.soft};--kc-accent-glow:${preset.glow}}`;
+    accentStyleNode.textContent = `:root{--kc-accent:${preset.accent};--kc-accent-soft:${preset.soft};--kc-accent-glow:${preset.glow};--kc-logo-filter:${preset.logoFilter}}`;
 }
 applyAccent();
 SettingsStore.addChangeListener("kittycordAccent", applyAccent);

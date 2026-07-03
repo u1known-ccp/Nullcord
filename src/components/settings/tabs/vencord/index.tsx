@@ -195,7 +195,9 @@ function EquicordSettings() {
     return (
         <SettingsTab>
             <div className={cl("hero")}>
-                <img className={cl("hero-logo")} src={BRAND_ICON} alt="" aria-hidden />
+                <div className={cl("hero-logo-wrap")}>
+                    <img className={cl("hero-logo")} src={BRAND_ICON} alt="" aria-hidden />
+                </div>
                 <div>
                     <div className={cl("hero-title")}>{BRAND_NAME}</div>
                     <div className={cl("hero-tagline")}>The cutest Discord client mod — plugins, themes and a whole lot of pink.</div>
