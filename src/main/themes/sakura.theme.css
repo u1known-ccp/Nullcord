@@ -357,8 +357,8 @@ img[class*="avatar"] {
 :root { --vg-ping: #f23f42; }
 
 @keyframes vg-ping-pulse {
-  0%, 100% { box-shadow: 0 0 4px 0 hsl(0 85% 55% / 0.25); }
-  50%      { box-shadow: 0 0 7px 1px hsl(0 85% 55% / 0.45); }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
 }
 
 [class*="numberBadge_"],
@@ -370,5 +370,100 @@ img[class*="avatar"] {
   border-radius: 999px !important;
   min-width: 16px !important;
   padding: 0 5px !important;
+  box-shadow: 0 0 6px 0 hsl(0 85% 55% / 0.35);
   animation: vg-ping-pulse 2.8s ease-in-out infinite;
+}
+
+html.kc-perf-noblur,
+html.kc-idle-noblur,
+html.kc-perf-noblur :is(.theme-dark, .theme-darker, .theme-light, .theme-midnight),
+html.kc-idle-noblur :is(.theme-dark, .theme-darker, .theme-light, .theme-midnight) {
+  --vg-glass-1: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+  --vg-glass-2: hsl(var(--vg-base-h) var(--vg-base-s) 9%);
+  --vg-glass-3: hsl(var(--vg-base-h) var(--vg-base-s) 12%);
+  --vg-glass-4: hsl(var(--vg-base-h) var(--vg-base-s) 13%);
+  --background-secondary-alt: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+  --background-tertiary: hsl(var(--vg-base-h) var(--vg-base-s) 8%);
+  --modal-footer-background: hsl(var(--vg-base-h) var(--vg-base-s) 7%);
+  --background-base-lowest: hsl(var(--vg-base-h) var(--vg-base-s) 9%);
+  --background-base-lower: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+  --background-base-low: hsl(var(--vg-base-h) var(--vg-base-s) 11%);
+  --background-surface-higher: hsl(var(--vg-base-h) var(--vg-base-s) 12%);
+  --background-surface-high: hsl(var(--vg-base-h) var(--vg-base-s) 13%);
+  --background-surface-highest: hsl(var(--vg-base-h) var(--vg-base-s) 14%);
+}
+
+html.kc-perf-noblur #app-mount,
+html.kc-idle-noblur #app-mount {
+  background: hsl(var(--vg-base-h) var(--vg-base-s) 6%) !important;
+}
+
+html.kc-perf-noblur [class*="guilds_"],
+html.kc-perf-noblur [class*="sidebar_"]:not([class*="sidebarRegion"]),
+html.kc-perf-noblur [class*="sidebarList_"],
+html.kc-perf-noblur [class*="membersWrap_"],
+html.kc-perf-noblur [class*="members_"]:not([class*="member_"]),
+html.kc-perf-noblur [class*="chatContent_"],
+html.kc-perf-noblur [class*="chat_"]:not([class*="chatContent_"]),
+html.kc-idle-noblur [class*="guilds_"],
+html.kc-idle-noblur [class*="sidebar_"]:not([class*="sidebarRegion"]),
+html.kc-idle-noblur [class*="sidebarList_"],
+html.kc-idle-noblur [class*="membersWrap_"],
+html.kc-idle-noblur [class*="members_"]:not([class*="member_"]),
+html.kc-idle-noblur [class*="chatContent_"],
+html.kc-idle-noblur [class*="chat_"]:not([class*="chatContent_"]) {
+  background-color: var(--vg-glass-1) !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .theme-dark,
+  .theme-darker,
+  .theme-light,
+  .theme-midnight {
+    --vg-glass-1: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+    --vg-glass-2: hsl(var(--vg-base-h) var(--vg-base-s) 9%);
+    --vg-glass-3: hsl(var(--vg-base-h) var(--vg-base-s) 12%);
+    --vg-glass-4: hsl(var(--vg-base-h) var(--vg-base-s) 13%);
+    --background-secondary-alt: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+    --background-tertiary: hsl(var(--vg-base-h) var(--vg-base-s) 8%);
+    --modal-footer-background: hsl(var(--vg-base-h) var(--vg-base-s) 7%);
+    --background-base-lowest: hsl(var(--vg-base-h) var(--vg-base-s) 9%);
+    --background-base-lower: hsl(var(--vg-base-h) var(--vg-base-s) 10%);
+    --background-base-low: hsl(var(--vg-base-h) var(--vg-base-s) 11%);
+    --background-surface-higher: hsl(var(--vg-base-h) var(--vg-base-s) 12%);
+    --background-surface-high: hsl(var(--vg-base-h) var(--vg-base-s) 13%);
+    --background-surface-highest: hsl(var(--vg-base-h) var(--vg-base-s) 14%);
+  }
+
+  #app-mount {
+    background: hsl(var(--vg-base-h) var(--vg-base-s) 6%) !important;
+  }
+
+  [class*="guilds_"],
+  [class*="sidebar_"]:not([class*="sidebarRegion"]),
+  [class*="sidebarList_"],
+  [class*="membersWrap_"],
+  [class*="members_"]:not([class*="member_"]),
+  [class*="chatContent_"],
+  [class*="chat_"]:not([class*="chatContent_"]) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--vg-glass-1) !important;
+  }
+
+  [class*="layerContainer_"] [class*="menu_"],
+  [class*="layerContainer_"] [class*="popout_"],
+  [class*="layer_"] [class*="root_"],
+  [class*="modal_"],
+  [class*="tooltip_"],
+  [class*="autocomplete_"],
+  [class*="quickswitcher_"],
+  [class*="searchPopout"],
+  [class*="panels_"],
+  [class*="form_"]:not([class*="formContainer"]),
+  [class*="channelTextArea_"] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }

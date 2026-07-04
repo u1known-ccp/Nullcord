@@ -2,7 +2,7 @@
  * @name        Midnight Magic Glass
  * @author      Kittycord
  * @description Midnight layout with a full magic-glass surface layer and window transparency.
- * @version     3.0.0
+ * @version     3.1.0
  */
 
 /* Built on refact0r's Midnight (MIT) - https://github.com/refact0r/midnight-discord */
@@ -280,8 +280,6 @@ body::before, body::after,
     border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 8px !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.08) !important;
-    backdrop-filter: blur(14px) saturate(1.2) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
 }
 
 [class*="guildsNav_"] [class*="listItem_"]:hover [class*="childWrapper_"],
@@ -290,8 +288,6 @@ body::before, body::after,
     border: 1px solid rgba(120, 230, 255, 0.18) !important;
     border-radius: 16px !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 4px 16px rgba(0,0,0,0.22) !important;
-    backdrop-filter: blur(14px) saturate(1.2) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
 }
 
 [class*="guildsNav_"] [class*="listItem_"][aria-selected="true"] [class*="childWrapper_"],
@@ -302,8 +298,6 @@ body::before, body::after,
     border: 1px solid rgba(120, 230, 255, 0.28) !important;
     border-radius: 16px !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 20px rgba(0,0,0,0.28) !important;
-    backdrop-filter: blur(18px) saturate(1.4) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(1.4) !important;
 }
 
 [data-list-item-id="guildsnav___home"] [class*="childWrapper_"]::before,
@@ -368,8 +362,6 @@ body::before, body::after,
     background: var(--magic-glass-panel-strong) !important;
     border: 1px solid rgba(255,255,255,0.10) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 12px 28px rgba(0,0,0,0.16) !important;
-    backdrop-filter: blur(20px) saturate(1.28) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.28) !important;
 }
 
 [class*="attachment_"] *,
@@ -480,14 +472,10 @@ nav[aria-label="Servers"],
     background: var(--magic-glass-soft) !important;
     border: 1px solid rgba(120, 230, 255, 0.18) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 4px 16px rgba(0,0,0,0.22) !important;
-    backdrop-filter: blur(14px) saturate(1.2) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(1.2) !important;
 }
 
 [class*="container__2637a"],
 [class*="privateChannels_"],
-[class*="messagesWrapper_"],
-[class*="scrollerInner_"],
 [class*="membersWrap_"],
 [class*="members_"],
 [class*="peopleColumn_"],
@@ -502,6 +490,8 @@ nav[aria-label="Servers"],
     -webkit-backdrop-filter: var(--magic-glass-blur) !important;
 }
 
+[class*="messagesWrapper_"],
+[class*="scrollerInner_"],
 [class*="scrollerInner_"] > *,
 [class*="messagesWrapper_"] [class*="scroller_"] {
     background: transparent !important;
@@ -1254,4 +1244,58 @@ textarea,
 [role="menuitem"] {
     -webkit-app-region: no-drag !important;
     app-region: no-drag !important;
+}
+
+html.kc-perf-noblur body,
+html.kc-idle-noblur body {
+    --blur-amount: 0px;
+}
+
+html.kc-perf-noblur,
+html.kc-idle-noblur,
+html.kc-perf-noblur :is(.theme-dark, .theme-light),
+html.kc-idle-noblur :is(.theme-dark, .theme-light) {
+    --bg-1: #2b334d;
+    --bg-2: #1e253b;
+    --bg-3: #131929;
+    --bg-4: #0a0e1a;
+    --magic-glass-panel: linear-gradient(135deg, #323a54, #101627 58%, #0e262f);
+    --magic-glass-panel-strong: linear-gradient(135deg, #444d6d, #141b2f 58%, #10343b);
+    --magic-glass-soft: linear-gradient(135deg, #282e45, #101525 58%, #0e222b);
+    --magic-glass-blur: none;
+}
+
+html.kc-perf-noblur #app-mount,
+html.kc-idle-noblur #app-mount {
+    background: #0a0e1a !important;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    body {
+        --blur-amount: 0px;
+    }
+
+    :root,
+    .theme-dark,
+    .theme-light {
+        --bg-1: #2b334d;
+        --bg-2: #1e253b;
+        --bg-3: #131929;
+        --bg-4: #0a0e1a;
+        --magic-glass-panel: linear-gradient(135deg, #323a54, #101627 58%, #0e262f);
+        --magic-glass-panel-strong: linear-gradient(135deg, #444d6d, #141b2f 58%, #10343b);
+        --magic-glass-soft: linear-gradient(135deg, #282e45, #101525 58%, #0e222b);
+        --magic-glass-blur: none;
+    }
+
+    #app-mount {
+        background: #0a0e1a !important;
+    }
+
+    @layer kc-fallback {
+        * {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+    }
 }

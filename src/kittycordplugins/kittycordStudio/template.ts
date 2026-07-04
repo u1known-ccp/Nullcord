@@ -325,15 +325,25 @@ html.kc-perf-noblur .theme-dark,
 html.kc-perf-noblur .theme-darker,
 html.kc-perf-noblur .theme-midnight,
 html.kc-perf-noblur .visual-refresh.theme-dark,
-html.kc-perf-noblur .visual-refresh .theme-dark {
+html.kc-perf-noblur .visual-refresh .theme-dark,
+html.kc-idle-noblur .theme-dark,
+html.kc-idle-noblur .theme-darker,
+html.kc-idle-noblur .theme-midnight,
+html.kc-idle-noblur .visual-refresh.theme-dark,
+html.kc-idle-noblur .visual-refresh .theme-dark {
         ${opaque}
 }
 
-html.kc-perf-noblur #app-mount { background: ${bg1}; }
+html.kc-perf-noblur #app-mount,
+html.kc-idle-noblur #app-mount { background: ${bg1}; }
 html.kc-perf-noblur [class*="chatContent"],
 html.kc-perf-noblur [class*="messagesWrapper"],
 html.kc-perf-noblur [class*="sidebar_"],
-html.kc-perf-noblur [class*="guilds_"] { backdrop-filter: none; }`;
+html.kc-perf-noblur [class*="guilds_"],
+html.kc-idle-noblur [class*="chatContent"],
+html.kc-idle-noblur [class*="messagesWrapper"],
+html.kc-idle-noblur [class*="sidebar_"],
+html.kc-idle-noblur [class*="guilds_"] { backdrop-filter: none; }`;
 }
 
 export function encodeMarker(params: StudioParams): string {
