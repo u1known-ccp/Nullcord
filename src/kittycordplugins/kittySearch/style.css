@@ -1,0 +1,44 @@
+.vc-kittysearch-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+}
+
+.vc-kittysearch-results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 50vh;
+    min-height: 120px;
+}
+
+.vc-kittysearch-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.vc-kittysearch-row.vc-kittysearch-active {
+    background: color-mix(in srgb, var(--kc-accent, #ff5fa6) 16%, transparent);
+}
+
+.vc-kittysearch-label {
+    color: var(--header-primary);
+}
+
+.vc-kittysearch-sub {
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-kittysearch-empty {
+    color: var(--text-muted);
+    padding: 24px 10px;
+    text-align: center;
+}
