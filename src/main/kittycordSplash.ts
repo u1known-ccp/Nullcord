@@ -159,9 +159,20 @@ const buildLoadingJs = (p: AccentPreset) => `
     } catch (e) {}
 })();`;
 
+const REMOVE_OVERLAY_JS = `
+(function () {
+    try {
+        var s = document.getElementById("kc-splash"); if (s) s.remove();
+        var l = document.getElementById("kc-loading"); if (l) l.remove();
+    } catch (e) {}
+})();`;
+
 app.on("browser-window-created", (_, win) => {
     try {
         if (win.webContents.isOffscreen()) return;
+        win.on("always-on-top-changed", (_e, isAlwaysOnTop) => {
+            if (isAlwaysOnTop) win.webContents.executeJavaScript(REMOVE_OVERLAY_JS).catch(() => { });
+        });
         win.webContents.on("dom-ready", () => {
             try {
                 const url = win.webContents.getURL() || "";
