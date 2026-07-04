@@ -37,7 +37,7 @@
   --vg-base-hsl: var(--vg-base-h) var(--vg-base-s) 9%;
 
   /* --- Glas-Look --------------------------------------------------------- */
-  --vg-blur: 20px;            /* Staerke des Frosted-Glass-Weichzeichners      */
+  --vg-blur: 10px;            /* Staerke des Frosted-Glass-Weichzeichners      */
   --vg-glass-1: hsl(var(--vg-base-hsl) / 0.42);  /* grosse Flaechen (Chat)    */
   --vg-glass-2: hsl(var(--vg-base-hsl) / 0.30);  /* Sidebars (durchsichtiger) */
   --vg-glass-3: hsl(var(--vg-base-hsl) / 0.55);  /* Karten / Eingabe          */
@@ -198,12 +198,15 @@
 [class*="sidebar_"]:not([class*="sidebarRegion"]),
 [class*="sidebarList_"],
 [class*="membersWrap_"],
-[class*="members_"]:not([class*="member_"]),
-[class*="chatContent_"],
-[class*="chat_"]:not([class*="chatContent_"]) {
+[class*="members_"]:not([class*="member_"]) {
   backdrop-filter: blur(var(--vg-blur)) saturate(135%);
   -webkit-backdrop-filter: blur(var(--vg-blur)) saturate(135%);
   background-color: transparent !important;
+}
+
+[class*="chatContent_"],
+[class*="chat_"]:not([class*="chatContent_"]) {
+  background-color: hsl(var(--vg-base-h) var(--vg-base-s) 10%) !important;
 }
 
 /* Schwebende Ebenen: Popouts, Kontextmenues, Modals, Tooltips, Suche */
