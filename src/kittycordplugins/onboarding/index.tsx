@@ -10,6 +10,7 @@ import { isPluginEnabled, pluginRequiresRestart, plugins, startPlugin } from "@a
 import { Settings } from "@api/Settings";
 import { Flex } from "@components/Flex";
 import { FormSwitch } from "@components/FormSwitch";
+import { parseUrl } from "@utils/misc";
 import { ModalCloseButton as ModalCloseButtonRaw, ModalContent as ModalContentRaw, ModalHeader as ModalHeaderRaw, ModalRoot as ModalRootRaw, ModalSize, openModal } from "@utils/modal";
 import { relaunch } from "@utils/native";
 import definePlugin, { type PluginNative } from "@utils/types";
@@ -17,6 +18,8 @@ import { Button, React, showToast, Text, TextInput, Toasts, UserStore } from "@w
 import type { ComponentType } from "react";
 
 import { BRAND_WEBSITE } from "../../branding";
+import { type FriendAction, friendConsumed, markFriendConsumed, ONBOARDING_SEEN_KEY as SEEN_KEY, subscribeFriendAction, takeFriendAction } from "../_shared/friendLink";
+import { applyGalleryThemeById } from "../kittycordStudio/store";
 import { applyShare, parseEnvelope, type ShareEnvelope } from "../shareSetup/utils";
 
 // The @utils/modal components are intentionally typed `never` (deprecated). Cast them so we can use them as JSX.
@@ -25,7 +28,22 @@ const ModalHeader = ModalHeaderRaw as ComponentType<any>;
 const ModalContent = ModalContentRaw as ComponentType<any>;
 const ModalCloseButton = ModalCloseButtonRaw as ComponentType<any>;
 
-const SEEN_KEY = "Kittycord_OnboardingSeen";
+const CODE_RE = /^[a-z0-9_-]{3,20}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseFriendInput(raw: string): FriendAction | null {
+    const s = raw.trim();
+    if (!s) return null;
+    const url = parseUrl(s);
+    if (url) {
+        const id = url.searchParams.get("id");
+        if (id && UUID_RE.test(id)) return { kind: "theme", value: id };
+        const code = url.searchParams.get("code");
+        if (code && CODE_RE.test(code.toLowerCase())) return { kind: "claim", value: code.toLowerCase() };
+        return null;
+    }
+    return CODE_RE.test(s.toLowerCase()) ? { kind: "claim", value: s.toLowerCase() } : null;
+}
 
 const InvitesNative = VencordNative?.pluginHelpers?.KittyInvites as PluginNative<typeof import("../kittyInvites/native")> | undefined;
 
@@ -75,14 +93,40 @@ function OnboardingModal({ rootProps }: { rootProps: any; }) {
     const fileRef = React.useRef<HTMLInputElement>(null);
     const [pending, setPending] = React.useState<ShareEnvelope | null>(null);
     const [importDone, setImportDone] = React.useState(false);
+    const [friend, setFriend] = React.useState<FriendAction | null>(takeFriendAction);
+
+    React.useEffect(() => subscribeFriendAction(setFriend), []);
+
+    async function runFriendAction(action: FriendAction): Promise<boolean> {
+        if (friendConsumed(action)) return true;
+        if (action.kind === "theme") {
+            const theme = await applyGalleryThemeById(action.value);
+            if (!theme) return false;
+            markFriendConsumed(action);
+            showToast(`"${theme.name}" applied. 🎨`, Toasts.Type.SUCCESS);
+            return true;
+        }
+        const me = UserStore.getCurrentUser();
+        if (!InvitesNative || !me) return false;
+        const status = await InvitesNative.claim(me.id, action.value);
+        if (status !== "ok") return false;
+        markFriendConsumed(action);
+        showToast("Thanks, your inviter just got the credit! 🐱", Toasts.Type.SUCCESS);
+        return true;
+    }
+
+    async function confirmFriend() {
+        if (!friend) return;
+        const action = friend;
+        setFriend(null);
+        if (!await runFriendAction(action)) showToast("Couldn't start from your friend just now. Try their code or link below.", Toasts.Type.FAILURE);
+    }
 
     async function claimReferral() {
-        const me = UserStore.getCurrentUser();
-        if (!InvitesNative || !me || !refCode.trim()) return;
+        const action = parseFriendInput(refCode);
+        if (!action) { setRefState("fail"); return; }
         setRefState("saving");
-        const status = await InvitesNative.claim(me.id, refCode.trim());
-        setRefState(status === "ok" ? "done" : "fail");
-        if (status === "ok") showToast("Thanks — your inviter just got the credit! 🐱", Toasts.Type.SUCCESS);
+        setRefState(await runFriendAction(action) ? "done" : "fail");
     }
 
     async function onPickFile() {
@@ -154,6 +198,23 @@ function OnboardingModal({ rootProps }: { rootProps: any; }) {
                     Tip: click the Kittycord button in the channel header for Modes, bookmarks, tags and “Share setup with a friend”.
                 </Text>
 
+                {friend && (
+                    <div style={{ margin: "4px 0 12px" }}>
+                        <Text variant="text-md/semibold">Start from a friend 🐱</Text>
+                        <Text variant="text-sm/normal" style={{ opacity: 0.75, margin: "2px 0 6px" }}>
+                            {friend.kind === "theme"
+                                ? "A friend shared their Kittycord theme with you. Apply it to start with their look."
+                                : "A friend invited you. Confirm so it counts for them."}
+                        </Text>
+                        <Flex style={{ gap: 8 }}>
+                            <Button color={Button.Colors.BRAND} size={Button.Sizes.SMALL} onClick={confirmFriend}>
+                                {friend.kind === "theme" ? "Use their theme" : "Confirm"}
+                            </Button>
+                            <Button look={Button.Looks.LINK} color={Button.Colors.PRIMARY} size={Button.Sizes.SMALL} onClick={() => setFriend(null)}>Skip</Button>
+                        </Flex>
+                    </div>
+                )}
+
                 <div style={{ margin: "4px 0 12px" }}>
                     <Text variant="text-md/semibold">Coming from a friend?</Text>
                     <Text variant="text-sm/normal" style={{ opacity: 0.75, margin: "2px 0 6px" }}>
@@ -179,22 +240,22 @@ function OnboardingModal({ rootProps }: { rootProps: any; }) {
 
                 {InvitesNative && (
                     <div style={{ margin: "4px 0 12px" }}>
-                        <Text variant="text-md/semibold">Were you invited?</Text>
+                        <Text variant="text-md/semibold">Have a friend's code or link?</Text>
                         <Text variant="text-sm/normal" style={{ opacity: 0.75, margin: "2px 0 6px" }}>
-                            Enter a friend's creator code so it counts for them.
+                            Paste a friend's creator code or a kittycord.dev share link to start where they did.
                         </Text>
                         {refState === "done" ? (
-                            <Text variant="text-sm/normal" style={{ color: "var(--text-positive)" }}>Counted — thanks! 🐱</Text>
+                            <Text variant="text-sm/normal" style={{ color: "var(--text-positive)" }}>Done, thanks! 🐱</Text>
                         ) : (
                             <Flex style={{ gap: 8 }}>
                                 <div style={{ flexGrow: 1 }}>
-                                    <TextInput value={refCode} onChange={setRefCode} placeholder="their creator code" maxLength={20} />
+                                    <TextInput value={refCode} onChange={setRefCode} placeholder="their code or share link" maxLength={200} />
                                 </div>
-                                <Button color={Button.Colors.BRAND} disabled={refState === "saving" || !refCode.trim()} onClick={claimReferral}>Claim</Button>
+                                <Button color={Button.Colors.BRAND} disabled={refState === "saving" || !refCode.trim()} onClick={claimReferral}>Go</Button>
                             </Flex>
                         )}
                         {refState === "fail" && (
-                            <Text variant="text-sm/normal" style={{ color: "var(--text-danger)", marginTop: 4 }}>Couldn't count that — check the code and try again.</Text>
+                            <Text variant="text-sm/normal" style={{ color: "var(--text-danger)", marginTop: 4 }}>That didn't work. Check the code or link and try again.</Text>
                         )}
                     </div>
                 )}
