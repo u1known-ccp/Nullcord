@@ -4,9 +4,9 @@
   </a>
   <p><b>The cutest Discord client mod — plugins, themes and a whole lot of pink.</b></p>
   <p>
-    <a href="https://github.com/NullCord-Production/NullCord/stargazers"><img src="https://img.shields.io/github/stars/NullCord-Production/NullCord?style=for-the-badge&logo=github&label=stars&color=FF5FA6&labelColor=1f141b" alt="Stars"></a>
-    <a href="https://github.com/NullCord-Production/NullCord/commits/main"><img src="https://img.shields.io/github/last-commit/NullCord-Production/NullCord?style=for-the-badge&label=updated&color=FF8AC4&labelColor=1f141b" alt="Last commit"></a>
-    <a href="./LICENSE"><img src="https://img.shields.io/github/license/NullCord-Production/NullCord?style=for-the-badge&color=FF8AC4&labelColor=1f141b" alt="License"></a>
+    <a href="https://github.com/u1known-ccp/Nullcord/stargazers"><img src="https://img.shields.io/github/stars/u1known-ccp/Nullcord?style=for-the-badge&logo=github&label=stars&color=FF5FA6&labelColor=1f141b" alt="Stars"></a>
+    <a href="https://github.com/u1known-ccp/Nullcord/commits/main"><img src="https://img.shields.io/github/last-commit/u1known-ccp/Nullcord?style=for-the-badge&label=updated&color=FF8AC4&labelColor=1f141b" alt="Last commit"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/github/license/u1known-ccp/Nullcord?style=for-the-badge&color=FF8AC4&labelColor=1f141b" alt="License"></a>
   </p>
   <p>
     <a href="https://github.com/NullCord-Production/NullCord/releases/latest"><b>⬇️ Download</b></a>
@@ -16,6 +16,11 @@
     <a href="#-features"><b>🌸 Features</b></a>
     &nbsp;·&nbsp;
     <a href="#-faq--troubleshooting"><b>❓ FAQ</b></a>
+  </p>
+  <p>
+    <a href="./LICENSE"><b>License</b></a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/u1known-ccp/Nullcord/stargazers"><b>Stars</b></a>
   </p>
 </div>
 
