@@ -21,6 +21,8 @@ interface CustomStatusValue {
 const CustomStatusSetting = getUserSettingLazy<CustomStatusValue | null>("status", "customStatus");
 
 const MAX_STATUS_LENGTH = 128;
+const PAUSE_GRACE_MS = 30_000;
+const MIN_WRITE_INTERVAL_MS = 5_000;
 
 const settings = definePluginSettings({
     statusText: {
@@ -43,6 +45,8 @@ let saved: CustomStatusValue | null = null;
 let lastText: string | null = null;
 let lyrics: LyricsData | null = null;
 let lyricsId: string | null = null;
+let pausedSince: number | null = null;
+let lastWriteAt = 0;
 let timer: ReturnType<typeof setInterval> | null = null;
 
 function clip(text: string): string {
@@ -69,9 +73,7 @@ function currentLyricText(data: LyricsData, positionMs: number): string | null {
     return current.text;
 }
 
-function desiredText(track: Track | null): string | null {
-    if (!track) return null;
-
+function desiredText(track: Track): string {
     if (settings.store.statusText === "lyrics" && lyrics) {
         const line = currentLyricText(lyrics, SpotifyStore.position);
         if (line) return clip(line);
@@ -96,26 +98,37 @@ async function refetchIfNeeded(track: Track | null) {
     if (lyricsId === id) lyrics = data;
 }
 
+function restore() {
+    if (overriding && CustomStatusSetting) CustomStatusSetting.updateSetting(saved);
+    overriding = false;
+    lastText = null;
+    pausedSince = null;
+}
+
 function apply() {
     if (!CustomStatusSetting) return;
 
-    const text = SpotifyStore.device?.is_active ? desiredText(SpotifyStore.track) : null;
+    const { track } = SpotifyStore;
 
-    if (text == null) {
-        if (overriding) {
-            CustomStatusSetting.updateSetting(saved);
-            overriding = false;
-            lastText = null;
-        }
+    if (!SpotifyStore.device?.is_active || track == null) {
+        restore();
         return;
     }
+
+    if (!SpotifyStore.isPlaying) {
+        if (pausedSince == null) pausedSince = Date.now();
+        if (Date.now() - pausedSince > PAUSE_GRACE_MS) restore();
+        return;
+    }
+    pausedSince = null;
 
     if (!overriding) {
         saved = CustomStatusSetting.getSetting() ?? null;
         overriding = true;
     }
 
-    if (text !== lastText) {
+    const text = desiredText(track);
+    if (text !== lastText && Date.now() - lastWriteAt >= MIN_WRITE_INTERVAL_MS) {
         CustomStatusSetting.updateSetting({
             text,
             emojiName: settings.store.statusEmoji || "",
@@ -123,6 +136,7 @@ function apply() {
             expiresAtMs: "0"
         });
         lastText = text;
+        lastWriteAt = Date.now();
     }
 }
 
@@ -151,11 +165,10 @@ export default definePlugin({
         if (timer) clearInterval(timer);
         timer = null;
 
-        if (overriding && CustomStatusSetting) CustomStatusSetting.updateSetting(saved);
-        overriding = false;
+        restore();
         saved = null;
-        lastText = null;
         lyrics = null;
         lyricsId = null;
+        lastWriteAt = 0;
     }
 });
