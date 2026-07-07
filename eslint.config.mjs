@@ -66,7 +66,7 @@ export default defineConfig(
             "simple-header/header": [
                 "error",
                 {
-                    "files": [`${import.meta.dirname}/scripts/header-new.txt`, `${import.meta.dirname}/scripts/header-old.txt`, `${import.meta.dirname}/scripts/header-kittycord.txt`],
+                    "files": [`${import.meta.dirname}/scripts/header-new.txt`, `${import.meta.dirname}/scripts/header-old.txt`, `${import.meta.dirname}/scripts/header-NullCord.txt`],
                     "templates": { "author": [".*", "Vendicated and contributors"] }
                 }
             ],
@@ -146,3 +146,4 @@ export default defineConfig(
         }
     }
 );
+

@@ -134,24 +134,24 @@ window.VencordNative = {
         openFolder: async () => Promise.reject("settings:openFolder is not supported on web"),
     },
 
-    kittycordTelemetry: {
+    NullCordTelemetry: {
         // No main process on web -> telemetry is inert (no endpoint, no prompt, nothing sent).
         getConsent: async () => ({ consent: null as boolean | null, endpointConfigured: false }),
         setConsent: NOOP_ASYNC,
     },
 
-    kittycordCrash: {
+    NullCordCrash: {
         getConsent: async () => ({ consent: null as boolean | null, endpointConfigured: false }),
         setConsent: NOOP_ASYNC,
         report: NOOP_ASYNC,
     },
 
-    kittycordDeepLinks: {
+    NullCordDeepLinks: {
         onLink: NOOP,
         poll: async () => null,
     },
 
-    kittycordShare: {
+    NullCordShare: {
         // No main process on web -> friend discovery is inert.
         getConsent: async () => ({ consent: null as boolean | null, endpointConfigured: false }),
         setConsent: NOOP_ASYNC,
@@ -160,7 +160,7 @@ window.VencordNative = {
         friendsCheck: async () => [] as string[],
     },
 
-    kittycordBadges: {
+    NullCordBadges: {
         getBadges: async () => [] as { id: string; emoji: string; label: string; slot: number; }[],
         setBadge: async () => ({ ok: false as boolean, error: "web" as string | undefined }),
         clearBadge: NOOP_ASYNC,
@@ -175,3 +175,4 @@ window.VencordNative = {
         repairHost: () => Promise.resolve(false),
     },
 };
+

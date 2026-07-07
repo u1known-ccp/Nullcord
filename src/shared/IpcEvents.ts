@@ -59,23 +59,24 @@ export const enum IpcEvents {
     REPATCH_HOST = "VencordRepatchHost",
     SUPPORTS_WINDOWS_MATERIAL = "VencordSupportsWindowsMaterial",
 
-    GET_TELEMETRY_CONSENT = "KittycordGetTelemetryConsent",
-    SET_TELEMETRY_CONSENT = "KittycordSetTelemetryConsent",
+    GET_TELEMETRY_CONSENT = "NullCordGetTelemetryConsent",
+    SET_TELEMETRY_CONSENT = "NullCordSetTelemetryConsent",
 
-    GET_CRASH_CONSENT = "KittycordGetCrashConsent",
-    SET_CRASH_CONSENT = "KittycordSetCrashConsent",
-    REPORT_CRASH = "KittycordReportCrash",
+    GET_CRASH_CONSENT = "NullCordGetCrashConsent",
+    SET_CRASH_CONSENT = "NullCordSetCrashConsent",
+    REPORT_CRASH = "NullCordReportCrash",
 
-    DEEP_LINK = "KittycordDeepLink",
-    DEEP_LINK_POLL = "KittycordDeepLinkPoll",
+    DEEP_LINK = "NullCordDeepLink",
+    DEEP_LINK_POLL = "NullCordDeepLinkPoll",
 
-    GET_SHARE_CONSENT = "KittycordGetShareConsent",
-    SET_SHARE_CONSENT = "KittycordSetShareConsent",
-    SHARE_REGISTER = "KittycordShareRegister",
-    SHARE_UNREGISTER = "KittycordShareUnregister",
-    SHARE_FRIENDS_CHECK = "KittycordShareFriendsCheck",
+    GET_SHARE_CONSENT = "NullCordGetShareConsent",
+    SET_SHARE_CONSENT = "NullCordSetShareConsent",
+    SHARE_REGISTER = "NullCordShareRegister",
+    SHARE_UNREGISTER = "NullCordShareUnregister",
+    SHARE_FRIENDS_CHECK = "NullCordShareFriendsCheck",
 
-    GET_CUSTOM_BADGES = "KittycordGetCustomBadges",
-    SET_CUSTOM_BADGE = "KittycordSetCustomBadge",
-    CLEAR_CUSTOM_BADGE = "KittycordClearCustomBadge",
+    GET_CUSTOM_BADGES = "NullCordGetCustomBadges",
+    SET_CUSTOM_BADGE = "NullCordSetCustomBadge",
+    CLEAR_CUSTOM_BADGE = "NullCordClearCustomBadge",
 }
+

@@ -1,18 +1,18 @@
 {
-    "name": "kittycord",
+    "name": "NullCord",
     "private": "true",
     "version": "1.14.15.0",
-    "description": "Kittycord — a Discord client mod",
-    "homepage": "https://kittycord.dev",
+    "description": "NullCord — a Discord client mod",
+    "homepage": "https://NullCord.dev",
     "bugs": {
-        "url": "https://github.com/KittyCord-Production/Kittycord/issues"
+        "url": "https://github.com/NullCord-Production/NullCord/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/KittyCord-Production/Kittycord.git"
+        "url": "git+https://github.com/NullCord-Production/NullCord.git"
     },
     "license": "GPL-3.0-or-later",
-    "author": "Kittycord",
+    "author": "NullCord",
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",
@@ -27,7 +27,7 @@
         "generatePluginJson": "tsx scripts/generatePluginList.ts",
         "generateEquicordPluginJson": "tsx scripts/generatePluginList.ts --equicord",
         "generateVencordPluginJson": "tsx scripts/generatePluginList.ts --vencord",
-        "generateKittycordPluginJson": "tsx scripts/generatePluginList.ts --kittycord",
+        "generateNullCordPluginJson": "tsx scripts/generatePluginList.ts --NullCord",
         "generateMoggcordPluginJson": "tsx scripts/generatePluginList.ts --moggcord",
         "generateTypes": "tspc --emitDeclarationOnly --declaration --outDir packages/vencord-types --allowJs false",
         "inject": "node scripts/runInstaller.mjs -- --install",

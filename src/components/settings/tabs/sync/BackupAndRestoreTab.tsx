@@ -31,7 +31,7 @@ function BackupAndRestoreTab() {
         <SettingsTab>
             <Heading className={Margins.top16}>Backup & Restore</Heading>
             <Paragraph className={Margins.bottom20}>
-                Import and export your Kittycord settings as a JSON file. This allows you to easily transfer your settings to another device, or recover them after reinstalling Kittycord or Discord.
+                Import and export your NullCord settings as a JSON file. This allows you to easily transfer your settings to another device, or recover them after reinstalling NullCord or Discord.
             </Paragraph>
 
             <Notice.Warning className={Margins.bottom20}>
@@ -120,3 +120,4 @@ function BackupAndRestoreTab() {
 }
 
 export default wrapTab(BackupAndRestoreTab, "Backup & Restore");
+

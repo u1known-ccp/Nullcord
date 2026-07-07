@@ -1,0 +1,165 @@
+/*
+ * NullCord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.kc-inv-card {
+    background: var(--background-secondary);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.kc-inv-coderow {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.kc-inv-coderow > :first-child {
+    flex: 1;
+}
+
+.kc-inv-boardhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 10px;
+}
+
+.kc-inv-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+    background: var(--background-tertiary);
+    border-radius: 999px;
+    padding: 3px;
+}
+
+.kc-inv-seg {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color .12s ease, background .12s ease;
+}
+
+.kc-inv-seg:hover {
+    color: var(--header-primary);
+}
+
+.kc-inv-seg-on,
+.kc-inv-seg-on:hover {
+    color: #fff;
+    background: linear-gradient(135deg, var(--kc-accent, #ff5fa6), var(--kc-accent-soft, #ff8ac4));
+}
+
+.kc-inv-search {
+    margin: 0 0 12px;
+}
+
+.kc-inv-board {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kc-inv-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: var(--background-secondary);
+    transition: transform .12s ease, background .12s ease;
+}
+
+.kc-inv-row:hover {
+    background: var(--background-modifier-hover, var(--background-secondary-alt));
+    transform: translateX(2px);
+}
+
+/* Rank: a plain muted number, except the top 3 which become little medal "coins". */
+.kc-inv-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    border-radius: 50%;
+}
+
+.kc-inv-row.kc-inv-top1 .kc-inv-rank,
+.kc-inv-row.kc-inv-top2 .kc-inv-rank,
+.kc-inv-row.kc-inv-top3 .kc-inv-rank { color: #3a2230; }
+.kc-inv-row.kc-inv-top1 .kc-inv-rank { background: linear-gradient(135deg, #ffe28c, #f6b748); box-shadow: 0 2px 7px rgba(246, 183, 72, .45); }
+.kc-inv-row.kc-inv-top2 .kc-inv-rank { background: linear-gradient(135deg, #eef1f7, #c0c7d4); }
+.kc-inv-row.kc-inv-top3 .kc-inv-rank { background: linear-gradient(135deg, #f1b888, #d1824d); }
+
+.kc-inv-av {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--background-tertiary);
+}
+
+/* Medal-coloured rings on the top 3 avatars. */
+.kc-inv-row.kc-inv-top1 .kc-inv-av { box-shadow: 0 0 0 2px #f6b748; }
+.kc-inv-row.kc-inv-top2 .kc-inv-av { box-shadow: 0 0 0 2px #c0c7d4; }
+.kc-inv-row.kc-inv-top3 .kc-inv-av { box-shadow: 0 0 0 2px #d1824d; }
+
+.kc-inv-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--header-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A crown for the leader. */
+.kc-inv-row.kc-inv-top1 .kc-inv-name::before {
+    content: "👑 ";
+}
+
+/* Invite count: a soft pill with a pink number; the leader gets the full gradient pill. */
+.kc-inv-count {
+    flex-shrink: 0;
+    font-weight: 800;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: var(--kc-accent-soft, #ff8ac4);
+    background: var(--background-tertiary);
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.kc-inv-row.kc-inv-top1 .kc-inv-count {
+    color: #fff;
+    background: linear-gradient(135deg, var(--kc-accent, #ff5fa6), var(--kc-accent-soft, #ff8ac4));
+    box-shadow: 0 2px 8px rgb(var(--kc-accent-glow, 255 95 166) / 38%);
+}
+
+/* The #1 row gets a soft "throne" tint; your own row gets a subtle highlight + accent stripe.
+   Both use controlled NullCord pink (not theme brand vars, which some themes turn into a loud fill). */
+.kc-inv-row.kc-inv-top1 {
+    background: linear-gradient(90deg, rgb(var(--kc-accent-glow, 255 95 166) / 16%), var(--background-secondary) 62%);
+}
+
+.kc-inv-me,
+.kc-inv-me:hover {
+    background: var(--background-modifier-selected);
+    box-shadow: inset 3px 0 0 0 var(--kc-accent, #ff5fa6);
+}
+

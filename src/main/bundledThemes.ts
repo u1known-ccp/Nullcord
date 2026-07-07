@@ -1,15 +1,15 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Themes that ship with Kittycord. On startup they are written into the user's themes folder so
+// Themes that ship with NullCord. On startup they are written into the user's themes folder so
 // they show up in Settings > Themes for everyone.
 
 import { createHash } from "crypto";
 import amoledBlack from "file://themes/amoledBlack.theme.css";
-import kittycordCandy from "file://themes/kittycordCandy.theme.css";
+import NullCordCandy from "file://themes/NullCordCandy.theme.css";
 import lavender from "file://themes/lavender.theme.css";
 import midnight from "file://themes/midnight.theme.css";
 import midnightMagicGlass from "file://themes/MidnightMagicGlass.theme.css";
@@ -29,7 +29,7 @@ const BUNDLED_THEMES: Record<string, string> = {
     "AMOLEDBlack.theme.css": amoledBlack,
     "Lavender.theme.css": lavender,
     "Modern.theme.css": modern,
-    "KittycordCandy.theme.css": kittycordCandy
+    "NullCordCandy.theme.css": NullCordCandy
 };
 
 const SHIPPED_HASHES: Record<string, string[]> = {
@@ -58,14 +58,14 @@ const SHIPPED_HASHES: Record<string, string[]> = {
         "715331af89bddde7221f70ffac7b859d0109abcce54c8d6064e5757caf8e26c5"
     ],
     "Modern.theme.css": ["9be93b7f9961f8cf649d01c5ff0dc9edf956248a6cb0dc7d51d3c22780203189"],
-    "KittycordCandy.theme.css": [
+    "NullCordCandy.theme.css": [
         "935c8a108a429823507a0f4264fde093293b298eefbcca5c91d273e8872b3f29",
         "6e0152a4d0a418014fcc3d41ad47f82d953513985068232c6344d8096dfd77a3",
         "bd4fab3b6a588f7dcdb7b4f0f0b70058bec5109b1e9b2da2113b522471697ec1"
     ]
 };
 
-const MANIFEST_PATH = join(THEMES_DIR, ".kittycord-bundled.json");
+const MANIFEST_PATH = join(THEMES_DIR, ".NullCord-bundled.json");
 
 const hashCss = (css: string) => createHash("sha256")
     .update((css.charCodeAt(0) === 0xFEFF ? css.slice(1) : css).replace(/\r\n/g, "\n").trimEnd(), "utf-8")
@@ -103,5 +103,6 @@ try {
 
     writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 4), "utf-8");
 } catch (err) {
-    console.error("[Kittycord] Failed to install bundled themes", err);
+    console.error("[NullCord] Failed to install bundled themes", err);
 }
+

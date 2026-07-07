@@ -20,7 +20,7 @@ import { openContributorModal, openPluginModal, SettingsTab, wrapTab } from "@co
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { SpecialCard } from "@components/settings/SpecialCard";
 import BadgeAPI from "@plugins/_api/badges";
-import { ACCENT_PRESETS, KittycordAccent } from "@shared/accentPresets";
+import { ACCENT_PRESETS, NullCordAccent } from "@shared/accentPresets";
 import { gitRemote } from "@shared/vencordUserAgent";
 import { DONOR_ROLE_ID, GUILD_ID, IS_WINDOWS, VC_DONOR_ROLE_ID, VC_GUILD_ID } from "@utils/constants";
 import { classNameFactory } from "@utils/css";
@@ -154,7 +154,7 @@ function Switches() {
 }
 
 function AccentPicker() {
-    const settings = useSettings(["kittycordAccent"]);
+    const settings = useSettings(["NullCordAccent"]);
 
     return (
         <div className={cl("accent-row")} role="group" aria-label="Accent color">
@@ -162,11 +162,11 @@ function AccentPicker() {
                 <button
                     key={key}
                     type="button"
-                    className={cl("accent-swatch", { "accent-swatch-active": settings.kittycordAccent === key })}
+                    className={cl("accent-swatch", { "accent-swatch-active": settings.NullCordAccent === key })}
                     style={{ background: preset.accent }}
                     aria-label={key.charAt(0).toUpperCase() + key.slice(1)}
-                    aria-pressed={settings.kittycordAccent === key}
-                    onClick={() => { settings.kittycordAccent = key as KittycordAccent; }}
+                    aria-pressed={settings.NullCordAccent === key}
+                    onClick={() => { settings.NullCordAccent = key as NullCordAccent; }}
                 />
             ))}
         </div>
@@ -213,7 +213,7 @@ function EquicordSettings() {
                 <SpecialCard
                     title="Contributions"
                     subtitle="Thank you for contributing!"
-                    description="Since you've contributed to Kittycord you now have a cool new badge!"
+                    description="Since you've contributed to NullCord you now have a cool new badge!"
                     cardImage={COZY_CONTRIB_IMAGE}
                     backgroundImage={CONTRIB_BACKGROUND_IMAGE}
                     backgroundColor="#EDCC87"
@@ -239,7 +239,7 @@ function EquicordSettings() {
             <QuickActionCard>
                 <QuickAction
                     Icon={WebsiteIcon}
-                    text="Visit kittycord.dev"
+                    text="Visit NullCord.dev"
                     action={() => VencordNative.native.openExternal(BRAND_WEBSITE)}
                 />
                 <QuickAction
@@ -286,7 +286,7 @@ function EquicordSettings() {
 
             <Heading className={Margins.top20}>Accent Color</Heading>
             <Paragraph className={Margins.bottom16}>
-                Pick the color Kittycord uses for its own UI and the startup screen. The startup screen picks up a new color on the next launch.
+                Pick the color NullCord uses for its own UI and the startup screen. The startup screen picks up a new color on the next launch.
             </Paragraph>
             <AccentPicker />
 
@@ -294,7 +294,7 @@ function EquicordSettings() {
 
             <Heading className={Margins.top20}>Client Settings</Heading>
             <Paragraph className={Margins.bottom16}>
-                Configure how Kittycord behaves and integrates with Discord. These settings affect the Discord client's appearance and behavior.
+                Configure how NullCord behaves and integrates with Discord. These settings affect the Discord client's appearance and behavior.
             </Paragraph>
             <Notice.Info className={Margins.bottom20} style={{ width: "100%" }}>
                 You can customize where this settings section appears in Discord's settings menu by configuring the{" "}
@@ -317,7 +317,7 @@ function EquicordSettings() {
     );
 }
 
-export default wrapTab(EquicordSettings, "Kittycord Settings");
+export default wrapTab(EquicordSettings, "NullCord Settings");
 
 export function isEquicordDonor(userId: string): boolean {
     const donorBadges = BadgeAPI.getEquicordDonorBadges(userId);
@@ -328,3 +328,4 @@ export function isVencordDonor(userId: string): boolean {
     const donorBadges = BadgeAPI.getDonorBadges(userId);
     return GuildMemberStore.getMember(VC_GUILD_ID, userId)?.roles.includes(VC_DONOR_ROLE_ID) || !!donorBadges;
 }
+

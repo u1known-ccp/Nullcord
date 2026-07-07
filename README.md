@@ -1,17 +1,17 @@
 <div align="center">
-  <a href="https://kittycord.dev">
-    <img src="./browser/logo.png" width="440" alt="Kittycord">
+  <a href="https://NullCord.dev">
+    <img src="./browser/logo.png" width="440" alt="NullCord">
   </a>
   <p><b>The cutest Discord client mod — plugins, themes and a whole lot of pink.</b></p>
   <p>
-    <a href="https://github.com/KittyCord-Production/Kittycord/stargazers"><img src="https://img.shields.io/github/stars/KittyCord-Production/Kittycord?style=for-the-badge&logo=github&label=stars&color=FF5FA6&labelColor=1f141b" alt="Stars"></a>
-    <a href="https://github.com/KittyCord-Production/Kittycord/commits/main"><img src="https://img.shields.io/github/last-commit/KittyCord-Production/Kittycord?style=for-the-badge&label=updated&color=FF8AC4&labelColor=1f141b" alt="Last commit"></a>
-    <a href="./LICENSE"><img src="https://img.shields.io/github/license/KittyCord-Production/Kittycord?style=for-the-badge&color=FF8AC4&labelColor=1f141b" alt="License"></a>
+    <a href="https://github.com/NullCord-Production/NullCord/stargazers"><img src="https://img.shields.io/github/stars/NullCord-Production/NullCord?style=for-the-badge&logo=github&label=stars&color=FF5FA6&labelColor=1f141b" alt="Stars"></a>
+    <a href="https://github.com/NullCord-Production/NullCord/commits/main"><img src="https://img.shields.io/github/last-commit/NullCord-Production/NullCord?style=for-the-badge&label=updated&color=FF8AC4&labelColor=1f141b" alt="Last commit"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/github/license/NullCord-Production/NullCord?style=for-the-badge&color=FF8AC4&labelColor=1f141b" alt="License"></a>
   </p>
   <p>
-    <a href="https://github.com/KittyCord-Production/Kittycord/releases/latest"><b>⬇️ Download</b></a>
+    <a href="https://github.com/NullCord-Production/NullCord/releases/latest"><b>⬇️ Download</b></a>
     &nbsp;·&nbsp;
-    <a href="https://kittycord.dev"><b>🐾 kittycord.dev</b></a>
+    <a href="https://NullCord.dev"><b>🐾 NullCord.dev</b></a>
     &nbsp;·&nbsp;
     <a href="#-features"><b>🌸 Features</b></a>
     &nbsp;·&nbsp;
@@ -19,7 +19,7 @@
   </p>
 </div>
 
-Kittycord is a Discord client modification — a plugin and theme platform that adds hundreds of
+NullCord is a Discord client modification — a plugin and theme platform that adds hundreds of
 features to Discord while keeping it lightweight and privacy-friendly.
 
 ## 🌸 Features
@@ -28,11 +28,11 @@ features to Discord while keeping it lightweight and privacy-friendly.
   anything on or off in seconds, no extra downloads needed.
 - **Themes & QuickCSS** — restyle your whole client, or live-edit your own CSS right inside
   Discord.
-- **Kittycord exclusives** — Modes (one-click setting profiles), Quiet Hours, Message Tags,
-  Settings Sharing with friends, and the Kittycord Toolbox.
+- **NullCord exclusives** — Modes (one-click setting profiles), Quiet Hours, Message Tags,
+  Settings Sharing with friends, and the NullCord Toolbox.
 - **Custom plugin folder** — drop in your own plugins and they build right alongside the
   built-in ones.
-- **Safe auto-updates** — Kittycord keeps itself current in the background, and every download
+- **Safe auto-updates** — NullCord keeps itself current in the background, and every download
   is verified against a published SHA-256 checksum before it's applied.
 - **A cute installer in your language** — English, Deutsch, Español, Français and Русский,
   auto-detected from your system.
@@ -43,19 +43,19 @@ features to Discord while keeping it lightweight and privacy-friendly.
 > [discord.com](https://discord.com/download) (launched once), and an internet connection.
 > Nothing extra to install — everything the installer needs ships with Windows.
 
-1. **Download** [`Kittycord-Installer.exe`](https://github.com/KittyCord-Production/Kittycord/releases/latest)
+1. **Download** [`NullCord-Installer.exe`](https://github.com/NullCord-Production/NullCord/releases/latest)
    from the latest release.
 2. **Run it**, pick your Discord install and click **Install**. (Windows SmartScreen may warn
    because the exe is unsigned — click **"More info" → "Run anyway"**.)
 3. **Done!** Discord restarts on its own and comes back patched, pink and purring.
 
-![Kittycord Installer](installer/preview.png)
+![NullCord Installer](installer/preview.png)
 
 To uninstall, run the installer again and click **Uninstall** — it restores a completely clean
 Discord. See [installer/README.md](installer/README.md) for all the details and console
 alternatives.
 
-> A standalone Kittycord desktop client and Mac/Linux installers are on the roadmap. On other
+> A standalone NullCord desktop client and Mac/Linux installers are on the roadmap. On other
 > platforms, use the developer build below.
 
 ## ❓ FAQ & Troubleshooting
@@ -70,10 +70,10 @@ is built automatically from this repository by CI, so you can verify exactly wha
 </details>
 
 <details>
-<summary><b>Discord updated and Kittycord is gone</b></summary>
+<summary><b>Discord updated and NullCord is gone</b></summary>
 
 Big Discord host updates occasionally replace the patched files. Just run
-`Kittycord-Installer.exe` again and click **Reinstall / Repair** — your plugins, themes and
+`NullCord-Installer.exe` again and click **Reinstall / Repair** — your plugins, themes and
 settings are kept.
 </details>
 
@@ -95,7 +95,7 @@ for using them — see the [disclaimer](#%EF%B8%8F-disclaimer) below for the hon
 ## 🛠️ Developer Build
 
 <details>
-<summary>Build and install Kittycord from source</summary>
+<summary>Build and install NullCord from source</summary>
 
 ### Dependencies
 
@@ -109,13 +109,13 @@ Install `pnpm`:
 npm i -g pnpm
 ```
 
-> :exclamation: **IMPORTANT** Make sure you aren't using an admin/root terminal from here onwards. It **will** mess up your Discord/Kittycord instance and you **will** most likely have to reinstall.
+> :exclamation: **IMPORTANT** Make sure you aren't using an admin/root terminal from here onwards. It **will** mess up your Discord/NullCord instance and you **will** most likely have to reinstall.
 
-Clone Kittycord:
+Clone NullCord:
 
 ```shell
-git clone https://github.com/KittyCord-Production/Kittycord
-cd Kittycord
+git clone https://github.com/NullCord-Production/NullCord
+cd NullCord
 ```
 
 Install dependencies:
@@ -124,7 +124,7 @@ Install dependencies:
 pnpm install --frozen-lockfile
 ```
 
-Build Kittycord:
+Build NullCord:
 
 ```shell
 pnpm build
@@ -133,12 +133,12 @@ pnpm build
 Inject your local build into the Discord desktop client (Windows):
 
 ```shell
-powershell -ExecutionPolicy Bypass -File .\installer\Kittycord-Install.ps1
+powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Install.ps1
 ```
 
-Start Discord again and the Kittycord settings section appears. Re-run the script after
+Start Discord again and the NullCord settings section appears. Re-run the script after
 `pnpm build` whenever you want your latest changes in the client; revert everything with
-`installer\Kittycord-Uninstall.ps1`.
+`installer\NullCord-Uninstall.ps1`.
 
 ### Web extension / userscript
 
@@ -159,14 +159,15 @@ Discord is a trademark of Discord Inc., and is solely mentioned here for the sak
 Mentioning it does not imply any affiliation with or endorsement by Discord Inc.
 
 <details>
-<summary>Using Kittycord violates Discord's terms of service</summary>
+<summary>Using NullCord violates Discord's terms of service</summary>
 
 Client modifications are against Discord’s Terms of Service.
 
 However, Discord is pretty indifferent about them and there are no known cases of users getting banned for using client mods! So you should generally be fine if you don’t use plugins that implement abusive behaviour. But no worries, all inbuilt plugins are safe to use!
 
-Regardless, if your account is essential to you and getting disabled would be a disaster for you, you should probably not use any client mods (not exclusive to Kittycord), just to be safe.
+Regardless, if your account is essential to you and getting disabled would be a disaster for you, you should probably not use any client mods (not exclusive to NullCord), just to be safe.
 
-Additionally, make sure not to post screenshots with Kittycord in a server where you might get banned for it.
+Additionally, make sure not to post screenshots with NullCord in a server where you might get banned for it.
 
 </details>
+

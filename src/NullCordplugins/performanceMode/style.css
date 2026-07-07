@@ -1,0 +1,45 @@
+/* NullCord PerformanceMode - toggled via classes on <html> by the plugin.
+   Goal: cut the most expensive things to render on weak hardware. */
+
+@layer kc-perf {
+    /* Animations / transitions off. Durations are zeroed (instead of animation:none) so that
+       animationend/transitionend events still fire and Discord's logic doesn't get stuck. */
+    .kc-perf-noanim *,
+    .kc-perf-noanim *::before,
+    .kc-perf-noanim *::after {
+        animation-duration: 0s !important; /* perf: skip animation work on low-end PCs */
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+    }
+
+    /* Background blur is one of the most GPU-expensive effects Discord uses. */
+    .kc-perf-noblur * {
+        backdrop-filter: none !important; /* perf: blur is costly on weak GPUs */
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Heavy per-user cosmetics. */
+    .kc-perf-nofx [class*="profileEffect"],
+    .kc-perf-nofx [class*="ProfileEffect"] {
+        display: none !important; /* perf: animated profile effects */
+    }
+
+    .kc-perf-nodeco [class*="avatarDecoration"] {
+        display: none !important; /* perf: avatar decoration overlays */
+    }
+
+    .kc-perf-noplate [class*="nameplate"] {
+        display: none !important; /* perf: nameplate backgrounds */
+        background: none !important;
+    }
+
+    /* Ultra: maximum performance. The plugin also forces every toggle above on; this is the extra cut.
+       Note: deliberately NOT stripping `filter` globally — Discord blurs spoilers with it. */
+    .kc-perf-ultra *,
+    .kc-perf-ultra *::before,
+    .kc-perf-ultra *::after {
+        box-shadow: none !important; /* perf: shadows cause large repaint areas */
+    }
+}
+

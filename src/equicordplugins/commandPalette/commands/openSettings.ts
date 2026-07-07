@@ -29,7 +29,7 @@ export const DISCORD_SETTINGS_ROUTES: SettingsRoute[] = [
     { route: "authorized_apps", label: "Authorized Apps", keywords: ["oauth", "apps"] },
     { route: "family_center", label: "Family Center", keywords: ["family", "safety"] },
     { route: "advanced", label: "Advanced", keywords: ["developer"] },
-    { route: "equicord_main", label: "Kittycord", keywords: ["kittycord"] },
+    { route: "equicord_main", label: "NullCord", keywords: ["NullCord"] },
     { route: "equicord_plugins", label: "Plugins", keywords: ["plugins"] },
     { route: "equicord_themes", label: "Themes", keywords: ["themes", "css"] },
     { route: "equicord_updater", label: "Updater", keywords: ["update"] },
@@ -127,3 +127,4 @@ export async function openSettingsPage(route: string, label?: string) {
     showToast(`Unable to open ${label ?? "that settings page"}.`, Toasts.Type.FAILURE);
     return false;
 }
+

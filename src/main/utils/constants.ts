@@ -22,10 +22,10 @@ import { join } from "path";
 
 const suffix = IS_DEV ? "dev" : "";
 
-export const DATA_DIR = process.env.KITTYCORD_USER_DATA_DIR ?? process.env.EQUICORD_USER_DATA_DIR ?? (
+export const DATA_DIR = process.env.NullCord_USER_DATA_DIR ?? process.env.EQUICORD_USER_DATA_DIR ?? (
     process.env.DISCORD_USER_DATA_DIR
-        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "KittycordData", suffix)
-        : join(app.getPath("userData"), "..", "Kittycord", suffix)
+        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "NullCordData", suffix)
+        : join(app.getPath("userData"), "..", "NullCord", suffix)
 );
 
 export const SETTINGS_DIR = join(DATA_DIR, "settings");
@@ -68,8 +68,9 @@ if (IS_DEV) {
                 app.relaunch();
                 app.exit(0);
             } catch (err) {
-                console.error("[Kittycord] Failed to copy prod data:", err);
+                console.error("[NullCord] Failed to copy prod data:", err);
             }
         }, 5000);
     }
 }
+

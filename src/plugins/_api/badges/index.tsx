@@ -48,7 +48,7 @@ const ContributorBadge: ProfileBadge = {
 
 const EquicordContributorBadge: ProfileBadge = {
     id: "equicord_contributor_badge",
-    description: "Kittycord Contributor",
+    description: "NullCord Contributor",
     iconSrc: EQUICORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowEquicordContributorBadge(userId),
@@ -270,3 +270,4 @@ export default definePlugin({
         } satisfies ProfileBadge));
     }
 });
+

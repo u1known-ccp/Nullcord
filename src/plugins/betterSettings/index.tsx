@@ -17,7 +17,7 @@ import { findCssClassesLazy } from "@webpack";
 import { ComponentDispatch, FocusLock, Menu, useEffect, useRef } from "@webpack/common";
 import type { HTMLAttributes, ReactNode } from "react";
 
-import { buildPluginMenuEntries, buildThemeMenuEntries } from "../../kittycordplugins/kittycordMenu/menu";
+import { buildPluginMenuEntries, buildThemeMenuEntries } from "../../NullCordplugins/NullCordMenu/menu";
 import fullHeightStyle from "./fullHeightContext.css?managed";
 
 const cl = classNameFactory("");
@@ -241,3 +241,4 @@ export default definePlugin({
         return items;
     }
 });
+

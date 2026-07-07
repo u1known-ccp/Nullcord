@@ -1,5 +1,5 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -22,7 +22,7 @@ import { DATA_DIR } from "./utils/constants";
 // Set this to the deployed Cloudflare Worker URL (no trailing slash) to activate stats.
 // When empty, telemetry does NOTHING: no consent prompt, no network request.
 // Typed as string so the "is it configured?" checks below stay valid.
-const ENDPOINT: string = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
+const ENDPOINT: string = "https://NullCord-analytics.hell-bullet-hb.workers.dev";
 
 const FILE = join(DATA_DIR, "telemetry.json");
 const DAY = 24 * 60 * 60 * 1000;
@@ -88,3 +88,4 @@ ipcMain.handle(IpcEvents.SET_TELEMETRY_CONSENT, (_e, consent: boolean) => {
 });
 
 void maybePing();
+

@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name            Kittycord
+// @name            NullCord
 // @description     A Discord client mod - Web version
 // @version         %version%
-// @author          Kittycord (https://github.com/KittyCord-Production)
-// @namespace       https://github.com/KittyCord-Production/Kittycord
-// @supportURL      https://github.com/KittyCord-Production/Kittycord
-// @icon            https://raw.githubusercontent.com/KittyCord-Production/Kittycord/refs/heads/main/browser/icon.png
+// @author          NullCord (https://github.com/NullCord-Production)
+// @namespace       https://github.com/NullCord-Production/NullCord
+// @supportURL      https://github.com/NullCord-Production/NullCord
+// @icon            https://raw.githubusercontent.com/NullCord-Production/NullCord/refs/heads/main/browser/icon.png
 // @license         GPL-3.0
 // @match           *://*.discord.com/*
 // @grant           GM_xmlhttpRequest
@@ -23,4 +23,5 @@
 // to overwrite stuff on the window on sites that use CSP. Use Tampermonkey or use a chromium based browser
 // https://github.com/violentmonkey/violentmonkey/issues/997
 
-// this is a compiled and minified version of Kittycord. For the source code, visit the GitHub repo
+// this is a compiled and minified version of NullCord. For the source code, visit the GitHub repo
+

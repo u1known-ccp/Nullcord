@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { reportKittycordCrash } from "@utils/crashReporter";
+import { reportNullCordCrash } from "@utils/crashReporter";
 import { LazyComponent, LazyComponentWrapper } from "@utils/lazyReact";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
@@ -75,7 +75,7 @@ const ErrorBoundary = LazyComponent(() => {
         componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
             this.props.onError?.({ error, errorInfo, props: this.props.wrappedProps });
             logger.error(`${this.props.message || "A component threw an Error"}\n`, error, errorInfo.componentStack);
-            reportKittycordCrash(error);
+            reportNullCordCrash(error);
         }
 
         get isNoop() {
@@ -136,3 +136,4 @@ ErrorBoundary.wrap = (Component, errorBoundaryProps) => {
 };
 
 export default ErrorBoundary;
+

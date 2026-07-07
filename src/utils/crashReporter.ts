@@ -25,11 +25,11 @@ function hash(s: string): string {
     return String(h);
 }
 
-export function reportKittycordCrash(error: unknown, plugin?: string) {
+export function reportNullCordCrash(error: unknown, plugin?: string) {
     try {
         if (IS_DEV || IS_REPORTER || IS_WEB) return;
         if (sent >= MAX_PER_SESSION) return;
-        if (typeof VencordNative === "undefined" || !VencordNative.kittycordCrash) return;
+        if (typeof VencordNative === "undefined" || !VencordNative.NullCordCrash) return;
 
         const err = error instanceof Error ? error : new Error(String(error));
         const rawStack = err.stack ?? "";
@@ -42,6 +42,7 @@ export function reportKittycordCrash(error: unknown, plugin?: string) {
         const stack = scrub(rawStack.split("\n").slice(0, MAX_STACK_FRAMES).join("\n"));
 
         sent++;
-        VencordNative.kittycordCrash.report({ message, stack, plugin }).catch(() => { });
+        VencordNative.NullCordCrash.report({ message, stack, plugin }).catch(() => { });
     } catch { /* crash reporting must never cause a crash */ }
 }
+

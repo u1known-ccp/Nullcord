@@ -37,10 +37,10 @@ const settings = definePluginSettings({
         description: "Where to show the game activity toggle button",
         options: [
             { label: "Next to Mute/Deafen", value: "PANEL", default: true },
-            { label: "Kittycord", value: "TOOLBOX" }
+            { label: "NullCord", value: "TOOLBOX" }
         ],
         get hidden() {
-            return !isPluginEnabled("KittycordMenu");
+            return !isPluginEnabled("NullCordMenu");
         }
     }
 });
@@ -79,7 +79,7 @@ function GameActivityToggleButton({ iconForeground, hideTooltips, nameplate }: U
     const { location } = settings.use(["location"]);
     const showCurrentGame = ShowCurrentGame.useSetting();
 
-    if (location !== "PANEL" && isPluginEnabled("KittycordMenu")) return null;
+    if (location !== "PANEL" && isPluginEnabled("NullCordMenu")) return null;
 
     return (
         <UserAreaButton
@@ -123,3 +123,4 @@ export default definePlugin({
         );
     },
 });
+

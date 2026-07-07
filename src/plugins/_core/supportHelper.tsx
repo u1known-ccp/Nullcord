@@ -145,8 +145,8 @@ async function generateDebugInfoMessage() {
         : platformName();
 
     const info = {
-        Kittycord:
-            `v${VERSION} • [${gitHashShort}](<https://github.com/KittyCord-Production/Kittycord/commit/${gitHash}>)` +
+        NullCord:
+            `v${VERSION} • [${gitHashShort}](<https://github.com/NullCord-Production/NullCord/commit/${gitHash}>)` +
             `${IS_EQUIBOP ? "" : SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${clientString}`,
         Platform: platformDisplay
@@ -171,7 +171,7 @@ async function generateDebugInfoMessage() {
     const commonIssues = {
         "Activity Sharing Disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
         "Link Embeds Disabled": tryOrElse(() => !ShowEmbeds.getSetting(), false),
-        "Kittycord DevBuild": !IS_STANDALONE,
+        "NullCord DevBuild": !IS_STANDALONE,
         "Equibop DevBuild": IS_EQUIBOP && tryOrElse(() => VesktopNative.app.isDevBuild?.(), false),
         "Platform Spoofed": spoofInfo?.spoofed ?? false,
         "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
@@ -300,11 +300,11 @@ function DevBuildConfirmModal(props: RenderModalProps) {
             }}
         >
             <div>
-                <Paragraph>You are using a custom build of Kittycord, which we do not provide support for!</Paragraph>
+                <Paragraph>You are using a custom build of NullCord, which we do not provide support for!</Paragraph>
 
                 <Paragraph className={Margins.top8}>
-                    We only provide support for <Link href="https://kittycord.dev">official builds</Link>.
-                    Either <Link href="https://kittycord.dev">switch to an official build</Link> or figure your issue out yourself.
+                    We only provide support for <Link href="https://NullCord.dev">official builds</Link>.
+                    Either <Link href="https://NullCord.dev">switch to an official build</Link> or figure your issue out yourself.
                 </Paragraph>
 
                 <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
@@ -332,15 +332,15 @@ export default definePlugin({
 
     commands: [
         {
-            name: "kittycord-debug",
-            description: "Send Kittycord debug info",
+            name: "NullCord-debug",
+            description: "Send NullCord debug info",
             // @ts-ignore
             predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
             execute: async () => ({ content: await generateDebugInfoMessage() })
         },
         {
-            name: "kittycord-plugins",
-            description: "Send Kittycord plugin list",
+            name: "NullCord-plugins",
+            description: "Send NullCord plugin list",
             // @ts-ignore
             predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
             execute: async () => {
@@ -386,7 +386,7 @@ export default definePlugin({
                             onCancel={() => openSettingsTabModal(UpdaterTab!)}
                         >
                             <div>
-                                <Paragraph>You are using an outdated version of Kittycord! Chances are, your issue is already fixed.</Paragraph>
+                                <Paragraph>You are using an outdated version of NullCord! Chances are, your issue is already fixed.</Paragraph>
                                 <Paragraph className={Margins.top8}>
                                     Please first update before asking for support!
                                 </Paragraph>
@@ -412,9 +412,9 @@ export default definePlugin({
                         variant="primary"
                     >
                         <div>
-                            <Paragraph>You are using an externally updated Kittycord version, which we do not provide support for!</Paragraph>
+                            <Paragraph>You are using an externally updated NullCord version, which we do not provide support for!</Paragraph>
                             <Paragraph className={Margins.top8}>
-                                Please either switch to an <Link href="https://kittycord.dev">officially supported version of Kittycord</Link>, or
+                                Please either switch to an <Link href="https://NullCord.dev">officially supported version of NullCord</Link>, or
                                 contact your package maintainer for support instead.
                             </Paragraph>
                         </div>
@@ -463,14 +463,14 @@ export default definePlugin({
         }
 
         if (equicordSupport && isSupportChannel(props.channel.id) && PermissionStore.can(PermissionsBits.SEND_MESSAGES, props.channel)) {
-            if (props.message.content.includes("/kittycord-debug") || props.message.content.includes("/kittycord-plugins")) {
+            if (props.message.content.includes("/NullCord-debug") || props.message.content.includes("/NullCord-plugins")) {
                 buttons.push(
                     <Button
                         key="vc-dbg"
                         variant="secondary"
                         onClick={async () => sendMessage(props.channel.id, { content: await generateDebugInfoMessage() })}
                     >
-                        Run /kittycord-debug
+                        Run /NullCord-debug
                     </Button>,
                     <Button
                         key="vc-plg-list"
@@ -490,7 +490,7 @@ export default definePlugin({
                             }
                         }}
                     >
-                        Run /kittycord-plugins
+                        Run /NullCord-plugins
                     </Button>
                 );
             }
@@ -537,7 +537,7 @@ export default definePlugin({
 
         return (
             <Card variant="warning" className={Margins.top8} defaultPadding>
-                Please do not private message Kittycord plugin developers for support!
+                Please do not private message NullCord plugin developers for support!
                 <br />
                 Instead, use the support channel: {Parser.parse("https://discord.com/channels/1173279886065029291/1297590739911573585")}
                 {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) && " (Click the link to join)"}
@@ -545,3 +545,4 @@ export default definePlugin({
         );
     }, { noop: true }),
 });
+

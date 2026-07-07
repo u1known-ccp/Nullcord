@@ -1380,7 +1380,7 @@ export const EquicordDevs = Object.freeze({
     },
 } satisfies Record<string, Dev>);
 
-export const KittycordDevs = /* #__PURE__*/ Object.freeze({
+export const NullCordDevs = /* #__PURE__*/ Object.freeze({
     Maxi: {
         name: "Maxi",
         id: 432588595845398548n
@@ -1404,10 +1404,11 @@ export const EquicordDevsById = /* #__PURE__*/ (() =>
     ))
 )() as Record<string, Dev>;
 
-export const KittycordDevsById = /* #__PURE__*/ (() =>
+export const NullCordDevsById = /* #__PURE__*/ (() =>
     Object.freeze(Object.fromEntries(
-        Object.entries(KittycordDevs)
+        Object.entries(NullCordDevs)
             .filter(d => d[1].id !== 0n)
             .map(([_, v]) => [v.id, v] as const)
     ))
 )() as Record<string, Dev>;
+

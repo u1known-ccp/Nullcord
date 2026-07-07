@@ -77,7 +77,7 @@ const globNativesPlugin = {
         });
 
         build.onLoad({ filter, namespace: "import-natives" }, async () => {
-            const pluginDirs = ["plugins", "equicordplugins", "kittycordplugins", "moggcordplugins", "userplugins"];
+            const pluginDirs = ["plugins", "equicordplugins", "NullCordplugins", "moggcordplugins", "userplugins"];
             let code = "";
             let natives = "\n";
             let i = 0;
@@ -230,11 +230,11 @@ await buildOrWatchAll(buildConfigs);
 
 await Promise.all([
     writeFile("dist/desktop/package.json", JSON.stringify({
-        name: "kittycord",
+        name: "NullCord",
         main: "patcher.js"
     })),
     writeFile("dist/equibop/package.json", JSON.stringify({
-        name: "kittycord",
+        name: "NullCord",
         main: "main.js"
     }))
 ]);
@@ -243,3 +243,4 @@ await Promise.all([
     createPackage("dist/desktop", "dist/desktop.asar"),
     createPackage("dist/equibop", "dist/equibop.asar"),
 ]);
+

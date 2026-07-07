@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import "./kittycordTab.css";
+import "./NullCordTab.css";
 
 import ErrorBoundary from "@components/ErrorBoundary";
 import { handleComponentFailed } from "@components/handleComponentFailed";
@@ -59,3 +59,4 @@ export function openSettingsTabModal(Tab: ComponentType<any>) {
         handleSettingsTabError();
     }
 }
+

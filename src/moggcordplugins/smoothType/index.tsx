@@ -1,5 +1,5 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -8,8 +8,8 @@ import { definePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
 import { Forms } from "@webpack/common";
 
-// Ported to Kittycord from moggcord. Original authors kept as inline credits
-// (they are not in Kittycord's shared Devs list).
+// Ported to NullCord from moggcord. Original authors kept as inline credits
+// (they are not in NullCord's shared Devs list).
 
 const STYLE_ID = "vc-smoothtype";
 
@@ -320,3 +320,4 @@ export default definePlugin({
         caretEl = null;
     },
 });
+

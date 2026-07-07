@@ -1,25 +1,25 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord from moggcord and adapted: retargeted to the Kittycord
+// Ported to NullCord from moggcord and adapted: retargeted to the NullCord
 // settings heading, made opt-in (no longer a forced/required plugin).
 
 import definePlugin from "@utils/types";
 
-// Discord renders the "Kittycord Settings" heading from a plain string, so we
+// Discord renders the "NullCord Settings" heading from a plain string, so we
 // can't style it directly. Instead we tag the rendered text node and let CSS
 // run a black-and-white shimmer with a glint sweeping left-to-right.
 
-const STYLE_ID = "kittycord-settings-glint";
-const CLASS = "kittycord-glint-title";
-const TARGET_TEXT = "Kittycord Settings";
+const STYLE_ID = "NullCord-settings-glint";
+const CLASS = "NullCord-glint-title";
+const TARGET_TEXT = "NullCord Settings";
 const SCAN_INTERVAL_MS = 1000;
 
 const CSS = `
-@keyframes kittycord-glint-sweep {
+@keyframes NullCord-glint-sweep {
     0%   { background-position: -50% center; }
     100% { background-position: 150% center; }
 }
@@ -38,7 +38,7 @@ const CSS = `
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent !important;
-    animation: kittycord-glint-sweep 3.5s linear infinite !important;
+    animation: NullCord-glint-sweep 3.5s linear infinite !important;
     animation-play-state: running !important;
 }
 `;
@@ -73,7 +73,7 @@ let scanTimer: ReturnType<typeof setInterval> | null = null;
 export default definePlugin({
     name: "SettingsGlint",
     enabledByDefault: false,
-    description: "Animates the 'Kittycord Settings' heading with a black-and-white left-to-right glint.",
+    description: "Animates the 'NullCord Settings' heading with a black-and-white left-to-right glint.",
     authors: [{ name: "Moggcord", id: 0n }],
 
     start() {
@@ -96,3 +96,4 @@ export default definePlugin({
         document.querySelectorAll("." + CLASS).forEach(el => el.classList.remove(CLASS));
     }
 });
+

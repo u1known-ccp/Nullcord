@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: local voice-state patch only, no network/token/eval).
+// Ported to NullCord and audited (clean: local voice-state patch only, no network/token/eval).
 // Original author kept as inline credit.
 
 import { ApplicationCommandInputType, sendBotMessage } from "@api/Commands";
@@ -116,7 +116,7 @@ function FakeDeafenUserButton({ iconForeground, hideTooltips, nameplate }: UserA
 export default definePlugin({
     name: "FakeVoice",
     description: "Appear muted, deafened or with your camera on to others while you stay in control. Right-click the user-area button for options, or use /fakemute, /fakedeafen and /fakecamera.",
-    authors: [{ name: "Kittycord", id: 0n }, { name: "mushzi", id: 449282863582412850n }],
+    authors: [{ name: "NullCord", id: 0n }, { name: "mushzi", id: 449282863582412850n }],
     dependencies: ["CommandsAPI", "UserAreaAPI"],
 
     patches: [
@@ -193,3 +193,4 @@ export default definePlugin({
         },
     ],
 });
+

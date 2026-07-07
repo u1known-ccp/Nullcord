@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { ACCENT_PRESETS, KittycordAccent } from "@shared/accentPresets";
+import { ACCENT_PRESETS, NullCordAccent } from "@shared/accentPresets";
 import { app } from "electron";
 import { readFileSync, rmSync } from "fs";
 import { join } from "path";
@@ -15,7 +15,7 @@ import { DATA_DIR } from "./utils/constants";
 try {
     const candidates = new Set<string>([join(DATA_DIR, "style.json")]);
     try {
-        candidates.add(join(app.getPath("appData"), "Kittycord", "style.json"));
+        candidates.add(join(app.getPath("appData"), "NullCord", "style.json"));
     } catch { }
 
     for (const path of candidates) {
@@ -28,7 +28,7 @@ try {
         try {
             const accent = JSON.parse((raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw).trim())?.accent;
             if (typeof accent === "string" && Object.prototype.hasOwnProperty.call(ACCENT_PRESETS, accent)) {
-                RendererSettings.store.kittycordAccent = accent as KittycordAccent;
+                RendererSettings.store.NullCordAccent = accent as NullCordAccent;
             }
         } catch { }
         try {
@@ -36,3 +36,4 @@ try {
         } catch { }
     }
 } catch { }
+

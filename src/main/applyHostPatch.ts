@@ -11,7 +11,7 @@ const STUB_PACKAGE = JSON.stringify({ name: "discord", main: "index.js", private
 const VERSION_PREFIX = "app-";
 
 const makeStubIndex = (patcherPath: string) =>
-    `try {\n    require(${JSON.stringify(patcherPath)});\n} catch (err) {\n    console.error("[Kittycord] Failed to load patcher, starting vanilla Discord:", err);\n    require("../_app.asar");\n}\n`;
+    `try {\n    require(${JSON.stringify(patcherPath)});\n} catch (err) {\n    console.error("[NullCord] Failed to load patcher, starting vanilla Discord:", err);\n    require("../_app.asar");\n}\n`;
 
 export const getPatcherJsPath = () => join(__dirname, "patcher.js");
 
@@ -65,7 +65,7 @@ export const patchResourcesDir = (resources: string, patcherJsPath: string): boo
             try {
                 undo[i]();
             } catch (cleanupErr) {
-                console.error("[Kittycord] Rollback step failed", cleanupErr);
+                console.error("[NullCord] Rollback step failed", cleanupErr);
             }
         }
         throw err;
@@ -107,17 +107,18 @@ export const findStaleSibling = (currentExeDir: string): string | null => {
             try {
                 isDir = statSync(join(discordPath, name)).isDirectory();
             } catch (statErr) {
-                console.error("[Kittycord] Skipping unreadable sibling", name, statErr);
+                console.error("[NullCord] Skipping unreadable sibling", name, statErr);
                 continue;
             }
             if (!isDir) continue;
             if (isNewer(name, latest)) latest = name;
         }
     } catch (err) {
-        console.error("[Kittycord] Failed to scan for sibling versions", err);
+        console.error("[NullCord] Failed to scan for sibling versions", err);
         return null;
     }
 
     if (latest === currentVersion) return null;
     return join(discordPath, latest, "resources");
 };
+

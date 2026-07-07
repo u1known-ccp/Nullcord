@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: purely local string encryption/decryption,
+// Ported to NullCord and audited (clean: purely local string encryption/decryption,
 // no network/token/eval; only the clipboard is used to copy decrypted text on request).
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
@@ -293,7 +293,7 @@ const messageContextPatch = (children: any, { message }: { message: any; }) => {
 export default definePlugin({
     name: "EncryptedMessage",
     description: "Encrypts your messages with 400 unique techniques (0–399). Only those who know the key can decrypt.",
-    authors: [{ name: "Kittycord", id: 0n }, { name: "Moggcord", id: 0n }],
+    authors: [{ name: "NullCord", id: 0n }, { name: "Moggcord", id: 0n }],
     dependencies: ["ChatInputButtonAPI", "MessageEventsAPI", "MessageAccessoriesAPI"],
 
     chatBarButton: {
@@ -330,3 +330,4 @@ export default definePlugin({
         messageObj.content = encrypted;
     },
 });
+

@@ -1,0 +1,39 @@
+/*
+ * NullCord, a Discord client mod
+ * Copyright (c) 2025 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.kc-priv-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.kc-priv-yes,
+.kc-priv-no {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-normal);
+}
+
+.kc-priv-yes {
+    background: var(--background-secondary);
+    border-left: 3px solid #6bffb4;
+}
+
+.kc-priv-no {
+    background: var(--background-secondary);
+    border-left: 3px solid var(--kc-accent, #ff5fa6);
+}
+
+.kc-priv-report {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+

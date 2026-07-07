@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: local DOM/CSS only, no network/token/eval).
+// Ported to NullCord and audited (clean: local DOM/CSS only, no network/token/eval).
 // Original author kept as inline credit.
 
 import "./styles.css";
@@ -247,7 +247,7 @@ const userMenuPatch: NavContextMenuPatchCallback = (children, props) => {
 export default definePlugin({
     name: "StreamProof",
     description: "Blurs your messages, links, images, files and DMs (but not the screen share / voice grid) while streaming. Click an item to reveal it. Toggle via the chat bar button.",
-    authors: [{ name: "Kittycord", id: 0n }, EquicordDevs.TheArmagan],
+    authors: [{ name: "NullCord", id: 0n }, EquicordDevs.TheArmagan],
     dependencies: ["ChatInputButtonAPI"],
     settings,
 
@@ -286,3 +286,4 @@ export default definePlugin({
         wasStreaming = false;
     }
 });
+

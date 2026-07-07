@@ -109,12 +109,12 @@ const enum SearchStatus {
 }
 
 export const ExcludedReasons: Record<"web" | "discordDesktop" | "vesktop" | "equibop" | "desktop" | "dev", string> = {
-    desktop: "Discord Desktop app or the Kittycord app",
+    desktop: "Discord Desktop app or the NullCord app",
     discordDesktop: "Discord Desktop app",
-    vesktop: "the Kittycord app",
-    equibop: "the Kittycord app",
-    web: "the Kittycord app & Discord web",
-    dev: "Developer version of Kittycord"
+    vesktop: "the NullCord app",
+    equibop: "the NullCord app",
+    web: "the NullCord app & Discord web",
+    dev: "Developer version of NullCord"
 };
 
 function ExcludedPluginsList({ search }: { search: string; }) {
@@ -219,7 +219,7 @@ export default function PluginSettings() {
                 break;
             case SearchStatus.EQUICORD: {
                 const { folderName } = PluginMeta[plugin.name];
-                if (!folderName.startsWith("src/kittycordplugins/") && !folderName.startsWith("src/moggcordplugins/")) return false;
+                if (!folderName.startsWith("src/NullCordplugins/") && !folderName.startsWith("src/moggcordplugins/")) return false;
                 break;
             }
             case SearchStatus.VENCORD: {
@@ -284,7 +284,7 @@ export default function PluginSettings() {
 
             if (isRequired) {
                 const tooltipText = p.required || !depMap[p.name]
-                    ? "This plugin is required for Kittycord to function."
+                    ? "This plugin is required for NullCord to function."
                     : <PluginDependencyList deps={depMap[p.name]?.filter(d => settings.plugins[d].enabled)} />;
 
                 requiredPlugins.push(
@@ -425,7 +425,7 @@ export default function PluginSettings() {
                             { label: "Show All", value: SearchStatus.ALL, default: true },
                             { label: "Show Enabled", value: SearchStatus.ENABLED },
                             { label: "Show Disabled", value: SearchStatus.DISABLED },
-                            { label: "Show Kittycord", value: SearchStatus.EQUICORD },
+                            { label: "Show NullCord", value: SearchStatus.EQUICORD },
                             { label: "Show Built-in", value: SearchStatus.VENCORD },
                             { label: "Show New", value: SearchStatus.NEW },
                             hasUserPlugins && { label: "Show UserPlugins", value: SearchStatus.USER_PLUGINS },
@@ -491,3 +491,4 @@ export function PluginDependencyList({ deps }: { deps: string[]; }) {
         </>
     );
 }
+

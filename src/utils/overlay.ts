@@ -1,11 +1,11 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 // Discord's in-game overlay runs the full client renderer in a separate, transparent window.
-// Kittycord must never inject themes or managed styles there, or the overlay turns opaque and
+// NullCord must never inject themes or managed styles there, or the overlay turns opaque and
 // covers the game. This mirrors Discord's own overlay detection (discord_overlay2/index.js):
 // the `__OVERLAY__` global, the `__OVERLAY__SENTINEL__` node, or "overlay" in the path. The
 // substring (not `/overlay`) is what catches the renderer URLs `.../discord_overlay/...` and
@@ -25,3 +25,4 @@ export function isOverlayContext(win: Window | undefined) {
 export function isOverlayWindow() {
     return isOverlayContext(window);
 }
+

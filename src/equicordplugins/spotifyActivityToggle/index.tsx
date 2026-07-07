@@ -47,7 +47,7 @@ function SpotifyActivityToggleButton({ iconForeground, hideTooltips, nameplate }
         return () => { forceUpdate = null; };
     }, []);
 
-    if (!isLoaded || !spotifyId || location !== "PANEL" && isPluginEnabled("KittycordMenu")) return null;
+    if (!isLoaded || !spotifyId || location !== "PANEL" && isPluginEnabled("NullCordMenu")) return null;
 
     return (
         <UserAreaButton
@@ -76,10 +76,10 @@ const settings = definePluginSettings({
         description: "Where to show the Spotify toggle button.",
         options: [
             { label: "Next to Mute/Deafen", value: "PANEL", default: true },
-            { label: "Kittycord", value: "TOOLBOX" }
+            { label: "NullCord", value: "TOOLBOX" }
         ],
         get hidden() {
-            return !isPluginEnabled("KittycordMenu");
+            return !isPluginEnabled("NullCordMenu");
         }
     },
 });
@@ -133,3 +133,4 @@ export default definePlugin({
         }
     },
 });
+

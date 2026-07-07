@@ -1,10 +1,10 @@
 {
     "manifest_version": 2,
     "minimum_chrome_version": "91",
-    "name": "Kittycord",
+    "name": "NullCord",
     "description": "The cutest Discord mod now in your browser",
-    "author": "Kittycord",
-    "homepage_url": "https://github.com/KittyCord-Production/Kittycord",
+    "author": "NullCord",
+    "homepage_url": "https://github.com/NullCord-Production/NullCord",
     "icons": {
         "128": "icon.png"
     },
@@ -32,7 +32,7 @@
                 "*://*.discord.com/*"
             ],
             "js": [
-                "dist/Kittycord.js"
+                "dist/NullCord.js"
             ],
             "all_frames": true,
             "world": "MAIN"
@@ -44,12 +44,12 @@
         ]
     },
     "web_accessible_resources": [
-        "dist/Kittycord.js",
-        "dist/Kittycord.css"
+        "dist/NullCord.js",
+        "dist/NullCord.css"
     ],
     "browser_specific_settings": {
         "gecko": {
-            "id": "firefox@kittycord",
+            "id": "firefox@NullCord",
             "strict_min_version": "128.0",
             "data_collection_permissions": {
                 "required": [

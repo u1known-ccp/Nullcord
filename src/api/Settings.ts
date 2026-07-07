@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { KittycordAccent } from "@shared/accentPresets";
+import { NullCordAccent } from "@shared/accentPresets";
 import { SettingsStore as SettingsStoreClass } from "@shared/SettingsStore";
 import { Logger } from "@utils/Logger";
 import { mergeDefaults } from "@utils/mergeDefaults";
@@ -75,7 +75,7 @@ export interface Settings {
     windowsMaterial: "none" | "mica" | "tabbed" | "acrylic";
     disableMinSize: boolean;
     winNativeTitleBar: boolean;
-    kittycordAccent: KittycordAccent;
+    NullCordAccent: NullCordAccent;
     plugins: {
         [plugin: string]: {
             enabled: boolean;
@@ -134,7 +134,7 @@ const DefaultSettings: Settings = {
     windowsMaterial: "none",
     disableMinSize: false,
     winNativeTitleBar: false,
-    kittycordAccent: "pink",
+    NullCordAccent: "pink",
     plugins: {},
 
     uiElements: {
@@ -402,3 +402,4 @@ type ResolveUseSettings<T extends object> = {
     : Key
     : never;
 };
+

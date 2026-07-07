@@ -105,7 +105,7 @@ const buildConfigs = [
             IS_USERSCRIPT: "true",
             window: "unsafeWindow",
         },
-        outfile: "dist/Kittycord.user.js",
+        outfile: "dist/NullCord.user.js",
         banner: {
             js: readFileSync("browser/userscript.meta.js", "utf-8").replace("%version%", `${VERSION}.${new Date().getTime()}`)
         },
@@ -155,8 +155,8 @@ async function loadDir(dir, basePath = "") {
  */
 async function buildExtension(target, files) {
     const entries = {
-        "dist/Kittycord.js": await readFile("dist/browser/extension.js"),
-        "dist/Kittycord.css": await readFile("dist/browser/extension.css"),
+        "dist/NullCord.js": await readFile("dist/browser/extension.js"),
+        "dist/NullCord.css": await readFile("dist/browser/extension.css"),
         ...await loadDir("dist/browser/vendor/monaco", "dist/browser/"),
         ...Object.fromEntries(await Promise.all(files.map(async f => {
             let content = await readFile(join("browser", f));
@@ -184,10 +184,10 @@ async function buildExtension(target, files) {
     console.info("Unpacked Extension written to dist/browser/" + target);
 }
 
-const appendCssRuntime = readFile("dist/Kittycord.user.css", "utf-8").then(content => {
+const appendCssRuntime = readFile("dist/NullCord.user.css", "utf-8").then(content => {
     const cssRuntime = `unsafeWindow._vcUserScriptRendererCss=\`${content.replaceAll("`", "\\`")}\``;
 
-    return appendFile("dist/Kittycord.user.js", cssRuntime);
+    return appendFile("dist/NullCord.user.js", cssRuntime);
 });
 
 if (!process.argv.includes("--skip-extension")) {
@@ -208,3 +208,4 @@ if (!process.argv.includes("--skip-extension")) {
 } else {
     await appendCssRuntime;
 }
+

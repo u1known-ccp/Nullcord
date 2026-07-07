@@ -38,10 +38,11 @@ if (!uninstall && !existsSync(join(BASE_DIR, "dist", "desktop", "patcher.js"))) 
     process.exit(1);
 }
 
-const script = join(BASE_DIR, "installer", uninstall ? "Kittycord-Uninstall.ps1" : "Kittycord-Install.ps1");
+const script = join(BASE_DIR, "installer", uninstall ? "NullCord-Uninstall.ps1" : "NullCord-Install.ps1");
 
 try {
     execFileSync("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script], { stdio: "inherit" });
 } catch {
     process.exitCode = 1;
 }
+

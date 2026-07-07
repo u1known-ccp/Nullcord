@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord from moggcord (originally from Nightcord).
+// Ported to NullCord from moggcord (originally from Nightcord).
 
 import { definePluginSettings } from "@api/Settings";
 import definePlugin, { OptionType } from "@utils/types";
@@ -91,3 +91,4 @@ export default definePlugin({
         },
     ],
 });
+

@@ -99,8 +99,8 @@ if (!IS_VANILLA && !IS_EXTENSION) {
         try {
             if (RendererSettings.store.enableReactDevtools)
                 installExt("fmkadmapgofadopljbjfkapdkoienihi")
-                    .then(() => console.info("[Kittycord] Installed React Developer Tools"))
-                    .catch(err => console.error("[Kittycord] Failed to install React Developer Tools", err));
+                    .then(() => console.info("[NullCord] Installed React Developer Tools"))
+                    .catch(err => console.error("[NullCord] Failed to install React Developer Tools", err));
         } catch { }
 
         initCsp();
@@ -110,3 +110,4 @@ if (!IS_VANILLA && !IS_EXTENSION) {
 if (IS_DISCORD_DESKTOP) {
     require("./patcher");
 }
+

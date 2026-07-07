@@ -6,7 +6,7 @@
 > Your contribution must be majority human written! Some AI assistance like inline suggestions is acceptable, but "vibecoded" contributions are not welcome.
 > Also **do not** use AI to generate your pull request description, README.md or in communication. Ignoring this rule will lead to a permanent block.
 
-Kittycord is a community project and welcomes any kind of contribution from anyone!
+NullCord is a community project and welcomes any kind of contribution from anyone!
 
 Development guidelines for new contributors live in this repository — see [.rules](./.rules) for the coding standards and plugin conventions.
 
@@ -16,16 +16,16 @@ Contributions are submitted through pull requests. If you are new to Git or GitH
 
 Pull requests can be made to the `main` branch.
 
-Before working on a major change, we highly recommend opening an [issue](https://github.com/KittyCord-Production/Kittycord/issues) for it first, so it can be discussed before you invest time. This saves you a lot of time in case your feature is considered too niche or rejected for any other reason.
+Before working on a major change, we highly recommend opening an [issue](https://github.com/NullCord-Production/NullCord/issues) for it first, so it can be discussed before you invest time. This saves you a lot of time in case your feature is considered too niche or rejected for any other reason.
 
 ## Writing a Plugin
 
-Developing a plugin is the primary way to contribute. Kittycord's own plugins live in `src/kittycordplugins/`.
+Developing a plugin is the primary way to contribute. NullCord's own plugins live in `src/NullCordplugins/`.
 
 Before starting your plugin:
 
 - Consider if this plugin would be useful to a large portion of the userbase. We do not accept niche plugins.
-- Check existing pull requests and [issues](https://github.com/KittyCord-Production/Kittycord/issues) to see if someone is already working on a similar plugin, or if your idea was already requested or rejected.
+- Check existing pull requests and [issues](https://github.com/NullCord-Production/NullCord/issues) to see if someone is already working on a similar plugin, or if your idea was already requested or rejected.
 - If no request exists, open one and clearly state that you want to work on it yourself.
 - Wait for feedback before starting development, as some ideas may not be accepted or may need adjustments.
 - Familiarise yourself with the plugin rules below to ensure your plugin is not rejected.
@@ -35,7 +35,7 @@ Before starting your plugin:
 
 ## Plugin Rules
 
-To keep Kittycord stable, secure and maintainable, all plugins must follow these rules:
+To keep NullCord stable, secure and maintainable, all plugins must follow these rules:
 
 1. No simple slash-command plugins (e.g. `/cat`). If applicable, create a [user-installable Discord app](https://discord.com/developers/docs/change-log#userinstallable-apps-preview) instead.
 2. No simple text replacement plugins (the built-in TextReplace plugin already covers this).
@@ -51,12 +51,13 @@ To keep Kittycord stable, secure and maintainable, all plugins must follow these
 
 **Plugins that violate any of these rules will not be accepted.**
 
-## Improving Kittycord Itself
+## Improving NullCord Itself
 
-If you want to improve Kittycord beyond plugins, such as internal features or performance improvements, you are welcome to open an [issue](https://github.com/KittyCord-Production/Kittycord/issues) so it can be discussed.
+If you want to improve NullCord beyond plugins, such as internal features or performance improvements, you are welcome to open an [issue](https://github.com/NullCord-Production/NullCord/issues) so it can be discussed.
 
 Bug fixes, refactors, and documentation improvements are also highly appreciated!
 
 ## Helping the Community
 
-Helping out other users in the repository's [issues](https://github.com/KittyCord-Production/Kittycord/issues) and [discussions](https://github.com/KittyCord-Production/Kittycord/discussions) is always appreciated! The more, the merrier.
+Helping out other users in the repository's [issues](https://github.com/NullCord-Production/NullCord/issues) and [discussions](https://github.com/NullCord-Production/NullCord/discussions) is always appreciated! The more, the merrier.
+

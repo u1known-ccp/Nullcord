@@ -1,6 +1,6 @@
 /**
  * @name        AMOLED Black
- * @author      Kittycord
+ * @author      NullCord
  * @description Pures Schwarz-Theme fuer OLED-Displays. Nahezu opake Glasflaechen auf reinem Schwarz, dezenter Pink-Akzent, rotes LIVE-Badge bleibt erhalten. Eigenstaendig, ohne externe Imports. (Nachrichten-Textfarbe bleibt Discord-Standard.)
  * @version     1.0.0
  */
@@ -464,3 +464,4 @@ html.kc-idle-noblur [class*="chat_"]:not([class*="chatContent_"]) {
     -webkit-backdrop-filter: none;
   }
 }
+

@@ -123,7 +123,7 @@ async function syncSettings() {
 let notifiedForUpdatesThisSession = false;
 
 async function updateAndRelaunch() {
-    showToast("Getting the latest Kittycord update…", Toasts.Type.MESSAGE);
+    showToast("Getting the latest NullCord update…", Toasts.Type.MESSAGE);
     try {
         if (await checkForUpdates()) await update();
     } catch (err) {
@@ -161,7 +161,7 @@ async function runUpdateCheck() {
                 notifiedForUpdatesThisSession = true;
 
                 showNotice(
-                    "Kittycord has been updated!",
+                    "NullCord has been updated!",
                     "Restart",
                     updateAndRelaunch
                 );
@@ -173,7 +173,7 @@ async function runUpdateCheck() {
         notifiedForUpdatesThisSession = true;
 
         showNotice(
-            "A new version of Kittycord is available!",
+            "A new version of NullCord is available!",
             "View Update",
             () => openSettingsTabModal(UpdaterTab!)
         );
@@ -191,7 +191,7 @@ function initTrayIpc() {
             VencordNative.tray.setUpdateState(isOutdated);
 
             if (isOutdated) {
-                showNotice("A Kittycord update is available!", "View Update", () => openSettingsTabModal(UpdaterTab!));
+                showNotice("A NullCord update is available!", "View Update", () => openSettingsTabModal(UpdaterTab!));
             } else {
                 showNotice("No updates available, you're on the latest version!", "OK", popNotice);
             }
@@ -207,7 +207,7 @@ function initTrayIpc() {
             await update();
             relaunch();
         } catch (err) {
-            UpdateLogger.error("Failed to repair Kittycord", err);
+            UpdateLogger.error("Failed to repair NullCord", err);
         }
     });
 
@@ -219,7 +219,7 @@ async function maybeSurfaceChangelog() {
         if (!await shouldSurfaceUpdateNotice()) return;
         await markUpdateNoticeShown();
         showNotice(
-            "You're on a new version of Kittycord!",
+            "You're on a new version of NullCord!",
             "What's New",
             () => { if (ChangelogTab) openSettingsTabModal(ChangelogTab); }
         );
@@ -233,13 +233,13 @@ function maybeWarnPatchFailures() {
     if (erroredPatches < 3 && noEffectPatches < 8) return;
 
     showNotice(
-        "Some Kittycord features couldn't load, likely because Discord updated. The basics still work, and a Kittycord update usually fixes it.",
+        "Some NullCord features couldn't load, likely because Discord updated. The basics still work, and a NullCord update usually fixes it.",
         "OK",
         popNotice
     );
 }
 
-const PERFORMANCE_SUGGESTION_KEY = "Kittycord_PerformanceSuggested";
+const PERFORMANCE_SUGGESTION_KEY = "NullCord_PerformanceSuggested";
 
 async function maybeSuggestPerformanceMode() {
     try {
@@ -253,7 +253,7 @@ async function maybeSuggestPerformanceMode() {
         await dsSet(PERFORMANCE_SUGGESTION_KEY, true);
 
         showNotice(
-            "This device looks low on power. Turn on PerformanceMode in Kittycord settings for a lighter, smoother Discord.",
+            "This device looks low on power. Turn on PerformanceMode in NullCord settings for a lighter, smoother Discord.",
             "OK",
             popNotice
         );
@@ -290,7 +290,7 @@ async function init() {
                 "Webpack has finished initialising, but some patches haven't been applied yet.",
                 "This might be expected since some Modules are lazy loaded, but please verify",
                 "that all plugins are working as intended.",
-                "You are seeing this warning because this is a Development build of Kittycord.",
+                "You are seeing this warning because this is a Development build of NullCord.",
                 "\nThe following patches have not been applied:",
                 "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
             );
@@ -300,13 +300,13 @@ async function init() {
 initPluginManager();
 initStyles();
 
-const accentStyleNode = createAndAppendStyle("vencord-kittycord-accent", coreStyleRootNode);
+const accentStyleNode = createAndAppendStyle("vencord-NullCord-accent", coreStyleRootNode);
 function applyAccent() {
-    const preset = ACCENT_PRESETS[Settings.kittycordAccent] ?? ACCENT_PRESETS.pink;
+    const preset = ACCENT_PRESETS[Settings.NullCordAccent] ?? ACCENT_PRESETS.pink;
     accentStyleNode.textContent = `:root{--kc-accent:${preset.accent};--kc-accent-soft:${preset.soft};--kc-accent-glow:${preset.glow};--kc-logo-filter:${preset.logoFilter}}`;
 }
 applyAccent();
-SettingsStore.addChangeListener("kittycordAccent", applyAccent);
+SettingsStore.addChangeListener("NullCordAccent", applyAccent);
 
 startAllPlugins(StartAt.Init);
 init();
@@ -319,3 +319,4 @@ document.addEventListener("DOMContentLoaded", () => {
         createAndAppendStyle("vencord-native-titlebar-style", coreStyleRootNode).textContent = "[class*=titleBar]{display: none!important}";
     }
 }, { once: true });
+

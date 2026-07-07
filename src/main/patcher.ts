@@ -24,7 +24,7 @@ import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
 import { IS_VANILLA } from "./utils/constants";
 
-console.log("[Kittycord] Starting up...");
+console.log("[NullCord] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -47,54 +47,54 @@ if (!IS_VANILLA) {
     try {
         require("./styleSeed");
     } catch (err) {
-        console.error("[Kittycord] Failed to apply style seed", err);
+        console.error("[NullCord] Failed to apply style seed", err);
     }
 
-    // Rebrand Discord's startup splash window to Kittycord (best-effort, never throws).
+    // Rebrand Discord's startup splash window to NullCord (best-effort, never throws).
     try {
-        require("./kittycordSplash");
+        require("./NullCordSplash");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up splash branding", err);
+        console.error("[NullCord] Failed to set up splash branding", err);
     }
 
-    // Install Kittycord's bundled themes into the user's themes folder (shows up under Settings > Themes).
+    // Install NullCord's bundled themes into the user's themes folder (shows up under Settings > Themes).
     try {
         require("./bundledThemes");
     } catch (err) {
-        console.error("[Kittycord] Failed to install bundled themes", err);
+        console.error("[NullCord] Failed to install bundled themes", err);
     }
 
     // Optional anonymous usage stats (opt-in; fully inert until an endpoint is configured + the user agrees).
     try {
         require("./telemetry");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up telemetry", err);
+        console.error("[NullCord] Failed to set up telemetry", err);
     }
 
     try {
         require("./crashReporter");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up crash reporting", err);
+        console.error("[NullCord] Failed to set up crash reporting", err);
     }
 
     try {
         require("./deepLinks");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up deep links", err);
+        console.error("[NullCord] Failed to set up deep links", err);
     }
 
-    // Optional opt-in "which friends use Kittycord?" registry (inert until configured + the user agrees).
+    // Optional opt-in "which friends use NullCord?" registry (inert until configured + the user agrees).
     try {
         require("./shareRegistry");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up share registry", err);
+        console.error("[NullCord] Failed to set up share registry", err);
     }
 
     // Custom profile badges (emoji + label).
     try {
         require("./customBadges");
     } catch (err) {
-        console.error("[Kittycord] Failed to set up custom badges", err);
+        console.error("[NullCord] Failed to set up custom badges", err);
     }
 
     /*
@@ -105,7 +105,7 @@ if (!IS_VANILLA) {
         try {
             require("./hostUpdateHook").installHostUpdateHook();
         } catch (err) {
-            console.error("[Kittycord] Failed to install host update hook", err);
+            console.error("[NullCord] Failed to install host update hook", err);
         }
     }
 
@@ -115,7 +115,7 @@ if (!IS_VANILLA) {
         try {
             require("./retainPatch").installRetainPatch();
         } catch (err) {
-            console.error("[Kittycord] Failed to install retain patch", err);
+            console.error("[NullCord] Failed to install retain patch", err);
         }
     }
     if (process.platform === "win32") {
@@ -236,8 +236,9 @@ if (!IS_VANILLA) {
     app.commandLine.appendSwitch("disable-background-timer-throttling");
     app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
 } else {
-    console.log("[Kittycord] Running in vanilla mode. Not loading Equicord");
+    console.log("[NullCord] Running in vanilla mode. Not loading Equicord");
 }
 
-console.log("[Kittycord] Loading original Discord app.asar");
+console.log("[NullCord] Loading original Discord app.asar");
 require(require.main!.filename);
+

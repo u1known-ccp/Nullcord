@@ -27,7 +27,7 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
 
     const equicordFlag = args.includes("--equicord");
     const vencordFlag = args.includes("--vencord");
-    const kittycordFlag = args.includes("--kittycord");
+    const NullCordFlag = args.includes("--NullCord");
     const moggcordFlag = args.includes("--moggcord");
 
     let dirs: string[];
@@ -36,15 +36,15 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
         dirs = ["src/equicordplugins/_core", "src/equicordplugins"];
     } else if (vencordFlag) {
         dirs = ["src/plugins", "src/plugins/_core"];
-    } else if (kittycordFlag) {
-        dirs = ["src/kittycordplugins/_core", "src/kittycordplugins"];
+    } else if (NullCordFlag) {
+        dirs = ["src/NullCordplugins/_core", "src/NullCordplugins"];
     } else if (moggcordFlag) {
         dirs = ["src/moggcordplugins/_core", "src/moggcordplugins"];
     } else {
-        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins", "src/moggcordplugins/_core", "src/moggcordplugins", "src/kittycordplugins/_core", "src/kittycordplugins"];
+        dirs = ["src/plugins", "src/plugins/_core", "src/equicordplugins/_core", "src/equicordplugins", "src/moggcordplugins/_core", "src/moggcordplugins", "src/NullCordplugins/_core", "src/NullCordplugins"];
     }
 
-    // The moggcord/kittycord folders (and their _core subfolders) may not exist yet; skip missing dirs.
+    // The moggcord/NullCord folders (and their _core subfolders) may not exist yet; skip missing dirs.
     dirs = dirs.filter(dir => existsSync(dir));
 
     const outputPath = args.find(a => !a.startsWith("--")) ?? null;
@@ -70,3 +70,4 @@ import { getEntryPoint, isPluginFile, parseDevs, parseEquicordDevs, parseFile, P
         console.log(data);
     }
 })();
+

@@ -33,7 +33,7 @@ interface PluginCardProps extends React.HTMLProps<HTMLDivElement> {
 export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, onMouseLeave, isNew }: PluginCardProps) {
     const settings = Settings.plugins[plugin.name];
     const pluginMeta = PluginMeta[plugin.name];
-    const isKittycordPlugin = pluginMeta.folderName.startsWith("src/kittycordplugins/") ?? false;
+    const isNullCordPlugin = pluginMeta.folderName.startsWith("src/NullCordplugins/") ?? false;
     const isMoggcordPlugin = pluginMeta.folderName.startsWith("src/moggcordplugins/") ?? false;
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
     const isVencordPlugin = pluginMeta.folderName.startsWith("src/plugins/") ?? false;
@@ -100,16 +100,16 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             title: "Modified plugin"
         },
         {
-            condition: isKittycordPlugin,
+            condition: isNullCordPlugin,
             src: BRAND_ICON,
-            alt: "Kittycord",
-            title: "Kittycord Plugin"
+            alt: "NullCord",
+            title: "NullCord Plugin"
         },
         {
             condition: isMoggcordPlugin,
             src: BRAND_ICON,
-            alt: "Kittycord",
-            title: "Kittycord Plugin"
+            alt: "NullCord",
+            title: "NullCord Plugin"
         },
         {
             condition: isEquicordPlugin,
@@ -169,3 +169,4 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             } />
     );
 }
+

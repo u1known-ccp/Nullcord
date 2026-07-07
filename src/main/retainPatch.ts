@@ -32,7 +32,7 @@ const attempt = (): boolean => {
         if (!stale || isAlreadyPatched(stale)) return true;
         return patchResourcesDir(stale, getPatcherJsPath());
     } catch (err) {
-        console.error("[Kittycord] retain-patch attempt failed", err);
+        console.error("[NullCord] retain-patch attempt failed", err);
         return true;
     }
 };
@@ -61,7 +61,7 @@ export const repatchNow = (): boolean => {
         if (!stale) return false;
         return patchResourcesDir(stale, getPatcherJsPath());
     } catch (err) {
-        console.error("[Kittycord] manual repatch failed", err);
+        console.error("[NullCord] manual repatch failed", err);
         return false;
     }
 };
@@ -75,8 +75,9 @@ export const installRetainPatch = () => {
     try {
         watch(dirname(dirname(process.execPath)), { persistent: false }, onChange);
     } catch (err) {
-        console.error("[Kittycord] Failed to watch for host updates", err);
+        console.error("[NullCord] Failed to watch for host updates", err);
     }
 
     setInterval(run, FALLBACK_SCAN_MS).unref();
 };
+

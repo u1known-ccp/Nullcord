@@ -106,23 +106,23 @@ export default {
         repairHost: () => invoke<boolean>(IpcEvents.REPATCH_HOST),
     },
 
-    kittycordTelemetry: {
+    NullCordTelemetry: {
         getConsent: () => invoke<{ consent: boolean | null; endpointConfigured: boolean; }>(IpcEvents.GET_TELEMETRY_CONSENT),
         setConsent: (consent: boolean) => invoke<void>(IpcEvents.SET_TELEMETRY_CONSENT, consent),
     },
 
-    kittycordCrash: {
+    NullCordCrash: {
         getConsent: () => invoke<{ consent: boolean | null; endpointConfigured: boolean; }>(IpcEvents.GET_CRASH_CONSENT),
         setConsent: (consent: boolean) => invoke<void>(IpcEvents.SET_CRASH_CONSENT, consent),
         report: (payload: { message: string; stack?: string; plugin?: string; }) => invoke<void>(IpcEvents.REPORT_CRASH, payload),
     },
 
-    kittycordDeepLinks: {
+    NullCordDeepLinks: {
         onLink: (cb: (action: { kind: string; value: string; }) => void) => { ipcRenderer.on(IpcEvents.DEEP_LINK, (_, action) => cb(action)); },
         poll: () => invoke<{ kind: string; value: string; } | null>(IpcEvents.DEEP_LINK_POLL),
     },
 
-    kittycordShare: {
+    NullCordShare: {
         getConsent: () => invoke<{ consent: boolean | null; endpointConfigured: boolean; }>(IpcEvents.GET_SHARE_CONSENT),
         setConsent: (consent: boolean) => invoke<void>(IpcEvents.SET_SHARE_CONSENT, consent),
         register: (id: string) => invoke<void>(IpcEvents.SHARE_REGISTER, id),
@@ -130,7 +130,7 @@ export default {
         friendsCheck: (ids: string[]) => invoke<string[]>(IpcEvents.SHARE_FRIENDS_CHECK, ids),
     },
 
-    kittycordBadges: {
+    NullCordBadges: {
         getBadges: () => invoke<{ id: string; emoji: string; label: string; slot: number; }[]>(IpcEvents.GET_CUSTOM_BADGES),
         setBadge: (id: string, emoji: string, label: string, slot: number) => invoke<{ ok: boolean; error?: string; }>(IpcEvents.SET_CUSTOM_BADGE, id, emoji, label, slot),
         clearBadge: (id: string, slot: number) => invoke<void>(IpcEvents.CLEAR_CUSTOM_BADGE, id, slot),
@@ -138,3 +138,4 @@ export default {
 
     pluginHelpers: PluginHelpers
 };
+

@@ -1,3 +1,4 @@
-# Kittycord Types
+# NullCord Types
 
-Typings for Kittycord's API (generated from this repository).
+Typings for NullCord's API (generated from this repository).
+

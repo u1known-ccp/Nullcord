@@ -19,6 +19,7 @@ app.on("before-quit", () => {
         const stale = findStaleSibling(dirname(process.execPath));
         if (stale) patchResourcesDir(stale, getPatcherJsPath());
     } catch (err) {
-        console.error("[Kittycord] Failed to repatch latest host update", err);
+        console.error("[NullCord] Failed to repatch latest host update", err);
     }
 });
+

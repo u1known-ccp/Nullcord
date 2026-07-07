@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: reads Discord stores + joins voice channels locally,
+// Ported to NullCord and audited (clean: reads Discord stores + joins voice channels locally,
 // only cdn.discordapp.com icons/avatars are loaded for display; no network/token/eval).
 
 import "./styles.css";
@@ -311,14 +311,15 @@ function VCSHeaderButton() {
 export default definePlugin({
     name: "VoiceChannelSearch",
     description: "Search and join any voice channel across all your servers.",
-    authors: [{ name: "Kittycord", id: 0n }, { name: "Moggcord", id: 0n }],
+    authors: [{ name: "NullCord", id: 0n }, { name: "Moggcord", id: 0n }],
     dependencies: ["HeaderBarAPI"],
 
     start() {
-        addHeaderBarButton("kittycord-voice-channel-search", () => <VCSHeaderButton />, 9);
+        addHeaderBarButton("NullCord-voice-channel-search", () => <VCSHeaderButton />, 9);
     },
     stop() {
-        removeHeaderBarButton("kittycord-voice-channel-search");
+        removeHeaderBarButton("NullCord-voice-channel-search");
         scanCache = null;
     },
 });
+

@@ -12,13 +12,13 @@ permissions:
 # downloads the `desktop.asar` asset. The `.sha256` assets let the updater and the installer
 # verify their downloads.
 env:
-    KITTYCORD_REMOTE: ${{ github.repository }}
+    NullCord_REMOTE: ${{ github.repository }}
     # Run the JS actions on Node 24 (silences the Node 20 deprecation warning)
     FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
     build:
-        name: Build Kittycord
+        name: Build NullCord
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -56,8 +56,8 @@ jobs:
                   sha256sum out/equibop.asar | cut -d' ' -f1 > out/equibop.asar.sha256
                   cp dist/extension-chrome.zip out/
                   cp dist/extension-firefox.zip out/
-                  cp dist/Kittycord.user.js out/
-                  cp dist/Kittycord.user.css out/
+                  cp dist/NullCord.user.js out/
+                  cp dist/NullCord.user.css out/
 
             - uses: actions/upload-artifact@v4
               with:
@@ -73,7 +73,7 @@ jobs:
             - name: Parse-check installer script
               shell: powershell
               run: |
-                  $path = (Resolve-Path installer/Kittycord-Installer-GUI.ps1).Path
+                  $path = (Resolve-Path installer/NullCord-Installer-GUI.ps1).Path
                   $bytes = [System.IO.File]::ReadAllBytes($path)
                   if ($bytes.Length -lt 3 -or $bytes[0] -ne 0xEF -or $bytes[1] -ne 0xBB -or $bytes[2] -ne 0xBF) {
                       Write-Host "::error::installer script must be saved as UTF-8 with BOM"
@@ -93,27 +93,27 @@ jobs:
               run: |
                   Install-Module -Name ps2exe -Force -Scope CurrentUser
                   Invoke-ps2exe `
-                      -inputFile installer/Kittycord-Installer-GUI.ps1 `
-                      -outputFile Kittycord-Installer.exe `
+                      -inputFile installer/NullCord-Installer-GUI.ps1 `
+                      -outputFile NullCord-Installer.exe `
                       -noConsole `
-                      -iconFile installer/kittycord.ico `
-                      -title "Kittycord Installer" `
-                      -product "Kittycord" `
-                      -company "Kittycord" `
-                      -description "Installs Kittycord into your Discord desktop client"
+                      -iconFile installer/NullCord.ico `
+                      -title "NullCord Installer" `
+                      -product "NullCord" `
+                      -company "NullCord" `
+                      -description "Installs NullCord into your Discord desktop client"
 
             # checksum so users can verify the .exe they download matches this exact build
             - name: Checksum the installer
               shell: powershell
               run: |
-                  (Get-FileHash Kittycord-Installer.exe -Algorithm SHA256).Hash.ToLower() | Out-File Kittycord-Installer.exe.sha256 -Encoding ascii -NoNewline
+                  (Get-FileHash NullCord-Installer.exe -Algorithm SHA256).Hash.ToLower() | Out-File NullCord-Installer.exe.sha256 -Encoding ascii -NoNewline
 
             - uses: actions/upload-artifact@v4
               with:
                   name: installer
                   path: |
-                      Kittycord-Installer.exe
-                      Kittycord-Installer.exe.sha256
+                      NullCord-Installer.exe
+                      NullCord-Installer.exe.sha256
 
     release:
         name: Publish release
@@ -130,12 +130,13 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: latest
-                  name: Kittycord ${{ github.sha }}
+                  name: NullCord ${{ github.sha }}
                   make_latest: true
                   body: |
-                      Automated Kittycord build for commit ${{ github.sha }}.
+                      Automated NullCord build for commit ${{ github.sha }}.
 
-                      **Install (Windows):** download `Kittycord-Installer.exe` below, run it, then start Discord.
+                      **Install (Windows):** download `NullCord-Installer.exe` below, run it, then start Discord.
 
                       **Verify your download:** every file ships with a matching `.sha256` checksum. Compare it against your download to confirm it's the genuine, untampered build — see [SECURITY.md](https://github.com/${{ github.repository }}/blob/main/SECURITY.md) for step-by-step instructions.
                   files: assets/**/*
+

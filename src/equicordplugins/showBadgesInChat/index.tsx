@@ -58,7 +58,7 @@ function CheckBadge({ badge, author }: { badge: string; author: User; }): JSX.El
                 <span style={{ order: settings.store.EquicordContributorPosition }}>
                     <RoleIconComponent
                         className={roleIcon}
-                        name="Kittycord Contributor"
+                        name="NullCord Contributor"
                         size={20}
                         src={BRAND_ICON}
                     />
@@ -151,3 +151,4 @@ export default definePlugin({
         return props.message?.author ? <ChatBadges author={props.message.author} /> : null;
     }
 });
+

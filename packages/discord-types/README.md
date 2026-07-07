@@ -2,7 +2,7 @@
 
 This package provides TypeScript types for the Webpack modules of Discord's web app.
 
-While it was primarily created for Kittycord based on Vencord and its respective packages, other client mods could also benefit from this, so it is published as a standalone package!
+While it was primarily created for NullCord based on Vencord and its respective packages, other client mods could also benefit from this, so it is published as a standalone package!
 
 ## Installation
 
@@ -41,3 +41,4 @@ However, if you modify the code of this package, you must release source code of
 ### Credit
 
 This package was inspired by Swishilicous' [discord-types](https://www.npmjs.com/package/discord-types) package.
+

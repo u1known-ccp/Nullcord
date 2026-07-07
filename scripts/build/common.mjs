@@ -147,7 +147,7 @@ export const globPlugins = kind => ({
         });
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
-            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "equicordplugins/_api", "equicordplugins/_core", "equicordplugins", "moggcordplugins/_api", "moggcordplugins/_core", "moggcordplugins", "kittycordplugins/_api", "kittycordplugins/_core", "kittycordplugins", "userplugins"];
+            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "equicordplugins/_api", "equicordplugins/_core", "equicordplugins", "moggcordplugins/_api", "moggcordplugins/_core", "moggcordplugins", "NullCordplugins/_api", "NullCordplugins/_core", "NullCordplugins", "userplugins"];
             let code = "";
             let pluginsCode = "\n";
             let metaCode = "\n";
@@ -229,7 +229,7 @@ export const gitRemotePlugin = {
             namespace: "git-remote", path: args.path
         }));
         build.onLoad({ filter, namespace: "git-remote" }, async () => {
-            let remote = process.env.KITTYCORD_REMOTE || process.env.EQUICORD_REMOTE;
+            let remote = process.env.NullCord_REMOTE || process.env.EQUICORD_REMOTE;
             if (!remote) {
                 try {
                     const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
@@ -238,9 +238,9 @@ export const gitRemotePlugin = {
                         .replace("git@github.com:", "")
                         .replace(/.git$/, "");
                 } catch {
-                    // No `origin` configured yet (fresh Kittycord fork). Fall back so the build still succeeds;
-                    // once the Kittycord repo exists, run `git remote add origin <url>` and it is picked up automatically.
-                    remote = "KittyCord-Production/Kittycord";
+                    // No `origin` configured yet (fresh NullCord fork). Fall back so the build still succeeds;
+                    // once the NullCord repo exists, run `git remote add origin <url>` and it is picked up automatically.
+                    remote = "NullCord-Production/NullCord";
                 }
             }
 
@@ -374,3 +374,4 @@ export const commonRendererPlugins = [
     // @ts-expect-error this is never undefined
     ...commonOpts.plugins
 ];
+

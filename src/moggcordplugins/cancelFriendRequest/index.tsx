@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// Ported to Kittycord and audited (clean: Discord relationship actions + local DOM only,
+// Ported to NullCord and audited (clean: Discord relationship actions + local DOM only,
 // only cdn.discordapp.com avatar URLs are read; no network/token/eval).
 // Original author kept as inline credit.
 
@@ -135,7 +135,7 @@ function scan(root: Document | Element = document) {
 export default definePlugin({
     name: "CancelFriendRequest",
     description: "Cancels a pending friend request by clicking the button again.",
-    authors: [{ name: "Kittycord", id: 0n }, { name: "Moggcord", id: 0n }],
+    authors: [{ name: "NullCord", id: 0n }, { name: "Moggcord", id: 0n }],
 
     start() {
         observer = new MutationObserver(mutations => {
@@ -155,3 +155,4 @@ export default definePlugin({
         });
     },
 });
+

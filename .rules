@@ -1,4 +1,4 @@
-# Kittycord Rules
+# NullCord Rules
 
 ## Philosophy
 
@@ -52,9 +52,9 @@ Does NOT get merged:
    * SPDX-License-Identifier: GPL-3.0-or-later
    */
   ```
-  The header text stays exactly `Vencord, a Discord client mod` with author `Vendicated and contributors` on every new file. This is the GPL-3.0 copyright notice required by the license and enforced by the `simple-header/header` lint rule — it is NOT a brand label, so don't change it to "Kittycord".
+  The header text stays exactly `Vencord, a Discord client mod` with author `Vendicated and contributors` on every new file. This is the GPL-3.0 copyright notice required by the license and enforced by the `simple-header/header` lint rule — it is NOT a brand label, so don't change it to "NullCord".
   Older files carry the full GPL preamble. Leave existing headers alone, don't rewrite them.
-- Folder per plugin. New original plugins go in `src/kittycordplugins/<name>/index.tsx`. Other plugin folders exist: `src/plugins/`, `src/equicordplugins/`, `src/moggcordplugins/`. Single-file plugins still get a folder.
+- Folder per plugin. New original plugins go in `src/NullCordplugins/<name>/index.tsx`. Other plugin folders exist: `src/plugins/`, `src/equicordplugins/`, `src/moggcordplugins/`. Single-file plugins still get a folder.
 - Folder suffixes the build filters on: `.desktop`, `.web`, `.dev`, `.discordDesktop`, `.vesktop`, `.equibop`.
 - `export default definePlugin({ ... })`. Never named.
 - Required fields: `name`, `description`, `authors`. Prefer the shared `Devs`/`EquicordDevs` maps; inline `{ name, id }` author objects are allowed for ported plugins whose authors aren't in those maps.
@@ -64,7 +64,7 @@ Does NOT get merged:
 - `startAt?: StartAt` overrides default `WebpackReady`. Values: `Init`, `DOMContentLoaded`, `WebpackReady`.
 - `settingsAboutComponent?: React.ComponentType` renders above settings UI.
 - `reporterTestable?: ReporterTestable` flags parts the auto-reporter exercises (`Start`, `Patches`, `FluxEvents`, `None`).
-- `isModified?: true` marks an inherited upstream plugin that Kittycord has modified.
+- `isModified?: true` marks an inherited upstream plugin that NullCord has modified.
 - Optional: `tags?: PluginTag[]` (closed list in `src/utils/types.ts`), `required` (forced on, hidden toggle), `enabledByDefault` (on at first run, toggleable), `hidden` (off the UI), `searchTerms?: string[]`.
 
 ### Declarative over imperative
@@ -166,7 +166,7 @@ Declarative fields auto-enable these. Imperative doesn't.
 - Never depend on argument names or object-key order. Use `arguments[i]` — minifiers rename params and reorder destructured keys.
 - Prefer multiple small patches over one with broad find and many replacements.
 - In DEV, failing replacements auto-diff 200 chars around the match site. Read it before retrying.
-- Never reference build flags literally inside `replace`. They only exist in Kittycord's bundle. Interpolate outside:
+- Never reference build flags literally inside `replace`. They only exist in NullCord's bundle. Interpolate outside:
   ```js
   // BAD
   replace: "IS_WEB?foo:bar"
@@ -412,7 +412,7 @@ Replaced at build time. Reference only in plugin TS, never literally inside `rep
 | `IS_DISCORD_DESKTOP` | Discord desktop injection |
 | `IS_VESKTOP` | Vesktop |
 | `IS_EQUIBOP` | Equibop |
-| `VERSION` | Kittycord version string |
+| `VERSION` | NullCord version string |
 | `BUILD_TIMESTAMP` | Build epoch ms |
 
 ## Reference
@@ -476,3 +476,4 @@ From `@webpack`. `findByPropsLazy`, `findByCodeLazy`, `findComponentLazy`, `find
 
 ### `IconUtils`
 `getUserAvatarURL(user, canAnimate?, size?, format?)`, `getUserBannerURL({ id, banner, canAnimate?, size })`, `getGuildIconURL({ id, icon, size?, canAnimate? })`, `getGuildBannerURL(guild, canAnimate?)`, `getGuildSplashURL`, `getGuildDiscoverySplashURL`, `getGuildHomeHeaderURL`, `getChannelIconURL({ id, icon })`, `getResourceChannelIconURL`, `getEmojiURL({ id, animated, size })`, `getApplicationIconURL`, `getGameAssetURL`, `getVideoFilterAssetURL`, `getAvatarDecorationURL`, `getGuildMemberAvatarURL`, `getGuildMemberAvatarURLSimple`, `getGuildMemberBannerURL`, `getDefaultAvatarURL(id)`, `hasAnimatedGuildIcon`, `isAnimatedIconHash`.
+

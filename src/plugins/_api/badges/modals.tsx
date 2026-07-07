@@ -90,7 +90,7 @@ export function EquicordDonorModal() {
                     >
                         <Flex justifyContent="center" alignItems="center" gap="0.5em">
                             <Heart />
-                            Kittycord Donor
+                            NullCord Donor
                         </Flex>
                     </Heading>
                 }
@@ -112,10 +112,10 @@ export function EquicordDonorModal() {
                     </Flex>
                     <div style={{ padding: "1em" }}>
                         <Paragraph>
-                            This Badge is a special perk for Kittycord Donors
+                            This Badge is a special perk for NullCord Donors
                         </Paragraph>
                         <Paragraph className={Margins.top20}>
-                            Please consider supporting the development of Kittycord by becoming a donor. It would mean a lot! :3
+                            Please consider supporting the development of NullCord by becoming a donor. It would mean a lot! :3
                         </Paragraph>
                     </div>
                 </div>
@@ -146,7 +146,7 @@ export function EquicordTranslatorModal() {
                         }}
                     >
                         <Flex justifyContent="center" alignItems="center" gap="0.5em">
-                            Kittycord Translator
+                            NullCord Translator
                         </Flex>
                     </Heading>
                 }
@@ -162,7 +162,7 @@ export function EquicordTranslatorModal() {
                     </Flex>
                     <div className="vc-translate-modal-paragraph">
                         <Paragraph>
-                            Awarded to contributors who expand Kittycord’s language support by translating content for the community.
+                            Awarded to contributors who expand NullCord’s language support by translating content for the community.
                         </Paragraph>
                     </div>
                 </div>
@@ -170,3 +170,4 @@ export function EquicordTranslatorModal() {
         </ErrorBoundary>
     ));
 }
+

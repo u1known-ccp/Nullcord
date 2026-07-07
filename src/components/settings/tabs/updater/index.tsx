@@ -48,19 +48,19 @@ function EquibopSection() {
     return (
         <Flex className={Margins.bottom20} flexDirection="column" gap="1em">
             <Card variant="brand">
-                <HeadingSecondary>Kittycord</HeadingSecondary>
-                <Paragraph>This updater keeps Kittycord up to date.</Paragraph>
+                <HeadingSecondary>NullCord</HeadingSecondary>
+                <Paragraph>This updater keeps NullCord up to date.</Paragraph>
                 <Paragraph className={Margins.top8}>
-                    You may also get separate popups to update the Kittycord desktop app. You can grab the <Link href="https://kittycord.dev">latest version</Link> any time.
+                    You may also get separate popups to update the NullCord desktop app. You can grab the <Link href="https://NullCord.dev">latest version</Link> any time.
                 </Paragraph>
             </Card>
 
             {isEquibopOutdated && (
                 <Card variant="warning">
-                    <HeadingSecondary>Kittycord Outdated</HeadingSecondary>
+                    <HeadingSecondary>NullCord Outdated</HeadingSecondary>
                     <Flex flexDirection="column" gap="0.5em">
-                        <Paragraph>Your version of the Kittycord app is outdated!</Paragraph>
-                        <Button variant="link" onClick={() => VesktopNative.app.openUpdater()}>Open Kittycord Updater</Button>
+                        <Paragraph>Your version of the NullCord app is outdated!</Paragraph>
+                        <Button variant="link" onClick={() => VesktopNative.app.openUpdater()}>Open NullCord Updater</Button>
                     </Flex>
                 </Card>
             )}
@@ -88,12 +88,12 @@ function Updater() {
             <EquibopSection />
             <Heading className={Margins.top16}>Update Preferences</Heading>
             <Paragraph className={Margins.bottom20}>
-                Control how Kittycord keeps itself up to date. You can choose to update automatically in the background or be notified when new updates are available.
+                Control how NullCord keeps itself up to date. You can choose to update automatically in the background or be notified when new updates are available.
             </Paragraph>
 
             <FormSwitch
                 title="Automatically update"
-                description="When enabled, Kittycord will automatically download and install updates in the background without asking for confirmation. You'll need to restart Discord to apply the changes."
+                description="When enabled, NullCord will automatically download and install updates in the background without asking for confirmation. You'll need to restart Discord to apply the changes."
                 value={settings.autoUpdate}
                 onChange={(v: boolean) => settings.autoUpdate = v}
                 hideBorder
@@ -102,7 +102,7 @@ function Updater() {
                 value={settings.autoUpdateNotification}
                 onChange={(v: boolean) => settings.autoUpdateNotification = v}
                 title="Get notified when an automatic update completes"
-                description="Receive a notification when Kittycord finishes downloading an update in the background, so you know when to restart Discord."
+                description="Receive a notification when NullCord finishes downloading an update in the background, so you know when to restart Discord."
                 disabled={!settings.autoUpdate}
                 hideBorder
             />
@@ -111,7 +111,7 @@ function Updater() {
 
             <Heading className={Margins.top20}>Repository</Heading>
             <Paragraph className={Margins.bottom8}>
-                This is the GitHub repository where Kittycord fetches updates from.
+                This is the GitHub repository where NullCord fetches updates from.
             </Paragraph>
             <Paragraph color="text-subtle">
                 {repoPending
@@ -138,3 +138,4 @@ function Updater() {
 export default IS_UPDATER_DISABLED
     ? null
     : wrapTab(Updater, "Updater");
+

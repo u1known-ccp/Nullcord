@@ -20,4 +20,5 @@ export const ACCENT_PRESETS = {
     mono: { accent: "#b8bcc8", soft: "#d7dae2", glow: "184 188 200", logoFilter: "saturate(0)" }
 } satisfies Record<string, AccentPreset>;
 
-export type KittycordAccent = keyof typeof ACCENT_PRESETS;
+export type NullCordAccent = keyof typeof ACCENT_PRESETS;
+

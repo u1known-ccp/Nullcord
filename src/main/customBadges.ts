@@ -1,5 +1,5 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -11,7 +11,7 @@
 import { IpcEvents } from "@shared/IpcEvents";
 import { ipcMain } from "electron";
 
-const ENDPOINT: string = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
+const ENDPOINT: string = "https://NullCord-analytics.hell-bullet-hb.workers.dev";
 const SNOWFLAKE_RE = /^\d{17,20}$/;
 const MAX_ICON_LEN = 512;
 const MAX_LABEL_LEN = 24;
@@ -78,3 +78,4 @@ async function clearBadge(id: unknown, slot: unknown): Promise<void> {
 ipcMain.handle(IpcEvents.GET_CUSTOM_BADGES, () => getBadges());
 ipcMain.handle(IpcEvents.SET_CUSTOM_BADGE, (_e, id: unknown, emoji: unknown, label: unknown, slot: unknown) => setBadge(id, emoji, label, slot));
 ipcMain.handle(IpcEvents.CLEAR_CUSTOM_BADGE, (_e, id: unknown, slot: unknown) => clearBadge(id, slot));
+

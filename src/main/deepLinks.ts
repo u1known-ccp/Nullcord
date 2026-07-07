@@ -7,7 +7,7 @@
 import { IpcEvents } from "@shared/IpcEvents";
 import { app, BrowserWindow, ipcMain } from "electron";
 
-const SCHEME = "kittycord";
+const SCHEME = "NullCord";
 const CODE_RE = /^[a-z0-9_-]{3,20}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -82,3 +82,4 @@ ipcMain.handle(IpcEvents.DEEP_LINK_POLL, () => {
     pending = null;
     return action;
 });
+

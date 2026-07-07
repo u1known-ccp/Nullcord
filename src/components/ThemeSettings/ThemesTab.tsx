@@ -51,7 +51,7 @@ import type { UserstyleHeader } from "usercss-meta";
 
 import Plugins from "~plugins";
 
-import { openStudio } from "../../kittycordplugins/kittycordStudio/StudioModal";
+import { openStudio } from "../../NullCordplugins/NullCordStudio/StudioModal";
 
 const PinIcon = findComponentByCodeLazy("1-.06-.63L6.16");
 const HomeIcon = findComponentByCodeLazy("m2.4 8.4 8.38-6.46a2");
@@ -838,7 +838,7 @@ function ThemesTab() {
             </Paragraph>
 
             <QuickActionCard>
-                {isPluginEnabled("KittycordStudio") && (
+                {isPluginEnabled("NullCordStudio") && (
                     <QuickAction
                         text="Open Theme Studio"
                         action={() => openStudio()}
@@ -1070,7 +1070,7 @@ export function CspErrorCard() {
     const allowUrl = async (url: string) => {
         const { origin: baseUrl, host } = new URL(url);
 
-        const result = await VencordNative.csp.requestAddOverride(baseUrl, ["connect-src", "img-src", "style-src", "font-src"], "Kittycord Themes");
+        const result = await VencordNative.csp.requestAddOverride(baseUrl, ["connect-src", "img-src", "style-src", "font-src"], "NullCord Themes");
         if (result !== "ok") return;
 
         CspBlockedUrls.forEach(url => {
@@ -1134,3 +1134,4 @@ function UserscriptThemesTab() {
 export default IS_USERSCRIPT
     ? wrapTab(UserscriptThemesTab, "Themes")
     : wrapTab(ThemesTab, "Themes");
+

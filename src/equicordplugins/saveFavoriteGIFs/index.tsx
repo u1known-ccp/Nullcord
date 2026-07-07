@@ -101,12 +101,12 @@ async function saveWorkingGifs() {
 
 const settings = definePluginSettings({
     showToolboxButton: {
-        description: "Show 'Save Favorite GIFs' button in the Kittycord menu (Requires Reload)",
+        description: "Show 'Save Favorite GIFs' button in the NullCord menu (Requires Reload)",
         type: OptionType.BOOLEAN,
         default: true,
         restartNeeded: true,
         get hidden() {
-            return !isPluginEnabled("KittycordMenu");
+            return !isPluginEnabled("NullCordMenu");
         }
     }
 });
@@ -145,3 +145,4 @@ export default definePlugin({
         );
     }
 });
+

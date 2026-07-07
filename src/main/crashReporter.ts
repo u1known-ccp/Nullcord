@@ -13,7 +13,7 @@ import gitHash from "~git-hash";
 
 import { DATA_DIR } from "./utils/constants";
 
-const ENDPOINT: string = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
+const ENDPOINT: string = "https://NullCord-analytics.hell-bullet-hb.workers.dev";
 
 const FILE = join(DATA_DIR, "crash.json");
 const MAX_MSG = 500;
@@ -71,3 +71,4 @@ ipcMain.handle(IpcEvents.REPORT_CRASH, async (_e, payload: unknown) => {
         });
     } catch { /* offline / endpoint down -> ignore */ }
 });
+

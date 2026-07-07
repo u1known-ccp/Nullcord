@@ -152,9 +152,10 @@ export function Updatable(props: CommonProps) {
                 </>
             ) : (
                 <Paragraph>
-                    You're running the latest version of Kittycord.
+                    You're running the latest version of NullCord.
                 </Paragraph>
             )}
         </>
     );
 }
+

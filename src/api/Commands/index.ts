@@ -75,7 +75,7 @@ export const _handleCommand = function (cmd: VencordCommand, args: CommandArgume
         sendBotMessage(ctx.channel.id, {
             content: `${msg}:\n${makeCodeblock(reason)}`,
             author: {
-                username: "Kittycord"
+                username: "NullCord"
             }
         });
     };
@@ -175,3 +175,4 @@ export function unregisterCommand(name: string) {
 
     return true;
 }
+

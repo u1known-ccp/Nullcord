@@ -110,7 +110,7 @@ function PatchHelper() {
         <SettingsTab>
             <Heading className={Margins.top16}>Patch Helper</Heading>
             <Paragraph className={Margins.bottom16}>
-                A developer tool to help you create patches for Kittycord plugins.
+                A developer tool to help you create patches for NullCord plugins.
             </Paragraph>
 
             <Heading className="">Full Patch</Heading>
@@ -184,3 +184,4 @@ function PatchHelper() {
 }
 
 export default !IS_STANDALONE ? wrapTab(PatchHelper, "PatchHelper") : null;
+

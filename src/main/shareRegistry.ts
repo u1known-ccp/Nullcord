@@ -1,10 +1,10 @@
 /*
- * Kittycord, a Discord client mod
+ * NullCord, a Discord client mod
  * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-// "Which friends use Kittycord?" registry. Main process (CSP-free, local opt-out file). On by
+// "Which friends use NullCord?" registry. Main process (CSP-free, local opt-out file). On by
 // default; sends only the user's own id (register) or friend ids (lookup) unless the user opts out.
 
 import { IpcEvents } from "@shared/IpcEvents";
@@ -14,7 +14,7 @@ import { join } from "path";
 
 import { DATA_DIR } from "./utils/constants";
 
-const ENDPOINT: string = "https://kittycord-analytics.hell-bullet-hb.workers.dev";
+const ENDPOINT: string = "https://NullCord-analytics.hell-bullet-hb.workers.dev";
 
 const FILE = join(DATA_DIR, "shareRegistry.json");
 const DAY = 24 * 60 * 60 * 1000;
@@ -116,3 +116,4 @@ ipcMain.handle(IpcEvents.SHARE_REGISTER, (_e, id: string) => register(id));
 ipcMain.handle(IpcEvents.SHARE_UNREGISTER, (_e, id: string) => unregister(id));
 
 ipcMain.handle(IpcEvents.SHARE_FRIENDS_CHECK, (_e, ids: unknown) => friendsCheck(ids));
+
