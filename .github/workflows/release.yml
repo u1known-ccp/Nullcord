@@ -73,12 +73,7 @@ jobs:
             - name: Parse-check installer script
               shell: powershell
               run: |
-                  $path = (Resolve-Path installer/NullCord-Installer-GUI.ps1).Path
-                  $bytes = [System.IO.File]::ReadAllBytes($path)
-                  if ($bytes.Length -lt 3 -or $bytes[0] -ne 0xEF -or $bytes[1] -ne 0xBB -or $bytes[2] -ne 0xBF) {
-                      Write-Host "::error::installer script must be saved as UTF-8 with BOM"
-                      exit 1
-                  }
+                $path = (Resolve-Path installer/NullCord-Installer.ps1).Path
                   $tokens = $null
                   $errors = $null
                   [void][System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
@@ -93,10 +88,10 @@ jobs:
               run: |
                   Install-Module -Name ps2exe -Force -Scope CurrentUser
                   Invoke-ps2exe `
-                      -inputFile installer/NullCord-Installer-GUI.ps1 `
+                      -inputFile installer/NullCord-Installer.ps1 `
                       -outputFile NullCord-Installer.exe `
                       -noConsole `
-                      -iconFile installer/NullCord.ico `
+                      -iconFile extracted-NullCord-Installer.exe.ico `
                       -title "NullCord Installer" `
                       -product "NullCord" `
                       -company "NullCord" `

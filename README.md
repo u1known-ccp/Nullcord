@@ -27,6 +27,10 @@
 NullCord is a Discord client modification — a plugin and theme platform that adds hundreds of
 features to Discord while keeping it lightweight and privacy-friendly.
 
+## 🖼️ Installer Preview
+
+![NullCord Installer Preview](installer/preview.png)
+
 ## 🌸 Features
 
 - **350+ built-in plugins** covering chat, appearance, voice, moderation and utility — toggle
@@ -53,8 +57,6 @@ features to Discord while keeping it lightweight and privacy-friendly.
 2. **Run it**, pick your Discord install and click **Install**. (Windows SmartScreen may warn
    because the exe is unsigned — click **"More info" → "Run anyway"**.)
 3. **Done!** Discord restarts on its own and comes back patched, pink and purring.
-
-![NullCord Installer](installer/preview.png)
 
 To uninstall, run the installer again and click **Uninstall** — it restores a completely clean
 Discord. See [installer/README.md](installer/README.md) for all the details and console
@@ -138,12 +140,12 @@ pnpm build
 Inject your local build into the Discord desktop client (Windows):
 
 ```shell
-powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Install.ps1
+powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Installer.ps1 -NoGui -Mode Install -Source Local
 ```
 
 Start Discord again and the NullCord settings section appears. Re-run the script after
 `pnpm build` whenever you want your latest changes in the client; revert everything with
-`installer\NullCord-Uninstall.ps1`.
+`installer\NullCord-Installer.ps1 -NoGui -Mode Uninstall`.
 
 ### Web extension / userscript
 

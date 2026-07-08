@@ -38,10 +38,22 @@ if (!uninstall && !existsSync(join(BASE_DIR, "dist", "desktop", "patcher.js"))) 
     process.exit(1);
 }
 
-const script = join(BASE_DIR, "installer", uninstall ? "NullCord-Uninstall.ps1" : "NullCord-Install.ps1");
+const script = join(BASE_DIR, "installer", "NullCord-Installer.ps1");
+const args = [
+    "-NoProfile",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-File",
+    script,
+    "-NoGui",
+    "-Mode",
+    uninstall ? "Uninstall" : "Install",
+    "-Source",
+    "Local"
+];
 
 try {
-    execFileSync("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script], { stdio: "inherit" });
+    execFileSync("powershell.exe", args, { stdio: "inherit" });
 } catch {
     process.exitCode = 1;
 }

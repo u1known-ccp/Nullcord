@@ -4,19 +4,23 @@ $b64Path = Join-Path $PSScriptRoot 'new_logo.b64'
 if (-not (Test-Path $b64Path)) { Write-Error "Base64 file not found: $b64Path"; exit 1 }
 $B64 = Get-Content -Raw $b64Path
 
-$instPath = Join-Path $repoRoot 'installer\NullCord-Installer-GUI.ps1'
+$instPath = Join-Path $repoRoot 'installer\NullCord-Installer.ps1'
 if (-not (Test-Path $instPath)) { Write-Error "Installer not found: $instPath"; exit 1 }
 $inst = Get-Content -Raw $instPath
 $startMarker = '$LogoB64 = "'
 $startIndex = $inst.IndexOf($startMarker)
-if ($startIndex -lt 0) { Write-Error "Start marker for LogoB64 not found in installer"; exit 1 }
-$logoNullIndex = $inst.IndexOf('$logo = $null', $startIndex)
-if ($logoNullIndex -lt 0) { Write-Error "Logo null marker not found in installer"; exit 1 }
-$pre = $inst.Substring(0, $startIndex)
-$after = $inst.Substring($logoNullIndex)
-$newInst = $pre + $startMarker + $B64 + '"' + "`r`n" + $after
-Set-Content -Encoding utf8BOM -Path $instPath -Value $newInst
-Write-Output "Updated installer: $instPath"
+if ($startIndex -lt 0) {
+    Write-Output "Installer has no embedded LogoB64 marker. Skipping installer logo injection."
+}
+else {
+    $logoNullIndex = $inst.IndexOf('$logo = $null', $startIndex)
+    if ($logoNullIndex -lt 0) { Write-Error "Logo null marker not found in installer"; exit 1 }
+    $pre = $inst.Substring(0, $startIndex)
+    $after = $inst.Substring($logoNullIndex)
+    $newInst = $pre + $startMarker + $B64 + '"' + "`r`n" + $after
+    Set-Content -Encoding utf8BOM -Path $instPath -Value $newInst
+    Write-Output "Updated installer: $instPath"
+}
 
 $iconPath = Join-Path $repoRoot 'src\main\iconData.ts'
 if (-not (Test-Path $iconPath)) { Write-Error "iconData.ts not found: $iconPath"; exit 1 }

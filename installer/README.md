@@ -1,77 +1,54 @@
 # NullCord Windows Installer
 
-There are two installers:
+NullCord now ships one unified installer script:
 
-| Script | For whom | What it does |
-|---|---|---|
-| `NullCord-Installer-GUI.ps1` | **End users** (compiled to `NullCord-Installer.exe` by CI) | Graphical installer: downloads the latest `desktop.asar` from GitHub Releases and patches Discord. No repo/pnpm needed. |
-| `NullCord-Online-Install.ps1` | **End users (console)** | Same job as the GUI, as a plain console script. |
-| `NullCord-Install.ps1` | **Developers** | Patches Discord to load your local `dist/desktop` build (run `pnpm build` first). |
+- `NullCord-Installer.ps1`
 
-`NullCord-Uninstall.ps1` reverts any of them.
+The same script supports:
 
-## System requirements
+- modern GUI install flow for end users
+- release install from GitHub
+- local developer install from `dist/desktop/patcher.js`
+- uninstall/revert mode
 
-- **Windows 10 (version 1803 or newer) or Windows 11.** Everything the installer needs — .NET
-  Framework, Windows PowerShell and `curl` — is already built into these, so there's **nothing
-  extra to install**.
-- **The standard Discord desktop app** from [discord.com](https://discord.com/download), launched
-  at least once so it has finished setting up. (The **Microsoft Store** version of Discord can't be
-  patched — use the discord.com one.)
-- **An internet connection** (the installer downloads the build over HTTPS and verifies it
-  against the SHA-256 checksum published with each release).
-- Administrator is **not required**. Running as your normal user is recommended (elevation can
-  affect Discord's file permissions), but the installer no longer blocks it — it just warns.
-- On first launch, Windows SmartScreen may show "Windows protected your PC" because the `.exe` is
-  unsigned — click **"More info" → "Run anyway"**. Some antivirus may flag it for the same reason
-  (it's a PowerShell installer that downloads from GitHub); allow it / add an exclusion if needed.
+## GUI usage (end users)
 
-The installer checks these for you and shows a clear message if something's missing (Discord not
-installed, not launched yet, Store version, or no internet).
+Download `NullCord-Installer.exe` from the
+[latest release](https://github.com/NullCord-Production/NullCord/releases/latest), run it, select your
+Discord install and click `Install / Repair`.
 
-## Easiest: prebuilt `.exe`
+The GUI installer will:
 
-![NullCord Installer](preview.png)
+- download the latest `desktop.asar`
+- verify SHA-256 when available
+- back up Discord's original `app.asar` to `_app.asar`
+- inject a clean `app/` loader
 
-Download **`NullCord-Installer.exe`** from the
-[latest release](https://github.com/NullCord-Production/NullCord/releases/latest), run it (Administrator is
-not needed), pick your Discord install and click **Install**, then start Discord. The graphical installer
-downloads the latest build and patches Discord (and cleanly takes over an install that another mod
-patched). It is produced automatically by [.github/workflows/release.yml](../.github/workflows/release.yml).
+## CLI usage
 
-> The `.exe` is unsigned, so Windows SmartScreen may warn on first run — choose
-> "More info" → "Run anyway".
-
-## Developer install (from source)
-
-1. Build NullCord once so the output exists:
-   ```powershell
-   pnpm install
-   pnpm build
-   ```
-2. Run the installer (do **not** use an Administrator terminal):
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Install.ps1
-   ```
-3. Start Discord again. You should see the NullCord settings section.
-
-It patches Discord Stable, PTB and Canary if found, backing up the original `app.asar` as
-`_app.asar` and injecting an `app/` folder that loads `dist/desktop/patcher.js` (with an automatic
-fallback to vanilla Discord if the patcher ever fails to load).
-
-## Uninstall
+Install from release build:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Uninstall.ps1
+powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Installer.ps1 -NoGui -Mode Install -Source Release
 ```
 
-This removes the injected `app/` folder and restores the original `app.asar`.
+Install from local developer build:
+
+```powershell
+pnpm build
+powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Installer.ps1 -NoGui -Mode Install -Source Local
+```
+
+Uninstall and restore vanilla Discord:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\installer\NullCord-Installer.ps1 -NoGui -Mode Uninstall
+```
 
 ## Notes
 
-- The injected `index.js` references the **absolute path** of this repo's `dist/desktop`. If you
-  move the repo, re-run the installer.
-- Discord host updates create a new `app-<version>` folder; re-run the installer after a Discord
-  update if NullCord stops loading (a host-update hook handles most cases automatically).
-- A standalone, double-clickable installer and a custom client are on the roadmap.
+- Supported targets: Discord Stable, PTB, Canary.
+- Microsoft Store Discord is not supported for patching.
+- You do not need Administrator rights.
+- If Discord updates and creates a new `app-*` directory, run install again.
 
