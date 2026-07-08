@@ -31,7 +31,7 @@ features to Discord while keeping it lightweight and privacy-friendly.
 
 ![NullCord Installer Preview](installer/preview.png)
 
-## 🌸 Features
+## 👁️ Features
 
 - **350+ built-in plugins** covering chat, appearance, voice, moderation and utility — toggle
   anything on or off in seconds, no extra downloads needed.
