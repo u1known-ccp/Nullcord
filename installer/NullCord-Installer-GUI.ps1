@@ -31,7 +31,8 @@ try {
 [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 '@
     $script:nativeOk = $true
-} catch { }
+}
+catch { }
 if ($script:nativeOk) {
     # 1 = system DPI aware. Must run before the first window (incl. message boxes) is created.
     try { [void][NullCordNative.Win32]::SetProcessDpiAwareness(1) } catch { }
@@ -103,7 +104,8 @@ public static class NullCordImaging {
 }
 '@
     $script:darkMenuOk = $true
-} catch { }
+}
+catch { }
 
 function Set-DarkTitlebar([IntPtr]$hwnd) {
     if (-not $script:nativeOk) { return }
@@ -115,7 +117,8 @@ function Set-DarkTitlebar([IntPtr]$hwnd) {
         # 33 = DWMWA_WINDOW_CORNER_PREFERENCE, 2 = rounded (Win11; older builds ignore it)
         $round = 2
         [void][NullCordNative.Win32]::DwmSetWindowAttribute($hwnd, 33, [ref]$round, 4)
-    } catch { }
+    }
+    catch { }
 }
 
 # The window is borderless, so dragging anywhere on the background moves it.
@@ -124,14 +127,16 @@ function Start-WindowDrag {
     try {
         [void][NullCordNative.Win32]::ReleaseCapture()
         [void][NullCordNative.Win32]::SendMessage($form.Handle, 0xA1, 2, 0)
-    } catch { }
+    }
+    catch { }
 }
 
 [System.Windows.Forms.Application]::EnableVisualStyles()
 $ProgressPreference = "SilentlyContinue"
 try {
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-} catch {
+}
+catch {
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 }
 
@@ -142,14 +147,15 @@ try {
     $g0 = [System.Drawing.Graphics]::FromHwnd([IntPtr]::Zero)
     $script:ui = [double]$g0.DpiX / 96.0
     $g0.Dispose()
-} catch { }
+}
+catch { }
 function S([double]$v) { return [int][Math]::Round($v * $script:ui) }
 
 # ----- config -----
-$Repo        = "NullCord-Production/NullCord"
-$AsarUrl     = "https://github.com/$Repo/releases/latest/download/desktop.asar"
-$InstallDir  = Join-Path $env:LOCALAPPDATA "NullCord"
-$AsarPath    = Join-Path $InstallDir "desktop.asar"
+$Repo = "NullCord-Production/NullCord"
+$AsarUrl = "https://github.com/$Repo/releases/latest/download/desktop.asar"
+$InstallDir = Join-Path $env:LOCALAPPDATA "NullCord"
+$AsarPath = Join-Path $InstallDir "desktop.asar"
 $AsarForward = ($AsarPath -replace '\\', '/')
 
 # ----- localization -----
@@ -158,255 +164,255 @@ $script:LangNames = @("English", "Deutsch", "Espa�ol", "Fran�ais", "???????"
 
 $script:Strings = @{
     en = @{
-        eyebrow          = "DISCORD CLIENT MOD  -  OFFICIAL INSTALLER"
-        headline1        = "The cutest"
-        headline2        = "Discord mod"
-        tagline          = "Plugins, themes and a whole lot of pink - patched straight into your Discord in seconds."
-        choose           = "Choose which Discord to patch"
-        stInstalled      = "NullCord installed"
-        stNot            = "not patched"
-        stOther          = "patched by another mod"
-        btnInstall       = "Install"
-        btnRepair        = "Reinstall / Repair"
-        btnUninstall     = "Uninstall"
-        ready            = "Ready. Select a Discord install and click Install."
-        selectFirst      = "Select at least one Discord install first."
-        logDownloading   = "Downloading latest NullCord build..."
-        noteDownload     = "Downloading... {0}%  ({1} / {2} MB)"
-        noteDownloadMb   = "Downloading... {0} MB"
-        logDownloaded    = "Downloaded {0} MB."
-        logChecksumOk    = "Checksum verified (SHA-256 OK)."
-        logChecksumNone  = "No checksum published for this release - skipping verification."
-        logRetryCurl     = "Retrying download via curl..."
-        noteRetry        = "Retrying download..."
+        eyebrow           = "DISCORD CLIENT MOD  -  OFFICIAL INSTALLER"
+        headline1         = "The cutest"
+        headline2         = "Discord mod"
+        tagline           = "Plugins, themes and a whole lot of pink - patched straight into your Discord in seconds."
+        choose            = "Choose which Discord to patch"
+        stInstalled       = "NullCord installed"
+        stNot             = "not patched"
+        stOther           = "patched by another mod"
+        btnInstall        = "Install"
+        btnRepair         = "Reinstall / Repair"
+        btnUninstall      = "Uninstall"
+        ready             = "Ready. Select a Discord install and click Install."
+        selectFirst       = "Select at least one Discord install first."
+        logDownloading    = "Downloading latest NullCord build..."
+        noteDownload      = "Downloading... {0}%  ({1} / {2} MB)"
+        noteDownloadMb    = "Downloading... {0} MB"
+        logDownloaded     = "Downloaded {0} MB."
+        logChecksumOk     = "Checksum verified (SHA-256 OK)."
+        logChecksumNone   = "No checksum published for this release - skipping verification."
+        logRetryCurl      = "Retrying download via curl..."
+        noteRetry         = "Retrying download..."
         logDownloadFailed = "Download failed: {0}"
-        noteFailed       = "Download failed"
-        notePatching     = "Patching Discord..."
-        logPatching      = "Build downloaded. Discord will be closed and restarted. Patching..."
-        logPatched       = "Patched {0}."
-        logErrPatch      = "Error patching {0}: {1}"
-        logRestarting    = "Restarting {0}..."
-        noteDone         = "Done"
-        logDoneInstall   = "Done. NullCord is installed."
-        noteRemoving     = "Removing NullCord patch..."
-        logReverted      = "Reverted {0}."
-        logErrRevert     = "Error reverting {0}: {1}"
-        logDoneUninstall = "Uninstalled. Start Discord again for a clean client."
-        msgDoneInstall   = "NullCord installed! Discord is restarting - if it doesn't reopen, just start it."
-        msgDoneUninstall = "NullCord removed. Start Discord again for a clean client."
-        msgError         = "Something went wrong - check the log in the window."
-        errChecksum      = "checksum mismatch - the download may be corrupted, or a new release is publishing right now. Please try again in a minute."
-        errTooSmall      = "downloaded file too small (is the repo public?)"
-        errNoFile        = "download did not produce a file"
-        noStore          = "Microsoft Store Discord found - that version can't be patched. Please uninstall it, install Discord from discord.com, then run this installer again."
-        noSetup          = "Discord is installed but hasn't finished setting up. Open Discord once and let it fully load, then close it and run this installer again."
-        noNone           = "Discord was not found. Install the Discord desktop app from discord.com first, then run this installer again."
-        adminWarn        = "Tip: you don't need to run this as Administrator. Running as your normal user is recommended, since elevation can affect Discord's file permissions."
-        adminAsk         = "Continue anyway?"
-        toS              = "client mods are against Discord's ToS - use at your own risk"
-        creatorCode      = "Creator code (optional) - got a friend's code? type it here"
-        stylePink        = "Style: Pink"
-        styleBlue        = "Style: Blue"
+        noteFailed        = "Download failed"
+        notePatching      = "Patching Discord..."
+        logPatching       = "Build downloaded. Discord will be closed and restarted. Patching..."
+        logPatched        = "Patched {0}."
+        logErrPatch       = "Error patching {0}: {1}"
+        logRestarting     = "Restarting {0}..."
+        noteDone          = "Done"
+        logDoneInstall    = "Done. NullCord is installed."
+        noteRemoving      = "Removing NullCord patch..."
+        logReverted       = "Reverted {0}."
+        logErrRevert      = "Error reverting {0}: {1}"
+        logDoneUninstall  = "Uninstalled. Start Discord again for a clean client."
+        msgDoneInstall    = "NullCord installed! Discord is restarting - if it doesn't reopen, just start it."
+        msgDoneUninstall  = "NullCord removed. Start Discord again for a clean client."
+        msgError          = "Something went wrong - check the log in the window."
+        errChecksum       = "checksum mismatch - the download may be corrupted, or a new release is publishing right now. Please try again in a minute."
+        errTooSmall       = "downloaded file too small (is the repo public?)"
+        errNoFile         = "download did not produce a file"
+        noStore           = "Microsoft Store Discord found - that version can't be patched. Please uninstall it, install Discord from discord.com, then run this installer again."
+        noSetup           = "Discord is installed but hasn't finished setting up. Open Discord once and let it fully load, then close it and run this installer again."
+        noNone            = "Discord was not found. Install the Discord desktop app from discord.com first, then run this installer again."
+        adminWarn         = "Tip: you don't need to run this as Administrator. Running as your normal user is recommended, since elevation can affect Discord's file permissions."
+        adminAsk          = "Continue anyway?"
+        toS               = "client mods are against Discord's ToS - use at your own risk"
+        creatorCode       = "Creator code (optional) - got a friend's code? type it here"
+        stylePink         = "Style: Pink"
+        styleBlue         = "Style: Blue"
     }
     de = @{
-        eyebrow          = "DISCORD CLIENT MOD  -  OFFIZIELLER INSTALLER"
-        headline1        = "The cutest"
-        headline2        = "Discord mod"
-        tagline          = "Plugins, Themes und ganz viel Pink - in Sekunden direkt in dein Discord gepatcht."
-        choose           = "W�hle aus, welches Discord gepatcht wird"
-        stInstalled      = "NullCord installiert"
-        stNot            = "nicht gepatcht"
-        stOther          = "von anderem Mod gepatcht"
-        btnInstall       = "Installieren"
-        btnRepair        = "Reparieren"
-        btnUninstall     = "Entfernen"
-        ready            = "Bereit. W�hle eine Discord-Installation und klicke auf Installieren."
-        selectFirst      = "W�hle zuerst mindestens eine Discord-Installation aus."
-        logDownloading   = "Lade den neuesten NullCord-Build herunter..."
-        noteDownload     = "Lade herunter... {0}%  ({1} / {2} MB)"
-        noteDownloadMb   = "Lade herunter... {0} MB"
-        logDownloaded    = "{0} MB heruntergeladen."
-        logChecksumOk    = "Pr�fsumme verifiziert (SHA-256 OK)."
-        logChecksumNone  = "F�r dieses Release ist keine Pr�fsumme ver�ffentlicht - Verifikation �bersprungen."
-        logRetryCurl     = "Versuche Download erneut �ber curl..."
-        noteRetry        = "Versuche Download erneut..."
+        eyebrow           = "DISCORD CLIENT MOD  -  OFFIZIELLER INSTALLER"
+        headline1         = "The cutest"
+        headline2         = "Discord mod"
+        tagline           = "Plugins, Themes und ganz viel Pink - in Sekunden direkt in dein Discord gepatcht."
+        choose            = "W�hle aus, welches Discord gepatcht wird"
+        stInstalled       = "NullCord installiert"
+        stNot             = "nicht gepatcht"
+        stOther           = "von anderem Mod gepatcht"
+        btnInstall        = "Installieren"
+        btnRepair         = "Reparieren"
+        btnUninstall      = "Entfernen"
+        ready             = "Bereit. W�hle eine Discord-Installation und klicke auf Installieren."
+        selectFirst       = "W�hle zuerst mindestens eine Discord-Installation aus."
+        logDownloading    = "Lade den neuesten NullCord-Build herunter..."
+        noteDownload      = "Lade herunter... {0}%  ({1} / {2} MB)"
+        noteDownloadMb    = "Lade herunter... {0} MB"
+        logDownloaded     = "{0} MB heruntergeladen."
+        logChecksumOk     = "Pr�fsumme verifiziert (SHA-256 OK)."
+        logChecksumNone   = "F�r dieses Release ist keine Pr�fsumme ver�ffentlicht - Verifikation �bersprungen."
+        logRetryCurl      = "Versuche Download erneut �ber curl..."
+        noteRetry         = "Versuche Download erneut..."
         logDownloadFailed = "Download fehlgeschlagen: {0}"
-        noteFailed       = "Download fehlgeschlagen"
-        notePatching     = "Patche Discord..."
-        logPatching      = "Build heruntergeladen. Discord wird geschlossen und neu gestartet. Patche..."
-        logPatched       = "{0} gepatcht."
-        logErrPatch      = "Fehler beim Patchen von {0}: {1}"
-        logRestarting    = "Starte {0} neu..."
-        noteDone         = "Fertig"
-        logDoneInstall   = "Fertig. NullCord ist installiert."
-        noteRemoving     = "Entferne NullCord-Patch..."
-        logReverted      = "{0} zur�ckgesetzt."
-        logErrRevert     = "Fehler beim Zur�cksetzen von {0}: {1}"
-        logDoneUninstall = "Deinstalliert. Starte Discord erneut f�r einen sauberen Client."
-        msgDoneInstall   = "NullCord installiert! Discord startet neu - falls nicht, starte es einfach selbst."
-        msgDoneUninstall = "NullCord entfernt. Starte Discord erneut f�r einen sauberen Client."
-        msgError         = "Etwas ist schiefgelaufen - sieh dir das Log im Fenster an."
-        errChecksum      = "Pr�fsummen-Fehler - der Download ist evtl. besch�digt oder ein neues Release wird gerade ver�ffentlicht. Versuch es in einer Minute erneut."
-        errTooSmall      = "heruntergeladene Datei zu klein (ist das Repo �ffentlich?)"
-        errNoFile        = "Download hat keine Datei erzeugt"
-        noStore          = "Microsoft-Store-Discord gefunden - diese Version kann nicht gepatcht werden. Bitte deinstalliere sie, installiere Discord von discord.com und starte den Installer erneut."
-        noSetup          = "Discord ist installiert, aber noch nicht fertig eingerichtet. �ffne Discord einmal vollst�ndig, schlie�e es und starte den Installer erneut."
-        noNone           = "Discord wurde nicht gefunden. Installiere zuerst die Discord-Desktop-App von discord.com und starte den Installer erneut."
-        adminWarn        = "Tipp: Du musst dieses Programm nicht als Administrator ausf�hren. Empfohlen ist dein normaler Benutzer, da erh�hte Rechte die Dateiberechtigungen von Discord beeinflussen k�nnen."
-        adminAsk         = "Trotzdem fortfahren?"
-        toS              = "Client-Mods versto�en gegen Discords Nutzungsbedingungen - Nutzung auf eigene Gefahr"
-        stylePink        = "Stil: Pink"
-        styleBlue        = "Stil: Blau"
+        noteFailed        = "Download fehlgeschlagen"
+        notePatching      = "Patche Discord..."
+        logPatching       = "Build heruntergeladen. Discord wird geschlossen und neu gestartet. Patche..."
+        logPatched        = "{0} gepatcht."
+        logErrPatch       = "Fehler beim Patchen von {0}: {1}"
+        logRestarting     = "Starte {0} neu..."
+        noteDone          = "Fertig"
+        logDoneInstall    = "Fertig. NullCord ist installiert."
+        noteRemoving      = "Entferne NullCord-Patch..."
+        logReverted       = "{0} zur�ckgesetzt."
+        logErrRevert      = "Fehler beim Zur�cksetzen von {0}: {1}"
+        logDoneUninstall  = "Deinstalliert. Starte Discord erneut f�r einen sauberen Client."
+        msgDoneInstall    = "NullCord installiert! Discord startet neu - falls nicht, starte es einfach selbst."
+        msgDoneUninstall  = "NullCord entfernt. Starte Discord erneut f�r einen sauberen Client."
+        msgError          = "Etwas ist schiefgelaufen - sieh dir das Log im Fenster an."
+        errChecksum       = "Pr�fsummen-Fehler - der Download ist evtl. besch�digt oder ein neues Release wird gerade ver�ffentlicht. Versuch es in einer Minute erneut."
+        errTooSmall       = "heruntergeladene Datei zu klein (ist das Repo �ffentlich?)"
+        errNoFile         = "Download hat keine Datei erzeugt"
+        noStore           = "Microsoft-Store-Discord gefunden - diese Version kann nicht gepatcht werden. Bitte deinstalliere sie, installiere Discord von discord.com und starte den Installer erneut."
+        noSetup           = "Discord ist installiert, aber noch nicht fertig eingerichtet. �ffne Discord einmal vollst�ndig, schlie�e es und starte den Installer erneut."
+        noNone            = "Discord wurde nicht gefunden. Installiere zuerst die Discord-Desktop-App von discord.com und starte den Installer erneut."
+        adminWarn         = "Tipp: Du musst dieses Programm nicht als Administrator ausf�hren. Empfohlen ist dein normaler Benutzer, da erh�hte Rechte die Dateiberechtigungen von Discord beeinflussen k�nnen."
+        adminAsk          = "Trotzdem fortfahren?"
+        toS               = "Client-Mods versto�en gegen Discords Nutzungsbedingungen - Nutzung auf eigene Gefahr"
+        stylePink         = "Stil: Pink"
+        styleBlue         = "Stil: Blau"
     }
     es = @{
-        eyebrow          = "MOD DE CLIENTE PARA DISCORD  -  INSTALADOR OFICIAL"
-        headline1        = "The cutest"
-        headline2        = "Discord mod"
-        tagline          = "Plugins, temas y mucho rosa: parcheado directamente en tu Discord en segundos."
-        choose           = "Elige qu� Discord parchear"
-        stInstalled      = "NullCord instalado"
-        stNot            = "sin parchear"
-        stOther          = "parcheado por otro mod"
-        btnInstall       = "Instalar"
-        btnRepair        = "Reparar"
-        btnUninstall     = "Desinstalar"
-        ready            = "Listo. Elige una instalaci�n de Discord y pulsa Instalar."
-        selectFirst      = "Selecciona primero al menos una instalaci�n de Discord."
-        logDownloading   = "Descargando la �ltima versi�n de NullCord..."
-        noteDownload     = "Descargando... {0}%  ({1} / {2} MB)"
-        noteDownloadMb   = "Descargando... {0} MB"
-        logDownloaded    = "{0} MB descargados."
-        logChecksumOk    = "Suma de verificaci�n correcta (SHA-256 OK)."
-        logChecksumNone  = "Esta versi�n no publica suma de verificaci�n - se omite la comprobaci�n."
-        logRetryCurl     = "Reintentando la descarga con curl..."
-        noteRetry        = "Reintentando descarga..."
+        eyebrow           = "MOD DE CLIENTE PARA DISCORD  -  INSTALADOR OFICIAL"
+        headline1         = "The cutest"
+        headline2         = "Discord mod"
+        tagline           = "Plugins, temas y mucho rosa: parcheado directamente en tu Discord en segundos."
+        choose            = "Elige qu� Discord parchear"
+        stInstalled       = "NullCord instalado"
+        stNot             = "sin parchear"
+        stOther           = "parcheado por otro mod"
+        btnInstall        = "Instalar"
+        btnRepair         = "Reparar"
+        btnUninstall      = "Desinstalar"
+        ready             = "Listo. Elige una instalaci�n de Discord y pulsa Instalar."
+        selectFirst       = "Selecciona primero al menos una instalaci�n de Discord."
+        logDownloading    = "Descargando la �ltima versi�n de NullCord..."
+        noteDownload      = "Descargando... {0}%  ({1} / {2} MB)"
+        noteDownloadMb    = "Descargando... {0} MB"
+        logDownloaded     = "{0} MB descargados."
+        logChecksumOk     = "Suma de verificaci�n correcta (SHA-256 OK)."
+        logChecksumNone   = "Esta versi�n no publica suma de verificaci�n - se omite la comprobaci�n."
+        logRetryCurl      = "Reintentando la descarga con curl..."
+        noteRetry         = "Reintentando descarga..."
         logDownloadFailed = "Error de descarga: {0}"
-        noteFailed       = "Error de descarga"
-        notePatching     = "Parcheando Discord..."
-        logPatching      = "Versi�n descargada. Discord se cerrar� y se reiniciar�. Parcheando..."
-        logPatched       = "{0} parcheado."
-        logErrPatch      = "Error al parchear {0}: {1}"
-        logRestarting    = "Reiniciando {0}..."
-        noteDone         = "Listo"
-        logDoneInstall   = "Listo. NullCord est� instalado."
-        noteRemoving     = "Quitando el parche de NullCord..."
-        logReverted      = "{0} restaurado."
-        logErrRevert     = "Error al restaurar {0}: {1}"
-        logDoneUninstall = "Desinstalado. Vuelve a abrir Discord para un cliente limpio."
-        msgDoneInstall   = "�NullCord instalado! Discord se est� reiniciando - si no se abre, �brelo t�."
-        msgDoneUninstall = "NullCord eliminado. Vuelve a abrir Discord para un cliente limpio."
-        msgError         = "Algo sali� mal - revisa el registro de la ventana."
-        errChecksum      = "la suma de verificaci�n no coincide - la descarga puede estar da�ada o se est� publicando una nueva versi�n ahora mismo. Int�ntalo de nuevo en un minuto."
-        errTooSmall      = "el archivo descargado es demasiado peque�o (�el repositorio es p�blico?)"
-        errNoFile        = "la descarga no gener� ning�n archivo"
-        noStore          = "Se encontr� el Discord de la Microsoft Store - esa versi�n no se puede parchear. Desinst�lala, instala Discord desde discord.com y vuelve a ejecutar este instalador."
-        noSetup          = "Discord est� instalado pero a�n no ha terminado de configurarse. Abre Discord una vez, deja que cargue, ci�rralo y vuelve a ejecutar este instalador."
-        noNone           = "No se encontr� Discord. Instala primero la app de escritorio desde discord.com y vuelve a ejecutar este instalador."
-        adminWarn        = "Consejo: no necesitas ejecutar esto como administrador. Se recomienda usar tu usuario normal, ya que la elevaci�n puede afectar a los permisos de archivos de Discord."
-        adminAsk         = "�Continuar de todos modos?"
-        toS              = "los mods de cliente van contra los ToS de Discord - �salo bajo tu propia responsabilidad"
-        stylePink        = "Estilo: Rosa"
-        styleBlue        = "Estilo: Azul"
+        noteFailed        = "Error de descarga"
+        notePatching      = "Parcheando Discord..."
+        logPatching       = "Versi�n descargada. Discord se cerrar� y se reiniciar�. Parcheando..."
+        logPatched        = "{0} parcheado."
+        logErrPatch       = "Error al parchear {0}: {1}"
+        logRestarting     = "Reiniciando {0}..."
+        noteDone          = "Listo"
+        logDoneInstall    = "Listo. NullCord est� instalado."
+        noteRemoving      = "Quitando el parche de NullCord..."
+        logReverted       = "{0} restaurado."
+        logErrRevert      = "Error al restaurar {0}: {1}"
+        logDoneUninstall  = "Desinstalado. Vuelve a abrir Discord para un cliente limpio."
+        msgDoneInstall    = "�NullCord instalado! Discord se est� reiniciando - si no se abre, �brelo t�."
+        msgDoneUninstall  = "NullCord eliminado. Vuelve a abrir Discord para un cliente limpio."
+        msgError          = "Algo sali� mal - revisa el registro de la ventana."
+        errChecksum       = "la suma de verificaci�n no coincide - la descarga puede estar da�ada o se est� publicando una nueva versi�n ahora mismo. Int�ntalo de nuevo en un minuto."
+        errTooSmall       = "el archivo descargado es demasiado peque�o (�el repositorio es p�blico?)"
+        errNoFile         = "la descarga no gener� ning�n archivo"
+        noStore           = "Se encontr� el Discord de la Microsoft Store - esa versi�n no se puede parchear. Desinst�lala, instala Discord desde discord.com y vuelve a ejecutar este instalador."
+        noSetup           = "Discord est� instalado pero a�n no ha terminado de configurarse. Abre Discord una vez, deja que cargue, ci�rralo y vuelve a ejecutar este instalador."
+        noNone            = "No se encontr� Discord. Instala primero la app de escritorio desde discord.com y vuelve a ejecutar este instalador."
+        adminWarn         = "Consejo: no necesitas ejecutar esto como administrador. Se recomienda usar tu usuario normal, ya que la elevaci�n puede afectar a los permisos de archivos de Discord."
+        adminAsk          = "�Continuar de todos modos?"
+        toS               = "los mods de cliente van contra los ToS de Discord - �salo bajo tu propia responsabilidad"
+        stylePink         = "Estilo: Rosa"
+        styleBlue         = "Estilo: Azul"
     }
     fr = @{
-        eyebrow          = "MOD CLIENT DISCORD  -  INSTALLATEUR OFFICIEL"
-        headline1        = "The cutest"
-        headline2        = "Discord mod"
-        tagline          = "Des plugins, des th�mes et beaucoup de rose - patch� dans votre Discord en quelques secondes."
-        choose           = "Choisissez quel Discord patcher"
-        stInstalled      = "NullCord install�"
-        stNot            = "non patch�"
-        stOther          = "patch� par un autre mod"
-        btnInstall       = "Installer"
-        btnRepair        = "R�parer"
-        btnUninstall     = "D�sinstaller"
-        ready            = "Pr�t. Choisissez une installation Discord et cliquez sur Installer."
-        selectFirst      = "S�lectionnez d'abord au moins une installation Discord."
-        logDownloading   = "T�l�chargement de la derni�re version de NullCord..."
-        noteDownload     = "T�l�chargement... {0}%  ({1} / {2} Mo)"
-        noteDownloadMb   = "T�l�chargement... {0} Mo"
-        logDownloaded    = "{0} Mo t�l�charg�s."
-        logChecksumOk    = "Somme de contr�le v�rifi�e (SHA-256 OK)."
-        logChecksumNone  = "Aucune somme de contr�le publi�e pour cette version - v�rification ignor�e."
-        logRetryCurl     = "Nouvelle tentative de t�l�chargement via curl..."
-        noteRetry        = "Nouvelle tentative..."
+        eyebrow           = "MOD CLIENT DISCORD  -  INSTALLATEUR OFFICIEL"
+        headline1         = "The cutest"
+        headline2         = "Discord mod"
+        tagline           = "Des plugins, des th�mes et beaucoup de rose - patch� dans votre Discord en quelques secondes."
+        choose            = "Choisissez quel Discord patcher"
+        stInstalled       = "NullCord install�"
+        stNot             = "non patch�"
+        stOther           = "patch� par un autre mod"
+        btnInstall        = "Installer"
+        btnRepair         = "R�parer"
+        btnUninstall      = "D�sinstaller"
+        ready             = "Pr�t. Choisissez une installation Discord et cliquez sur Installer."
+        selectFirst       = "S�lectionnez d'abord au moins une installation Discord."
+        logDownloading    = "T�l�chargement de la derni�re version de NullCord..."
+        noteDownload      = "T�l�chargement... {0}%  ({1} / {2} Mo)"
+        noteDownloadMb    = "T�l�chargement... {0} Mo"
+        logDownloaded     = "{0} Mo t�l�charg�s."
+        logChecksumOk     = "Somme de contr�le v�rifi�e (SHA-256 OK)."
+        logChecksumNone   = "Aucune somme de contr�le publi�e pour cette version - v�rification ignor�e."
+        logRetryCurl      = "Nouvelle tentative de t�l�chargement via curl..."
+        noteRetry         = "Nouvelle tentative..."
         logDownloadFailed = "�chec du t�l�chargement : {0}"
-        noteFailed       = "�chec du t�l�chargement"
-        notePatching     = "Patch de Discord en cours..."
-        logPatching      = "Version t�l�charg�e. Discord va �tre ferm� puis relanc�. Patch en cours..."
-        logPatched       = "{0} patch�."
-        logErrPatch      = "Erreur lors du patch de {0} : {1}"
-        logRestarting    = "Red�marrage de {0}..."
-        noteDone         = "Termin�"
-        logDoneInstall   = "Termin�. NullCord est install�."
-        noteRemoving     = "Suppression du patch NullCord..."
-        logReverted      = "{0} restaur�."
-        logErrRevert     = "Erreur lors de la restauration de {0} : {1}"
-        logDoneUninstall = "D�sinstall�. Relancez Discord pour un client propre."
-        msgDoneInstall   = "NullCord install� ! Discord red�marre - s'il ne se rouvre pas, lancez-le."
-        msgDoneUninstall = "NullCord supprim�. Relancez Discord pour un client propre."
-        msgError         = "Un probl�me est survenu - consultez le journal dans la fen�tre."
-        errChecksum      = "somme de contr�le incorrecte - le t�l�chargement est peut-�tre corrompu, ou une nouvelle version est en cours de publication. R�essayez dans une minute."
-        errTooSmall      = "fichier t�l�charg� trop petit (le d�p�t est-il public ?)"
-        errNoFile        = "le t�l�chargement n'a produit aucun fichier"
-        noStore          = "Discord du Microsoft Store d�tect� - cette version ne peut pas �tre patch�e. D�sinstallez-la, installez Discord depuis discord.com, puis relancez cet installateur."
-        noSetup          = "Discord est install� mais sa configuration n'est pas termin�e. Ouvrez Discord une fois, laissez-le charger, fermez-le, puis relancez cet installateur."
-        noNone           = "Discord est introuvable. Installez d'abord l'application de bureau depuis discord.com, puis relancez cet installateur."
-        adminWarn        = "Astuce : inutile de lancer ce programme en tant qu'administrateur. Utilisez votre compte normal, l'�l�vation peut affecter les permissions des fichiers de Discord."
-        adminAsk         = "Continuer quand m�me ?"
-        toS              = "les mods clients sont contraires aux CGU de Discord - � utiliser � vos risques"
-        stylePink        = "Style : Rose"
-        styleBlue        = "Style : Bleu"
+        noteFailed        = "�chec du t�l�chargement"
+        notePatching      = "Patch de Discord en cours..."
+        logPatching       = "Version t�l�charg�e. Discord va �tre ferm� puis relanc�. Patch en cours..."
+        logPatched        = "{0} patch�."
+        logErrPatch       = "Erreur lors du patch de {0} : {1}"
+        logRestarting     = "Red�marrage de {0}..."
+        noteDone          = "Termin�"
+        logDoneInstall    = "Termin�. NullCord est install�."
+        noteRemoving      = "Suppression du patch NullCord..."
+        logReverted       = "{0} restaur�."
+        logErrRevert      = "Erreur lors de la restauration de {0} : {1}"
+        logDoneUninstall  = "D�sinstall�. Relancez Discord pour un client propre."
+        msgDoneInstall    = "NullCord install� ! Discord red�marre - s'il ne se rouvre pas, lancez-le."
+        msgDoneUninstall  = "NullCord supprim�. Relancez Discord pour un client propre."
+        msgError          = "Un probl�me est survenu - consultez le journal dans la fen�tre."
+        errChecksum       = "somme de contr�le incorrecte - le t�l�chargement est peut-�tre corrompu, ou une nouvelle version est en cours de publication. R�essayez dans une minute."
+        errTooSmall       = "fichier t�l�charg� trop petit (le d�p�t est-il public ?)"
+        errNoFile         = "le t�l�chargement n'a produit aucun fichier"
+        noStore           = "Discord du Microsoft Store d�tect� - cette version ne peut pas �tre patch�e. D�sinstallez-la, installez Discord depuis discord.com, puis relancez cet installateur."
+        noSetup           = "Discord est install� mais sa configuration n'est pas termin�e. Ouvrez Discord une fois, laissez-le charger, fermez-le, puis relancez cet installateur."
+        noNone            = "Discord est introuvable. Installez d'abord l'application de bureau depuis discord.com, puis relancez cet installateur."
+        adminWarn         = "Astuce : inutile de lancer ce programme en tant qu'administrateur. Utilisez votre compte normal, l'�l�vation peut affecter les permissions des fichiers de Discord."
+        adminAsk          = "Continuer quand m�me ?"
+        toS               = "les mods clients sont contraires aux CGU de Discord - � utiliser � vos risques"
+        stylePink         = "Style : Rose"
+        styleBlue         = "Style : Bleu"
     }
     ru = @{
-        eyebrow          = "?????????? ??? ??? DISCORD  -  ??????????? ??????????"
-        headline1        = "The cutest"
-        headline2        = "Discord mod"
-        tagline          = "???????, ???? ? ????? ???????? - ???? ????? ? ??? Discord ?? ????????? ???????."
-        choose           = "????????, ????? Discord ??????????"
-        stInstalled      = "NullCord ??????????"
-        stNot            = "?? ?????????"
-        stOther          = "????????? ?????? ?????"
-        btnInstall       = "??????????"
-        btnRepair        = "??????????????"
-        btnUninstall     = "???????"
-        ready            = "??????. ???????? ????????? Discord ? ??????? ??????????."
-        selectFirst      = "??????? ???????? ???? ?? ???? ????????? Discord."
-        logDownloading   = "?????????? ????????? ?????? NullCord..."
-        noteDownload     = "??????????... {0}%  ({1} / {2} ??)"
-        noteDownloadMb   = "??????????... {0} ??"
-        logDownloaded    = "??????? {0} ??."
-        logChecksumOk    = "??????????? ????? ????????? (SHA-256 OK)."
-        logChecksumNone  = "??? ????? ?????? ??? ??????????? ????? - ???????? ?????????."
-        logRetryCurl     = "????????? ??????? ?????????? ????? curl..."
-        noteRetry        = "????????? ???????..."
+        eyebrow           = "?????????? ??? ??? DISCORD  -  ??????????? ??????????"
+        headline1         = "The cutest"
+        headline2         = "Discord mod"
+        tagline           = "???????, ???? ? ????? ???????? - ???? ????? ? ??? Discord ?? ????????? ???????."
+        choose            = "????????, ????? Discord ??????????"
+        stInstalled       = "NullCord ??????????"
+        stNot             = "?? ?????????"
+        stOther           = "????????? ?????? ?????"
+        btnInstall        = "??????????"
+        btnRepair         = "??????????????"
+        btnUninstall      = "???????"
+        ready             = "??????. ???????? ????????? Discord ? ??????? ??????????."
+        selectFirst       = "??????? ???????? ???? ?? ???? ????????? Discord."
+        logDownloading    = "?????????? ????????? ?????? NullCord..."
+        noteDownload      = "??????????... {0}%  ({1} / {2} ??)"
+        noteDownloadMb    = "??????????... {0} ??"
+        logDownloaded     = "??????? {0} ??."
+        logChecksumOk     = "??????????? ????? ????????? (SHA-256 OK)."
+        logChecksumNone   = "??? ????? ?????? ??? ??????????? ????? - ???????? ?????????."
+        logRetryCurl      = "????????? ??????? ?????????? ????? curl..."
+        noteRetry         = "????????? ???????..."
         logDownloadFailed = "?????? ??????????: {0}"
-        noteFailed       = "?????? ??????????"
-        notePatching     = "???? Discord..."
-        logPatching      = "?????? ???????. Discord ????? ?????? ? ???????????. ????..."
-        logPatched       = "{0} ?????????."
-        logErrPatch      = "?????? ????? {0}: {1}"
-        logRestarting    = "?????????? {0}..."
-        noteDone         = "??????"
-        logDoneInstall   = "??????. NullCord ??????????."
-        noteRemoving     = "???????? ????? NullCord..."
-        logReverted      = "{0} ????????????."
-        logErrRevert     = "?????? ?????????????? {0}: {1}"
-        logDoneUninstall = "???????. ????????? Discord ????? ??? ??????? ???????."
-        msgDoneInstall   = "NullCord ??????????! Discord ??????????????? - ???? ?? ?????????, ????????? ??? ????."
-        msgDoneUninstall = "NullCord ??????. ????????? Discord ????? ??? ??????? ???????."
-        msgError         = "???-?? ????? ?? ??? - ?????????? ?????? ? ????."
-        errChecksum      = "??????????? ????? ?? ????????? - ???????? ????? ???????????, ??? ????? ?????? ??????????? ????? ?????. ?????????? ????? ????? ??????."
-        errTooSmall      = "????????? ???? ??????? ??? (??????????? ??????????)"
-        errNoFile        = "?????????? ?? ??????? ????"
-        noStore          = "?????? Discord ?? Microsoft Store - ??? ?????? ?????? ??????????. ??????? ??, ?????????? Discord ? discord.com ? ????????? ?????????? ?????."
-        noSetup          = "Discord ??????????, ?? ??? ?? ???????? ?????????. ???????? Discord ???? ???, ????? ???????????, ???????? ? ????????? ?????????? ?????."
-        noNone           = "Discord ?? ??????. ??????? ?????????? ?????????? ?????????? ? discord.com ? ????????? ?????????? ?????."
-        adminWarn        = "?????: ????????? ?? ????? ?????????????? ?? ?????. ????????????? ??????? ???????????? - ????????? ???? ????? ???????? ?? ????? ?????? Discord."
-        adminAsk         = "??? ????? ???????????"
-        toS              = "?????????? ???? ???????? ??????? ????????????? Discord - ??????????? ?? ???? ????"
-        stylePink        = "?????: ???????"
-        styleBlue        = "?????: ?????"
+        noteFailed        = "?????? ??????????"
+        notePatching      = "???? Discord..."
+        logPatching       = "?????? ???????. Discord ????? ?????? ? ???????????. ????..."
+        logPatched        = "{0} ?????????."
+        logErrPatch       = "?????? ????? {0}: {1}"
+        logRestarting     = "?????????? {0}..."
+        noteDone          = "??????"
+        logDoneInstall    = "??????. NullCord ??????????."
+        noteRemoving      = "???????? ????? NullCord..."
+        logReverted       = "{0} ????????????."
+        logErrRevert      = "?????? ?????????????? {0}: {1}"
+        logDoneUninstall  = "???????. ????????? Discord ????? ??? ??????? ???????."
+        msgDoneInstall    = "NullCord ??????????! Discord ??????????????? - ???? ?? ?????????, ????????? ??? ????."
+        msgDoneUninstall  = "NullCord ??????. ????????? Discord ????? ??? ??????? ???????."
+        msgError          = "???-?? ????? ?? ??? - ?????????? ?????? ? ????."
+        errChecksum       = "??????????? ????? ?? ????????? - ???????? ????? ???????????, ??? ????? ?????? ??????????? ????? ?????. ?????????? ????? ????? ??????."
+        errTooSmall       = "????????? ???? ??????? ??? (??????????? ??????????)"
+        errNoFile         = "?????????? ?? ??????? ????"
+        noStore           = "?????? Discord ?? Microsoft Store - ??? ?????? ?????? ??????????. ??????? ??, ?????????? Discord ? discord.com ? ????????? ?????????? ?????."
+        noSetup           = "Discord ??????????, ?? ??? ?? ???????? ?????????. ???????? Discord ???? ???, ????? ???????????, ???????? ? ????????? ?????????? ?????."
+        noNone            = "Discord ?? ??????. ??????? ?????????? ?????????? ?????????? ? discord.com ? ????????? ?????????? ?????."
+        adminWarn         = "?????: ????????? ?? ????? ?????????????? ?? ?????. ????????????? ??????? ???????????? - ????????? ???? ????? ???????? ?? ????? ?????? Discord."
+        adminAsk          = "??? ????? ???????????"
+        toS               = "?????????? ???? ???????? ??????? ????????????? Discord - ??????????? ?? ???? ????"
+        stylePink         = "?????: ???????"
+        styleBlue         = "?????: ?????"
     }
 }
 
@@ -414,39 +420,39 @@ $script:StyleId = "pink"
 
 $script:StringsBlue = @{
     en = @{
-        headline1        = "Discord,"
-        headline2        = "your way"
-        tagline          = "Plugins, themes and full control - patched straight into your Discord in seconds."
-        creatorCode      = "Creator code (optional) - enter a referral code if you have one"
-        msgDoneInstall   = "NullCord installed. Discord is restarting - if it doesn't reopen, just start it."
+        headline1      = "Discord,"
+        headline2      = "your way"
+        tagline        = "Plugins, themes and full control - patched straight into your Discord in seconds."
+        creatorCode    = "Creator code (optional) - enter a referral code if you have one"
+        msgDoneInstall = "NullCord installed. Discord is restarting - if it doesn't reopen, just start it."
     }
     de = @{
-        headline1        = "Discord,"
-        headline2        = "wie du es willst"
-        tagline          = "Plugins, Themes und volle Kontrolle - in Sekunden direkt in dein Discord gepatcht."
-        creatorCode      = "Creator-Code (optional) - hast du einen Empfehlungscode, gib ihn hier ein"
-        msgDoneInstall   = "NullCord installiert. Discord startet neu - falls nicht, starte es einfach selbst."
+        headline1      = "Discord,"
+        headline2      = "wie du es willst"
+        tagline        = "Plugins, Themes und volle Kontrolle - in Sekunden direkt in dein Discord gepatcht."
+        creatorCode    = "Creator-Code (optional) - hast du einen Empfehlungscode, gib ihn hier ein"
+        msgDoneInstall = "NullCord installiert. Discord startet neu - falls nicht, starte es einfach selbst."
     }
     es = @{
-        headline1        = "Discord,"
-        headline2        = "a tu manera"
-        tagline          = "Plugins, temas y control total: parcheado directamente en tu Discord en segundos."
-        creatorCode      = "C�digo de creador (opcional): si tienes un c�digo de referido, escr�belo aqu�"
-        msgDoneInstall   = "NullCord instalado. Discord se est� reiniciando - si no se abre, �brelo t�."
+        headline1      = "Discord,"
+        headline2      = "a tu manera"
+        tagline        = "Plugins, temas y control total: parcheado directamente en tu Discord en segundos."
+        creatorCode    = "C�digo de creador (opcional): si tienes un c�digo de referido, escr�belo aqu�"
+        msgDoneInstall = "NullCord instalado. Discord se est� reiniciando - si no se abre, �brelo t�."
     }
     fr = @{
-        headline1        = "Discord,"
-        headline2        = "� votre fa�on"
-        tagline          = "Des plugins, des th�mes et un contr�le total - patch� dans votre Discord en quelques secondes."
-        creatorCode      = "Code cr�ateur (facultatif) - si vous avez un code de parrainage, saisissez-le ici"
-        msgDoneInstall   = "NullCord install�. Discord red�marre - s'il ne se rouvre pas, lancez-le."
+        headline1      = "Discord,"
+        headline2      = "� votre fa�on"
+        tagline        = "Des plugins, des th�mes et un contr�le total - patch� dans votre Discord en quelques secondes."
+        creatorCode    = "Code cr�ateur (facultatif) - si vous avez un code de parrainage, saisissez-le ici"
+        msgDoneInstall = "NullCord install�. Discord red�marre - s'il ne se rouvre pas, lancez-le."
     }
     ru = @{
-        headline1        = "Discord,"
-        headline2        = "your way"
-        tagline          = "???????, ???? ? ?????? ???????? - ???? ????? ? ??? Discord ?? ????????? ???????."
-        creatorCode      = "??? ?????? (?????????????) - ???? ? ??? ???? ??????????? ???, ??????? ??? ?????"
-        msgDoneInstall   = "NullCord ??????????. Discord ??????????????? - ???? ?? ?????????, ????????? ??? ????."
+        headline1      = "Discord,"
+        headline2      = "your way"
+        tagline        = "???????, ???? ? ?????? ???????? - ???? ????? ? ??? Discord ?? ????????? ???????."
+        creatorCode    = "??? ?????? (?????????????) - ???? ? ??? ???? ??????????? ???, ??????? ??? ?????"
+        msgDoneInstall = "NullCord ??????????. Discord ??????????????? - ???? ?? ?????????, ????????? ??? ????."
     }
 }
 
@@ -454,7 +460,8 @@ $script:Lang = "en"
 try {
     $sysLang = (Get-UICulture).TwoLetterISOLanguageName
     if ($script:LangCodes -contains $sysLang) { $script:Lang = $sysLang }
-} catch { }
+}
+catch { }
 
 function T([string]$key) {
     if ($script:StyleId -eq "blue") {
@@ -479,7 +486,8 @@ try {
             "NullCord", "YesNo", "Warning")
         if ($kcAns -eq [System.Windows.Forms.DialogResult]::No) { exit 0 }
     }
-} catch { }
+}
+catch { }
 
 # ----- palette (NullCord pink on deep plum-black, Cylone-style editorial layout) -----
 function C3([int]$r, [int]$g, [int]$b) { return [System.Drawing.Color]::FromArgb($r, $g, $b) }
@@ -527,7 +535,8 @@ $logo = $null
 try {
     $ms = New-Object System.IO.MemoryStream(, [Convert]::FromBase64String($LogoB64))
     $logo = [System.Drawing.Image]::FromStream($ms)
-} catch { }
+}
+catch { }
 
 $script:logoBlue = $null
 $script:iconPink = $null
@@ -537,7 +546,8 @@ if ($logo) {
     try {
         $script:logoBlue = [NullCordImaging]::HueShift($logo, -117)
         $script:iconBlue = [System.Drawing.Icon]::FromHandle($script:logoBlue.GetHicon())
-    } catch { }
+    }
+    catch { }
 }
 $script:logoCur = $logo
 
@@ -552,25 +562,27 @@ try {
     $script:pfc.AddMemoryFont($fontPtr, $fontBytes.Length)
     [System.Runtime.InteropServices.Marshal]::FreeCoTaskMem($fontPtr)
     $script:pixelFamily = $script:pfc.Families[0]
-} catch { }
+}
+catch { }
 
 # fonts (point-based, so they scale with the DPI automatically)
 $fWordmark = New-Object System.Drawing.Font("Segoe UI Semibold", 12, [System.Drawing.FontStyle]::Bold)
-$fEyebrow  = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-$fTag      = New-Object System.Drawing.Font("Segoe UI", 10)
-$fSection  = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
-$fBtn      = New-Object System.Drawing.Font("Segoe UI Semibold", 10, [System.Drawing.FontStyle]::Bold)
-$fRowName  = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$fBadge    = New-Object System.Drawing.Font("Segoe UI", 8.5)
-$fFoot     = New-Object System.Drawing.Font("Segoe UI", 8.5)
+$fEyebrow = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$fTag = New-Object System.Drawing.Font("Segoe UI", 10)
+$fSection = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
+$fBtn = New-Object System.Drawing.Font("Segoe UI Semibold", 10, [System.Drawing.FontStyle]::Bold)
+$fRowName = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$fBadge = New-Object System.Drawing.Font("Segoe UI", 8.5)
+$fFoot = New-Object System.Drawing.Font("Segoe UI", 8.5)
 if ($script:pixelFamily) {
     $fPixelXL = New-Object System.Drawing.Font($script:pixelFamily, 40)
-    $fPixelM  = New-Object System.Drawing.Font($script:pixelFamily, 24)
-    $fPixelS  = New-Object System.Drawing.Font($script:pixelFamily, 13)
-} else {
+    $fPixelM = New-Object System.Drawing.Font($script:pixelFamily, 24)
+    $fPixelS = New-Object System.Drawing.Font($script:pixelFamily, 13)
+}
+else {
     $fPixelXL = New-Object System.Drawing.Font("Segoe UI", 30, [System.Drawing.FontStyle]::Bold)
-    $fPixelM  = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
-    $fPixelS  = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+    $fPixelM = New-Object System.Drawing.Font("Segoe UI", 18, [System.Drawing.FontStyle]::Bold)
+    $fPixelS = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
 }
 
 # state shared with event handlers
@@ -655,7 +667,8 @@ function New-Pill($text, $back, $hover, $fore, $font, $radius, $border) {
     try {
         $dbp = [System.Windows.Forms.Panel].GetProperty("DoubleBuffered", [System.Reflection.BindingFlags]"Instance,NonPublic")
         $dbp.SetValue($p, $true, $null)
-    } catch { }
+    }
+    catch { }
     $p.Add_Paint($script:pillPaint)
     $p.Add_MouseEnter({ param($s, $e) $s.Tag.Hot = $true; $s.Invalidate() })
     $p.Add_MouseLeave({ param($s, $e) $s.Tag.Hot = $false; $s.Invalidate() })
@@ -665,16 +678,16 @@ function New-Pill($text, $back, $hover, $fore, $font, $radius, $border) {
 # ----- discord detection -----
 function Get-DiscordInstalls {
     $branches = @(
-        @{ Name = "Discord (Stable)"; Dir = "Discord";       Proc = "Discord" }
-        @{ Name = "Discord PTB";      Dir = "DiscordPTB";    Proc = "DiscordPTB" }
-        @{ Name = "Discord Canary";   Dir = "DiscordCanary"; Proc = "DiscordCanary" }
+        @{ Name = "Discord (Stable)"; Dir = "Discord"; Proc = "Discord" }
+        @{ Name = "Discord PTB"; Dir = "DiscordPTB"; Proc = "DiscordPTB" }
+        @{ Name = "Discord Canary"; Dir = "DiscordCanary"; Proc = "DiscordCanary" }
     )
     $found = @()
     foreach ($b in $branches) {
         $base = Join-Path $env:LOCALAPPDATA $b.Dir
         if (-not (Test-Path $base)) { continue }
         $appDir = Get-ChildItem -Path $base -Directory -Filter "app-*" -ErrorAction SilentlyContinue |
-            Sort-Object Name -Descending | Select-Object -First 1
+        Sort-Object Name -Descending | Select-Object -First 1
         if (-not $appDir) { continue }
         $res = Join-Path $appDir.FullName "resources"
         if (-not (Test-Path $res)) { continue }
@@ -722,9 +735,9 @@ $form.ForeColor = $cText
 $form.Font = New-Object System.Drawing.Font("Segoe UI", 9)
 $form.Add_HandleCreated({ Set-DarkTitlebar $form.Handle })
 $form.Add_MouseDown({
-    param($s, $e)
-    if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) { Start-WindowDrag }
-})
+        param($s, $e)
+        if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) { Start-WindowDrag }
+    })
 if ($script:iconPink) {
     try { $form.Icon = $script:iconPink } catch { }
 }
@@ -732,65 +745,65 @@ if ($script:iconPink) {
 # Everything editorial (deco shapes, top bar, headline, tagline) is painted straight onto the
 # form so it can layer freely, like the reference layout.
 $form.Add_Paint({
-    param($s, $e)
-    $g = $e.Graphics
-    $g.SmoothingMode = "AntiAlias"
-    $g.TextRenderingHint = "AntiAliasGridFit"
+        param($s, $e)
+        $g = $e.Graphics
+        $g.SmoothingMode = "AntiAlias"
+        $g.TextRenderingHint = "AntiAliasGridFit"
 
-    # --- background geometry ---
-    Draw-Glow $g (S -160) (S -160) (S 520) (S 420) (CA 34 $cAccent)
-    Draw-Glow $g (S 470) (S 240) (S 560) (S 480) (CA 26 $cAccent)
+        # --- background geometry ---
+        Draw-Glow $g (S -160) (S -160) (S 520) (S 420) (CA 34 $cAccent)
+        Draw-Glow $g (S 470) (S 240) (S 560) (S 480) (CA 26 $cAccent)
 
-    # rotated diamond top-right
-    $pts = @(
-        (New-Object System.Drawing.Point((S 760), (S -120))),
-        (New-Object System.Drawing.Point((S 980), (S 60))),
-        (New-Object System.Drawing.Point((S 800), (S 240))),
-        (New-Object System.Drawing.Point((S 580), (S 60))))
-    $db = New-Object System.Drawing.SolidBrush (CA 26 $cAccent)
-    $g.FillPolygon($db, $pts)
-    $db.Dispose()
+        # rotated diamond top-right
+        $pts = @(
+            (New-Object System.Drawing.Point((S 760), (S -120))),
+            (New-Object System.Drawing.Point((S 980), (S 60))),
+            (New-Object System.Drawing.Point((S 800), (S 240))),
+            (New-Object System.Drawing.Point((S 580), (S 60))))
+        $db = New-Object System.Drawing.SolidBrush (CA 26 $cAccent)
+        $g.FillPolygon($db, $pts)
+        $db.Dispose()
 
-    # triangle bottom-left
-    $pts2 = @(
-        (New-Object System.Drawing.Point((S -80), (S 640))),
-        (New-Object System.Drawing.Point((S 220), (S 640))),
-        (New-Object System.Drawing.Point((S -80), (S 430))))
-    $tb = New-Object System.Drawing.SolidBrush (CA 16 $cAccentHi)
-    $g.FillPolygon($tb, $pts2)
-    $tb.Dispose()
+        # triangle bottom-left
+        $pts2 = @(
+            (New-Object System.Drawing.Point((S -80), (S 640))),
+            (New-Object System.Drawing.Point((S 220), (S 640))),
+            (New-Object System.Drawing.Point((S -80), (S 430))))
+        $tb = New-Object System.Drawing.SolidBrush (CA 16 $cAccentHi)
+        $g.FillPolygon($tb, $pts2)
+        $tb.Dispose()
 
-    # thin sweeping arcs (the crimson "lines" of the reference, in pink)
-    $arcPen = New-Object System.Drawing.Pen ((CA 70 $cAccent), (S 2))
-    $g.DrawArc($arcPen, (S 430), (S -340), (S 760), (S 760), 70, 95)
-    $g.DrawArc($arcPen, (S 380), (S -390), (S 880), (S 880), 75, 85)
-    $arcPen.Dispose()
+        # thin sweeping arcs (the crimson "lines" of the reference, in pink)
+        $arcPen = New-Object System.Drawing.Pen ((CA 70 $cAccent), (S 2))
+        $g.DrawArc($arcPen, (S 430), (S -340), (S 760), (S 760), 70, 95)
+        $g.DrawArc($arcPen, (S 380), (S -390), (S 880), (S 880), 75, 85)
+        $arcPen.Dispose()
 
-    # --- top bar ---
-    if ($script:logoCur) { $g.DrawImage($script:logoCur, (S 28), (S 16), (S 32), (S 32)) }
-    $wm = New-Object System.Drawing.SolidBrush ($cText)
-    $g.DrawString("NullCord", $fWordmark, $wm, (S 66), (S 20))
-    $wm.Dispose()
+        # --- top bar ---
+        if ($script:logoCur) { $g.DrawImage($script:logoCur, (S 28), (S 16), (S 32), (S 32)) }
+        $wm = New-Object System.Drawing.SolidBrush ($cText)
+        $g.DrawString("NullCord", $fWordmark, $wm, (S 66), (S 20))
+        $wm.Dispose()
 
-    # --- eyebrow + pixel headline + tagline ---
-    $eb = New-Object System.Drawing.SolidBrush ($cFaint)
-    $g.DrawString((T "eyebrow"), $fEyebrow, $eb, (S 30), (S 64))
-    $eb.Dispose()
+        # --- eyebrow + pixel headline + tagline ---
+        $eb = New-Object System.Drawing.SolidBrush ($cFaint)
+        $g.DrawString((T "eyebrow"), $fEyebrow, $eb, (S 30), (S 64))
+        $eb.Dispose()
 
-    $hl1 = New-Object System.Drawing.SolidBrush ($cAccent)
-    $hl2 = New-Object System.Drawing.SolidBrush ($cText)
-    $g.DrawString((T "headline1"), $fPixelXL, $hl1, (S 24), (S 80))
-    $g.DrawString((T "headline2"), $fPixelXL, $hl2, (S 24), (S 130))
-    $hl1.Dispose(); $hl2.Dispose()
+        $hl1 = New-Object System.Drawing.SolidBrush ($cAccent)
+        $hl2 = New-Object System.Drawing.SolidBrush ($cText)
+        $g.DrawString((T "headline1"), $fPixelXL, $hl1, (S 24), (S 80))
+        $g.DrawString((T "headline2"), $fPixelXL, $hl2, (S 24), (S 130))
+        $hl1.Dispose(); $hl2.Dispose()
 
-    $tg = New-Object System.Drawing.SolidBrush ($cMuted)
-    $g.DrawString((T "tagline"), $fTag, $tg, (New-Object System.Drawing.RectangleF((S 30), (S 192), (S 436), (S 40))))
-    $tg.Dispose()
+        $tg = New-Object System.Drawing.SolidBrush ($cMuted)
+        $g.DrawString((T "tagline"), $fTag, $tg, (New-Object System.Drawing.RectangleF((S 30), (S 192), (S 436), (S 40))))
+        $tg.Dispose()
 
-    $ch = New-Object System.Drawing.SolidBrush ($cAccent)
-    $g.DrawString((T "choose"), $fSection, $ch, (S 28), (S 240))
-    $ch.Dispose()
-})
+        $ch = New-Object System.Drawing.SolidBrush ($cAccent)
+        $g.DrawString((T "choose"), $fSection, $ch, (S 28), (S 240))
+        $ch.Dispose()
+    })
 
 # --- GitHub pill + window controls (top right; the window has no native titlebar) ---
 $ghBtn = New-Pill "GitHub" $cPanel $cPanel2 $cMuted $fFoot (S 13) $true
@@ -803,9 +816,9 @@ $styleBtn = New-Pill "" $cPanel $cPanel2 $cMuted $fFoot (S 13) $true
 $styleBtn.Location = New-Object System.Drawing.Point((S 540), (S 18))
 $styleBtn.Size = New-Object System.Drawing.Size((S 110), (S 27))
 $styleBtn.Add_Click({
-    if ($script:StyleId -eq "pink") { $script:StyleId = "blue" } else { $script:StyleId = "pink" }
-    Update-Style
-})
+        if ($script:StyleId -eq "pink") { $script:StyleId = "blue" } else { $script:StyleId = "pink" }
+        Update-Style
+    })
 $form.Controls.Add($styleBtn)
 
 $btnMin = New-Pill ([string][char]8211) $cPanel $cPanel2 $cMuted $fFoot (S 13) $true
@@ -893,14 +906,14 @@ if ($installs.Count -eq 0) {
     $emptyCard.Size = New-Object System.Drawing.Size((S 440), (S 118))
     $emptyCard.BackColor = [System.Drawing.Color]::Transparent
     $emptyCard.Add_Paint({
-        param($s, $e)
-        $g = $e.Graphics
-        $g.SmoothingMode = "AntiAlias"
-        $b = New-Object System.Drawing.SolidBrush ($cPanel)
-        $path = New-RoundedPath 0 0 ($s.Width - 1) ($s.Height - 1) (S 12)
-        $g.FillPath($b, $path)
-        $b.Dispose(); $path.Dispose()
-    })
+            param($s, $e)
+            $g = $e.Graphics
+            $g.SmoothingMode = "AntiAlias"
+            $b = New-Object System.Drawing.SolidBrush ($cPanel)
+            $path = New-RoundedPath 0 0 ($s.Width - 1) ($s.Height - 1) (S 12)
+            $g.FillPath($b, $path)
+            $b.Dispose(); $path.Dispose()
+        })
     $form.Controls.Add($emptyCard)
 
     $script:emptyKey = Get-NoInstallReasonKey
@@ -913,7 +926,8 @@ if ($installs.Count -eq 0) {
     $empty.Location = New-Object System.Drawing.Point((S 14), (S 11))
     $emptyCard.Controls.Add($empty)
     $script:emptyLbl = $empty
-} else {
+}
+else {
     $rowY = 268
     for ($idx = 0; $idx -lt $installs.Count; $idx++) {
         $i = $installs[$idx]
@@ -941,32 +955,33 @@ if ($installs.Count -eq 0) {
         $cb.Add_MouseEnter($rowEnter)
         $cb.Add_MouseLeave($rowLeave)
         $cb.Add_Paint({
-            param($s, $e)
-            $g = $e.Graphics
-            $g.SmoothingMode = "AntiAlias"
-            $w = $s.Width - 1
-            $h = $s.Height - 1
-            $on = $script:rowState[[int]$s.Tag]
-            if ($on) {
-                $b = New-Object System.Drawing.SolidBrush ($cAccent)
-                $path = New-RoundedPath 0 0 $w $h (S 5)
-                $g.FillPath($b, $path)
-                $b.Dispose(); $path.Dispose()
-                $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::White, (S 2))
-                $pen.StartCap = "Round"
-                $pen.EndCap = "Round"
-                $g.DrawLines($pen, @(
-                    (New-Object System.Drawing.Point((S 4), (S 9))),
-                    (New-Object System.Drawing.Point((S 7), (S 12))),
-                    (New-Object System.Drawing.Point((S 13), (S 5)))))
-                $pen.Dispose()
-            } else {
-                $pen = New-Object System.Drawing.Pen ($cCheckOff, (S 2))
-                $path = New-RoundedPath 1 1 ($w - 1) ($h - 1) (S 5)
-                $g.DrawPath($pen, $path)
-                $pen.Dispose(); $path.Dispose()
-            }
-        })
+                param($s, $e)
+                $g = $e.Graphics
+                $g.SmoothingMode = "AntiAlias"
+                $w = $s.Width - 1
+                $h = $s.Height - 1
+                $on = $script:rowState[[int]$s.Tag]
+                if ($on) {
+                    $b = New-Object System.Drawing.SolidBrush ($cAccent)
+                    $path = New-RoundedPath 0 0 $w $h (S 5)
+                    $g.FillPath($b, $path)
+                    $b.Dispose(); $path.Dispose()
+                    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::White, (S 2))
+                    $pen.StartCap = "Round"
+                    $pen.EndCap = "Round"
+                    $g.DrawLines($pen, @(
+                            (New-Object System.Drawing.Point((S 4), (S 9))),
+                            (New-Object System.Drawing.Point((S 7), (S 12))),
+                            (New-Object System.Drawing.Point((S 13), (S 5)))))
+                    $pen.Dispose()
+                }
+                else {
+                    $pen = New-Object System.Drawing.Pen ($cCheckOff, (S 2))
+                    $path = New-RoundedPath 1 1 ($w - 1) ($h - 1) (S 5)
+                    $g.DrawPath($pen, $path)
+                    $pen.Dispose(); $path.Dispose()
+                }
+            })
         $script:rowCb[$idx] = $cb
         $row.Controls.Add($cb)
 
@@ -1050,46 +1065,47 @@ $progress.BackColor = [System.Drawing.Color]::Transparent
 try {
     $dbProp = [System.Windows.Forms.Panel].GetProperty("DoubleBuffered", [System.Reflection.BindingFlags]"Instance,NonPublic")
     $dbProp.SetValue($progress, $true, $null)
-} catch { }
+}
+catch { }
 $progress.Add_Paint({
-    param($s, $e)
-    $g = $e.Graphics
-    $g.SmoothingMode = "AntiAlias"
-    $w = $s.Width - 1
-    $h = $s.Height - 1
-    $r = [int]($h / 2)
+        param($s, $e)
+        $g = $e.Graphics
+        $g.SmoothingMode = "AntiAlias"
+        $w = $s.Width - 1
+        $h = $s.Height - 1
+        $r = [int]($h / 2)
 
-    $track = New-RoundedPath 0 0 $w $h $r
-    $tb = New-Object System.Drawing.SolidBrush ($cPanel)
-    $g.FillPath($tb, $track)
-    $tp = New-Object System.Drawing.Pen ($cBorder)
-    $g.DrawPath($tp, $track)
-    $tp.Dispose(); $tb.Dispose(); $track.Dispose()
+        $track = New-RoundedPath 0 0 $w $h $r
+        $tb = New-Object System.Drawing.SolidBrush ($cPanel)
+        $g.FillPath($tb, $track)
+        $tp = New-Object System.Drawing.Pen ($cBorder)
+        $g.DrawPath($tp, $track)
+        $tp.Dispose(); $tb.Dispose(); $track.Dispose()
 
-    $pct = 0
-    try { $pct = [int]$script:work.Pct } catch { }
-    if ($pct -gt 0) {
-        if ($pct -gt 100) { $pct = 100 }
-        $fw = [int]($w * $pct / 100)
-        if ($fw -lt $h) { $fw = $h }
-        $fillRect = New-Object System.Drawing.Rectangle(0, 0, $fw, $h)
-        $fill = New-RoundedPath 0 0 $fw $h $r
-        $fb = New-Object System.Drawing.Drawing2D.LinearGradientBrush($fillRect, $cAccent, $cAccentHi, 0)
-        $g.FillPath($fb, $fill)
-        $fb.Dispose(); $fill.Dispose()
-    }
+        $pct = 0
+        try { $pct = [int]$script:work.Pct } catch { }
+        if ($pct -gt 0) {
+            if ($pct -gt 100) { $pct = 100 }
+            $fw = [int]($w * $pct / 100)
+            if ($fw -lt $h) { $fw = $h }
+            $fillRect = New-Object System.Drawing.Rectangle(0, 0, $fw, $h)
+            $fill = New-RoundedPath 0 0 $fw $h $r
+            $fb = New-Object System.Drawing.Drawing2D.LinearGradientBrush($fillRect, $cAccent, $cAccentHi, 0)
+            $g.FillPath($fb, $fill)
+            $fb.Dispose(); $fill.Dispose()
+        }
 
-    $txt = ""
-    try { $txt = [string]$script:work.Note } catch { }
-    if ($txt) {
-        $sf = New-Object System.Drawing.StringFormat
-        $sf.Alignment = "Center"
-        $sf.LineAlignment = "Center"
-        $tw = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::White)
-        $g.DrawString($txt, $fBadge, $tw, (New-Object System.Drawing.RectangleF(0, 0, $s.Width, $s.Height)), $sf)
-        $tw.Dispose(); $sf.Dispose()
-    }
-})
+        $txt = ""
+        try { $txt = [string]$script:work.Note } catch { }
+        if ($txt) {
+            $sf = New-Object System.Drawing.StringFormat
+            $sf.Alignment = "Center"
+            $sf.LineAlignment = "Center"
+            $tw = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::White)
+            $g.DrawString($txt, $fBadge, $tw, (New-Object System.Drawing.RectangleF(0, 0, $s.Width, $s.Height)), $sf)
+            $tw.Dispose(); $sf.Dispose()
+        }
+    })
 $form.Controls.Add($progress)
 
 # --- status log (borderless TextBox inside a rounded card) ---
@@ -1098,16 +1114,16 @@ $statusCard.Location = New-Object System.Drawing.Point((S 28), (S 564))
 $statusCard.Size = New-Object System.Drawing.Size((S 440), (S 56))
 $statusCard.BackColor = [System.Drawing.Color]::Transparent
 $statusCard.Add_Paint({
-    param($s, $e)
-    $g = $e.Graphics
-    $g.SmoothingMode = "AntiAlias"
-    $path = New-RoundedPath 0 0 ($s.Width - 1) ($s.Height - 1) (S 10)
-    $b = New-Object System.Drawing.SolidBrush ($cPanel)
-    $g.FillPath($b, $path)
-    $pen = New-Object System.Drawing.Pen ($cBorder)
-    $g.DrawPath($pen, $path)
-    $b.Dispose(); $pen.Dispose(); $path.Dispose()
-})
+        param($s, $e)
+        $g = $e.Graphics
+        $g.SmoothingMode = "AntiAlias"
+        $path = New-RoundedPath 0 0 ($s.Width - 1) ($s.Height - 1) (S 10)
+        $b = New-Object System.Drawing.SolidBrush ($cPanel)
+        $g.FillPath($b, $path)
+        $pen = New-Object System.Drawing.Pen ($cBorder)
+        $g.DrawPath($pen, $path)
+        $b.Dispose(); $pen.Dispose(); $path.Dispose()
+    })
 $form.Controls.Add($statusCard)
 
 $status = New-Object System.Windows.Forms.TextBox
@@ -1132,69 +1148,70 @@ $art.BackColor = [System.Drawing.Color]::Transparent
 try {
     $dbProp2 = [System.Windows.Forms.Panel].GetProperty("DoubleBuffered", [System.Reflection.BindingFlags]"Instance,NonPublic")
     $dbProp2.SetValue($art, $true, $null)
-} catch { }
+}
+catch { }
 $art.Add_Paint({
-    param($s, $e)
-    $g = $e.Graphics
-    $g.SmoothingMode = "AntiAlias"
-    $g.TextRenderingHint = "AntiAliasGridFit"
-    $w = $s.Width
-    $h = $s.Height
+        param($s, $e)
+        $g = $e.Graphics
+        $g.SmoothingMode = "AntiAlias"
+        $g.TextRenderingHint = "AntiAliasGridFit"
+        $w = $s.Width
+        $h = $s.Height
 
-    # rounded card filled with a vertical gradient; the inner artwork is clipped to the card
-    $card = New-RoundedPath 0 0 ($w - 1) ($h - 1) (S 18)
-    $rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
-    $gb = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect,
-        $cArtTop,
-        $cArtBottom, 90)
-    $g.FillPath($gb, $card)
-    $gb.Dispose()
-    $g.SetClip($card)
+        # rounded card filled with a vertical gradient; the inner artwork is clipped to the card
+        $card = New-RoundedPath 0 0 ($w - 1) ($h - 1) (S 18)
+        $rect = New-Object System.Drawing.Rectangle(0, 0, $w, $h)
+        $gb = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect,
+            $cArtTop,
+            $cArtBottom, 90)
+        $g.FillPath($gb, $card)
+        $gb.Dispose()
+        $g.SetClip($card)
 
-    # geometry inside the card
-    $pts = @(
-        (New-Object System.Drawing.Point([int]($w * 0.55), 0)),
-        (New-Object System.Drawing.Point($w, 0)),
-        (New-Object System.Drawing.Point($w, [int]($h * 0.4))))
-    $pb = New-Object System.Drawing.SolidBrush (CA 30 $cAccent)
-    $g.FillPolygon($pb, $pts)
-    $pb.Dispose()
-    $pts2 = @(
-        (New-Object System.Drawing.Point(0, $h)),
-        (New-Object System.Drawing.Point(0, [int]($h * 0.72))),
-        (New-Object System.Drawing.Point([int]($w * 0.45), $h)))
-    $pb2 = New-Object System.Drawing.SolidBrush (CA 22 $cAccentHi)
-    $g.FillPolygon($pb2, $pts2)
-    $pb2.Dispose()
+        # geometry inside the card
+        $pts = @(
+            (New-Object System.Drawing.Point([int]($w * 0.55), 0)),
+            (New-Object System.Drawing.Point($w, 0)),
+            (New-Object System.Drawing.Point($w, [int]($h * 0.4))))
+        $pb = New-Object System.Drawing.SolidBrush (CA 30 $cAccent)
+        $g.FillPolygon($pb, $pts)
+        $pb.Dispose()
+        $pts2 = @(
+            (New-Object System.Drawing.Point(0, $h)),
+            (New-Object System.Drawing.Point(0, [int]($h * 0.72))),
+            (New-Object System.Drawing.Point([int]($w * 0.45), $h)))
+        $pb2 = New-Object System.Drawing.SolidBrush (CA 22 $cAccentHi)
+        $g.FillPolygon($pb2, $pts2)
+        $pb2.Dispose()
 
-    # glow + mascot
-    Draw-Glow $g ([int]($w / 2) - (S 130)) (S 60) (S 260) (S 260) (CA 80 $cAccent)
-    if ($script:logoCur) { $g.DrawImage($script:logoCur, ([int]($w / 2) - (S 88)), (S 96), (S 176), (S 176)) }
+        # glow + mascot
+        Draw-Glow $g ([int]($w / 2) - (S 130)) (S 60) (S 260) (S 260) (CA 80 $cAccent)
+        if ($script:logoCur) { $g.DrawImage($script:logoCur, ([int]($w / 2) - (S 88)), (S 96), (S 176), (S 176)) }
 
-    Draw-Sparkle $g (S 60) (S 80) (S 5) 200
-    Draw-Sparkle $g (S 296) (S 120) (S 4) 150
-    Draw-Sparkle $g (S 70) (S 300) (S 3) 130
-    Draw-Sparkle $g (S 290) (S 330) (S 6) 180
+        Draw-Sparkle $g (S 60) (S 80) (S 5) 200
+        Draw-Sparkle $g (S 296) (S 120) (S 4) 150
+        Draw-Sparkle $g (S 70) (S 300) (S 3) 130
+        Draw-Sparkle $g (S 290) (S 330) (S 6) 180
 
-    # pixel wordmark + sub line
-    $sf = New-Object System.Drawing.StringFormat
-    $sf.Alignment = "Center"
-    $p1 = New-Object System.Drawing.SolidBrush ($cAccent)
-    $g.DrawString("NullCord", $fPixelM, $p1, (New-Object System.Drawing.RectangleF(0, (S 306), $w, (S 50))), $sf)
-    $p1.Dispose()
-    $subLine = "plugins - themes - pink"
-    if ($script:StyleId -eq "blue") { $subLine = "plugins - themes - your way" }
-    $p2 = New-Object System.Drawing.SolidBrush ($cMuted)
-    $g.DrawString($subLine, $fPixelS, $p2, (New-Object System.Drawing.RectangleF(0, (S 348), $w, (S 30))), $sf)
-    $p2.Dispose()
-    $sf.Dispose()
+        # pixel wordmark + sub line
+        $sf = New-Object System.Drawing.StringFormat
+        $sf.Alignment = "Center"
+        $p1 = New-Object System.Drawing.SolidBrush ($cAccent)
+        $g.DrawString("NullCord", $fPixelM, $p1, (New-Object System.Drawing.RectangleF(0, (S 306), $w, (S 50))), $sf)
+        $p1.Dispose()
+        $subLine = "plugins - themes - pink"
+        if ($script:StyleId -eq "blue") { $subLine = "plugins - themes - your way" }
+        $p2 = New-Object System.Drawing.SolidBrush ($cMuted)
+        $g.DrawString($subLine, $fPixelS, $p2, (New-Object System.Drawing.RectangleF(0, (S 348), $w, (S 30))), $sf)
+        $p2.Dispose()
+        $sf.Dispose()
 
-    # border
-    $g.ResetClip()
-    $pen = New-Object System.Drawing.Pen ($cBorder)
-    $g.DrawPath($pen, $card)
-    $pen.Dispose(); $card.Dispose()
-})
+        # border
+        $g.ResetClip()
+        $pen = New-Object System.Drawing.Pen ($cBorder)
+        $g.DrawPath($pen, $card)
+        $pen.Dispose(); $card.Dispose()
+    })
 $form.Controls.Add($art)
 
 # --- footer: language picker (custom pill + dark dropdown menu) + ToS note ---
@@ -1211,21 +1228,22 @@ if ($script:darkMenuOk) {
         $script:menuColors = New-Object NullCordMenuColors
         Set-StylePalette $script:StyleId
         $langMenu.Renderer = New-Object System.Windows.Forms.ToolStripProfessionalRenderer ($script:menuColors)
-    } catch { }
+    }
+    catch { }
 }
 for ($li = 0; $li -lt $script:LangCodes.Count; $li++) {
     $item = $langMenu.Items.Add($script:LangNames[$li])
     $item.ForeColor = $cText
     $item.Tag = $script:LangCodes[$li]
     $item.Add_Click({
-        param($s, $e)
-        $script:Lang = [string]$s.Tag
-        Update-Language
-    })
+            param($s, $e)
+            $script:Lang = [string]$s.Tag
+            Update-Language
+        })
 }
 $langBtn.Add_Click({
-    $langMenu.Show($langBtn, (New-Object System.Drawing.Point(0, 0)), [System.Windows.Forms.ToolStripDropDownDirection]::AboveRight)
-})
+        $langMenu.Show($langBtn, (New-Object System.Drawing.Point(0, 0)), [System.Windows.Forms.ToolStripDropDownDirection]::AboveRight)
+    })
 
 $footNote = New-Object System.Windows.Forms.Label
 $footNote.AutoSize = $true
@@ -1294,10 +1312,15 @@ function Update-Language {
 
 function Update-Style {
     Set-StylePalette $script:StyleId
-    $script:logoCur = $logo
-    if ($script:StyleId -eq "blue" -and $script:logoBlue) { $script:logoCur = $script:logoBlue }
-    $icon = $script:iconPink
-    if ($script:StyleId -eq "blue" -and $script:iconBlue) { $icon = $script:iconBlue }
+    if ($script:StyleId -eq "blue") {
+        if ($script:logoBlue) { $script:logoCur = $script:logoBlue }
+        $icon = $script:iconBlue
+    }
+    else {
+        $script:logoCur = $logo
+        $icon = $script:iconPink
+    }
+    if ($script:StyleId -eq "blue" -and -not $icon) { $icon = $script:iconPink }
     if ($icon) { try { $form.Icon = $icon } catch { } }
     $form.BackColor = $cBg
     $txtCode.BackColor = $cPanel
@@ -1359,7 +1382,8 @@ $workerBody = {
             if ($c -is [byte[]]) { $c = [System.Text.Encoding]::ASCII.GetString($c) }
             $c = ([string]$c).Trim().ToLower()
             if ($c -match '^[0-9a-f]{64}$') { return $c }
-        } catch { }
+        }
+        catch { }
         return $null
     }
 
@@ -1380,7 +1404,8 @@ $workerBody = {
                 return $false
             }
             Log $L.logChecksumOk
-        } else {
+        }
+        else {
             Log $L.logChecksumNone
         }
         return $true
@@ -1421,7 +1446,8 @@ $workerBody = {
                                 $st.Pct = $pct
                                 $st.Note = ($L.noteDownload -f $pct, ([Math]::Round($sum / 1MB, 1)), ([Math]::Round($total / 1MB, 1)))
                             }
-                        } else {
+                        }
+                        else {
                             $mb = [Math]::Round($sum / 1MB, 1)
                             if ($mb -ne $lastMb) { $lastMb = $mb; $st.Note = ($L.noteDownloadMb -f $mb) }
                         }
@@ -1429,7 +1455,8 @@ $workerBody = {
                     $outStream.Close(); $inStream.Close(); $resp.Close()
                     Log ($L.logDownloaded -f ([Math]::Round($sum / 1MB, 1)))
                     $ok = Test-AsarFile $expected
-                } catch {
+                }
+                catch {
                     $script:dlErr = $_.Exception.Message
                     try { if ($outStream) { $outStream.Close() } } catch { }
                     try { if ($inStream) { $inStream.Close() } } catch { }
@@ -1459,11 +1486,11 @@ $workerBody = {
             $st.Note = $L.notePatching
             Log $L.logPatching
             $idx = 'try {' + "`r`n" +
-                '    require("' + $AsarForward + '");' + "`r`n" +
-                '} catch (err) {' + "`r`n" +
-                '    console.error("[NullCord] Failed to load, starting vanilla Discord:", err);' + "`r`n" +
-                '    require("../_app.asar");' + "`r`n" +
-                '}'
+            '    require("' + $AsarForward + '");' + "`r`n" +
+            '} catch (err) {' + "`r`n" +
+            '    console.error("[NullCord] Failed to load, starting vanilla Discord:", err);' + "`r`n" +
+            '    require("../_app.asar");' + "`r`n" +
+            '}'
             foreach ($i in $sel) {
                 try {
                     Get-Process -Name $i.Proc -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -1479,7 +1506,8 @@ $workerBody = {
                     Set-Content -Path (Join-Path $appDir "package.json") -Encoding utf8 -Value '{ "name": "discord", "main": "index.js", "private": true }'
                     Set-Content -Path (Join-Path $appDir "index.js") -Encoding utf8 -Value $idx
                     Log ($L.logPatched -f $i.Name)
-                } catch { Log ($L.logErrPatch -f $i.Name, $_.Exception.Message); $st.Ok = $false }
+                }
+                catch { Log ($L.logErrPatch -f $i.Name, $_.Exception.Message); $st.Ok = $false }
             }
             # Relaunch the patched Discord(s) so the user sees NullCord immediately - no manual restart.
             foreach ($i in $sel) {
@@ -1489,11 +1517,13 @@ $workerBody = {
                         Start-Process -FilePath $updateExe -ArgumentList "--processStart", ($i.Proc + ".exe")
                         Log ($L.logRestarting -f $i.Name)
                     }
-                } catch { }
+                }
+                catch { }
             }
             $st.Note = $L.noteDone
             Log $L.logDoneInstall
-        } else {
+        }
+        else {
             $st.Note = $L.noteRemoving
             foreach ($i in $sel) {
                 try {
@@ -1506,14 +1536,17 @@ $workerBody = {
                     if (Test-Path $appDir) { Remove-Item -Path $appDir -Recurse -Force }
                     if ((Test-Path $backup) -and -not (Test-Path $appAsar)) { Move-Item -Path $backup -Destination $appAsar -Force }
                     Log ($L.logReverted -f $i.Name)
-                } catch { Log ($L.logErrRevert -f $i.Name, $_.Exception.Message); $st.Ok = $false }
+                }
+                catch { Log ($L.logErrRevert -f $i.Name, $_.Exception.Message); $st.Ok = $false }
             }
             $st.Note = $L.noteDone
             Log $L.logDoneUninstall
         }
-    } catch {
+    }
+    catch {
         Log ("Error: " + $_.Exception.Message); $st.Ok = $false
-    } finally {
+    }
+    finally {
         $st.Done = $true
     }
 }
@@ -1521,22 +1554,23 @@ $workerBody = {
 $script:poll = New-Object System.Windows.Forms.Timer
 $script:poll.Interval = 200
 $script:poll.Add_Tick({
-    while ($script:workQueue.Count -gt 0) { Write-Status ([string]$script:workQueue.Dequeue()) }
-    $progress.Invalidate()
-    if ($script:work.Done) {
-        $script:poll.Stop()
-        try { $script:wps.EndInvoke($script:whandle) } catch { }
-        try { $script:wps.Dispose() } catch { }
-        try { $script:wrs.Dispose() } catch { }
-        Set-Busy $false
+        while ($script:workQueue.Count -gt 0) { Write-Status ([string]$script:workQueue.Dequeue()) }
         $progress.Invalidate()
-        if ($script:work.Ok) {
-            [System.Windows.Forms.MessageBox]::Show($script:doneMsg, "NullCord", "OK", "Information") | Out-Null
-        } else {
-            [System.Windows.Forms.MessageBox]::Show((T "msgError"), "NullCord", "OK", "Warning") | Out-Null
+        if ($script:work.Done) {
+            $script:poll.Stop()
+            try { $script:wps.EndInvoke($script:whandle) } catch { }
+            try { $script:wps.Dispose() } catch { }
+            try { $script:wrs.Dispose() } catch { }
+            Set-Busy $false
+            $progress.Invalidate()
+            if ($script:work.Ok) {
+                [System.Windows.Forms.MessageBox]::Show($script:doneMsg, "NullCord", "OK", "Information") | Out-Null
+            }
+            else {
+                [System.Windows.Forms.MessageBox]::Show((T "msgError"), "NullCord", "OK", "Warning") | Out-Null
+            }
         }
-    }
-})
+    })
 
 function Start-Work($mode, $sel) {
     $script:work.Done = $false
@@ -1590,7 +1624,8 @@ function Save-CreatorCode {
             # makes the client's JSON.parse of referral.json fail, so the code would never be counted.
             [System.IO.File]::WriteAllText((Join-Path $dir "referral.json"), $json, (New-Object System.Text.UTF8Encoding($false)))
         }
-    } catch { }
+    }
+    catch { }
 }
 
 function Save-StyleSeed {
@@ -1600,46 +1635,49 @@ function Save-StyleSeed {
         $ts = [int64]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds())
         $json = '{"accent":"' + $script:StyleId + '","ts":' + $ts + '}'
         [System.IO.File]::WriteAllText((Join-Path $dir "style.json"), $json, (New-Object System.Text.UTF8Encoding($false)))
-    } catch { }
+    }
+    catch { }
 }
 
 $btnInstall.Add_Click({
-    if (-not $btnInstall.Tag.On) { return }
-    $sel = Get-Selected
-    if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
-    Save-CreatorCode
-    Save-StyleSeed
-    Set-Busy $true
-    $script:doneMsg = (T "msgDoneInstall")
-    Start-Work "install" $sel
-})
+        if (-not $btnInstall.Tag.On) { return }
+        $sel = Get-Selected
+        if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
+        Save-CreatorCode
+        Save-StyleSeed
+        Set-Busy $true
+        $script:doneMsg = (T "msgDoneInstall")
+        Start-Work "install" $sel
+    })
 $btnRepair.Add_Click({
-    if (-not $btnRepair.Tag.On) { return }
-    $sel = Get-Selected
-    if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
-    Save-StyleSeed
-    Set-Busy $true
-    $script:doneMsg = (T "msgDoneInstall")
-    Start-Work "install" $sel
-})
+        if (-not $btnRepair.Tag.On) { return }
+        $sel = Get-Selected
+        if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
+        Save-StyleSeed
+        Set-Busy $true
+        $script:doneMsg = (T "msgDoneInstall")
+        Start-Work "install" $sel
+    })
 $btnUninstall.Add_Click({
-    if (-not $btnUninstall.Tag.On) { return }
-    $sel = Get-Selected
-    if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
-    Set-Busy $true
-    $script:doneMsg = (T "msgDoneUninstall")
-    Start-Work "uninstall" $sel
-})
+        if (-not $btnUninstall.Tag.On) { return }
+        $sel = Get-Selected
+        if ($sel.Count -eq 0) { Write-Status (T "selectFirst"); return }
+        Set-Busy $true
+        $script:doneMsg = (T "msgDoneUninstall")
+        Start-Work "uninstall" $sel
+    })
 
 $form.Add_Shown({
-    Update-Language
-})
+        Update-Language
+    })
 
 try {
     [System.Windows.Forms.Application]::Run($form)
-} catch {
+}
+catch {
     [System.Windows.Forms.MessageBox]::Show("NullCord installer error:`n$($_.Exception.Message)", "NullCord", "OK", "Error") | Out-Null
 }
+
 
 
 

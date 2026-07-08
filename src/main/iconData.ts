@@ -10,3 +10,4 @@ export const KITTY_ICON_DATA_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg
 
 
 
+
