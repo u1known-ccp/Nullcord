@@ -132,6 +132,14 @@ async function updateAndRelaunch() {
     relaunch();
 }
 
+function promptUpdateAndRestart() {
+    showNotice(
+        "A new version of NullCord is available. Update now and restart Discord to load it.",
+        "Update & Restart",
+        updateAndRelaunch
+    );
+}
+
 async function runUpdateCheck() {
     if (IS_UPDATER_DISABLED) return;
     // Once we've notified (or auto-updated + notified) this session, stop re-checking, so the periodic
@@ -156,27 +164,21 @@ async function runUpdateCheck() {
 
         if (Settings.autoUpdate) {
             await update();
-            if (Settings.autoUpdateNotification) {
-                if (notifiedForUpdatesThisSession) return;
-                notifiedForUpdatesThisSession = true;
+            if (notifiedForUpdatesThisSession) return;
+            notifiedForUpdatesThisSession = true;
 
-                showNotice(
-                    "NullCord has been updated!",
-                    "Restart",
-                    updateAndRelaunch
-                );
-            }
+            showNotice(
+                "NullCord has downloaded an update. Restart Discord to load the new version.",
+                "Restart Discord",
+                relaunch
+            );
             return;
         }
 
         if (notifiedForUpdatesThisSession) return;
         notifiedForUpdatesThisSession = true;
 
-        showNotice(
-            "A new version of NullCord is available!",
-            "View Update",
-            () => openSettingsTabModal(UpdaterTab!)
-        );
+        promptUpdateAndRestart();
     } catch (err) {
         UpdateLogger.error("Failed to check for updates", err);
     }
@@ -191,7 +193,7 @@ function initTrayIpc() {
             VencordNative.tray.setUpdateState(isOutdated);
 
             if (isOutdated) {
-                showNotice("A NullCord update is available!", "View Update", () => openSettingsTabModal(UpdaterTab!));
+                promptUpdateAndRestart();
             } else {
                 showNotice("No updates available, you're on the latest version!", "OK", popNotice);
             }
