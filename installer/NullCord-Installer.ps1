@@ -379,16 +379,35 @@ function Download-ReleaseAsar {
     New-Item -ItemType Directory -Path (Split-Path -Path $TargetPath -Parent) -Force | Out-Null
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-    $request = [System.Net.HttpWebRequest]::Create($ReleaseAsarUrl)
-    $request.UserAgent = "NullCordInstaller/2"
-    $request.AllowAutoRedirect = $true
-    $response = $request.GetResponse()
+    $maxAttempts = 4
+    $downloadSucceeded = $false
 
-    try {
-        $total = [double]$response.ContentLength
-        $stream = $response.GetResponseStream()
-        $file = [System.IO.File]::Open($TargetPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+    for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+        $response = $null
+        $stream = $null
+        $file = $null
+
         try {
+            if (Test-Path $TargetPath) {
+                Remove-Item -Path $TargetPath -Force -ErrorAction SilentlyContinue
+            }
+
+            $request = [System.Net.HttpWebRequest]::Create($ReleaseAsarUrl)
+            $request.UserAgent = "NullCordInstaller/2"
+            $request.AllowAutoRedirect = $true
+            $request.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip -bor [System.Net.DecompressionMethods]::Deflate
+            $request.Timeout = 30000
+            $request.ReadWriteTimeout = 30000
+            $request.Proxy = [System.Net.WebRequest]::GetSystemWebProxy()
+            if ($request.Proxy) {
+                $request.Proxy.Credentials = [System.Net.CredentialCache]::DefaultCredentials
+            }
+
+            $response = $request.GetResponse()
+            $total = [double]$response.ContentLength
+            $stream = $response.GetResponseStream()
+            $file = [System.IO.File]::Open($TargetPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+
             $buffer = New-Object byte[] 65536
             $readTotal = 0L
             while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) {
@@ -400,14 +419,30 @@ function Download-ReleaseAsar {
                     Set-Status -Message ("Downloading build... {0}%" -f $percent)
                 }
             }
+
+            $downloadSucceeded = $true
+            break
+        }
+        catch {
+            $errorMessage = $_.Exception.Message
+            if ($attempt -ge $maxAttempts) {
+                throw "Failed to download desktop.asar after $maxAttempts attempts. Last error: $errorMessage"
+            }
+
+            Write-Log -Message ("Download attempt {0}/{1} failed: {2}" -f $attempt, $maxAttempts, $errorMessage) -Color ([System.Drawing.Color]::FromArgb(255, 196, 138))
+            Set-Status -Message ("Download interrupted, retrying ({0}/{1})..." -f $attempt, $maxAttempts)
+            $waitSeconds = [int][Math]::Min(10, [Math]::Pow(2, $attempt))
+            Start-Sleep -Seconds $waitSeconds
         }
         finally {
-            $file.Dispose()
-            $stream.Dispose()
+            if ($file) { $file.Dispose() }
+            if ($stream) { $stream.Dispose() }
+            if ($response) { $response.Dispose() }
         }
     }
-    finally {
-        $response.Dispose()
+
+    if (-not $downloadSucceeded) {
+        throw "Download failed: desktop.asar could not be downloaded"
     }
 
     if (-not (Test-Path $TargetPath)) {
@@ -415,15 +450,22 @@ function Download-ReleaseAsar {
     }
 
     $expected = $null
-    try {
-        $shaResponse = Invoke-WebRequest -Uri ($ReleaseAsarUrl + ".sha256") -UseBasicParsing -TimeoutSec 15
-        $shaText = [string]$shaResponse.Content
-        $shaText = $shaText.Trim().ToLower()
-        if ($shaText -match '^[0-9a-f]{64}$') {
-            $expected = $shaText
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            $shaResponse = Invoke-WebRequest -Uri ($ReleaseAsarUrl + ".sha256") -UseBasicParsing -TimeoutSec 20 -Headers @{ "User-Agent" = "NullCordInstaller/2" }
+            $shaText = [string]$shaResponse.Content
+            $shaText = $shaText.Trim().ToLower()
+            if ($shaText -match '^[0-9a-f]{64}$') {
+                $expected = $shaText
+            }
+            break
+        }
+        catch {
+            if ($attempt -lt 3) {
+                Start-Sleep -Seconds $attempt
+            }
         }
     }
-    catch { }
 
     if ($expected) {
         $actual = (Get-FileHash -Path $TargetPath -Algorithm SHA256).Hash.ToLower()
@@ -445,9 +487,22 @@ function Resolve-LoaderPath {
     }
 
     Write-Log -Message "Downloading latest NullCord release..."
-    Download-ReleaseAsar -TargetPath $DownloadedAsarPath
-    Write-Log -Message "Release build downloaded and verified."
-    return $DownloadedAsarPath
+    try {
+        Download-ReleaseAsar -TargetPath $DownloadedAsarPath
+        Write-Log -Message "Release build downloaded and verified."
+        return $DownloadedAsarPath
+    }
+    catch {
+        $releaseError = $_.Exception.Message
+        if (Test-Path $LocalPatcherPath) {
+            Write-Log -Message ("Release download failed: {0}" -f $releaseError) -Color ([System.Drawing.Color]::FromArgb(255, 196, 138))
+            Write-Log -Message ("Falling back to local build: {0}" -f $LocalPatcherPath) -Color ([System.Drawing.Color]::FromArgb(255, 196, 138))
+            Set-Status -Message "Using local fallback build..."
+            return $LocalPatcherPath
+        }
+
+        throw ("Release build download failed: {0} No local build found at {1}. Run 'corepack pnpm build' and retry with source Local, or try again later." -f $releaseError, $LocalPatcherPath)
+    }
 }
 
 function Get-StateLabel {

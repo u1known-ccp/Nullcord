@@ -6,6 +6,7 @@
 
 import { addProfileBadge, BadgePosition, ProfileBadge, removeProfileBadge } from "@api/Badges";
 import definePlugin, { type PluginNative } from "@utils/types";
+import { GuildMemberStore, GuildRoleStore } from "@webpack/common";
 
 import { BRAND_WEBSITE } from "../../branding";
 
@@ -17,6 +18,10 @@ const HELPER_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 
 const DONOR_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 20.7 4.3 13a5 5 0 0 1 7.05-7.05l.65.64.65-.64A5 5 0 0 1 19.7 13z'/><circle cx='8.6' cy='9.4' r='1.35' fill='#fff' opacity='.85'/></svg>");
 const CONTRIBUTOR_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/></svg>");
 const BUGHUNTER_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#ff5fa6' d='M12 5c1.7 0 3.1 1 3.8 2.4C17.6 8.5 19 10.6 19 13c0 3.3-3.1 6-7 6s-7-2.7-7-6c0-2.4 1.4-4.5 3.2-5.6C8.9 6 10.3 5 12 5Z'/><path fill='none' stroke='#fff' stroke-width='1.5' stroke-linecap='round' d='M12 8.5v8M8.6 5.6 6.5 3.5M15.4 5.6l2.1-2.1'/><circle cx='9' cy='12' r='1' fill='#fff'/><circle cx='15' cy='12' r='1' fill='#fff'/></svg>");
+const OWNER_CROWN_ICON = svgIcon("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='#f7b500' d='M3 18h18l-1.5-9-4.7 4.2L12 6 9.2 13.2 4.5 9z'/><path fill='#ffd666' d='M3 18h18v2H3z'/><circle cx='6.3' cy='9.8' r='1.1' fill='#fff4c2'/><circle cx='12' cy='7.2' r='1.1' fill='#fff4c2'/><circle cx='17.7' cy='9.8' r='1.1' fill='#fff4c2'/></svg>");
+
+const NULLCORD_GUILD_ID = "1524135162785435688";
+const NULLCORD_OWNER_ROLE_ID = "1524146425078743141";
 
 interface TeamRole {
     id: string;
@@ -84,8 +89,38 @@ const Native = VencordNative?.pluginHelpers?.NullCordBadges as PluginNative<type
 const roleMembers = new Map<string, Set<string>>(ROLES.map(role => [role.id, new Set(role.members)]));
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let nullCordGuildId: string | null = null;
+let nullCordRoleId: string | null = null;
+
+function resolveNullCordRoleTarget() {
+    nullCordGuildId = null;
+    nullCordRoleId = null;
+
+    if (!GuildRoleStore?.getRole) return;
+
+    const role = GuildRoleStore.getRole(NULLCORD_GUILD_ID, NULLCORD_OWNER_ROLE_ID);
+    if (!role) return;
+
+    nullCordGuildId = NULLCORD_GUILD_ID;
+    nullCordRoleId = NULLCORD_OWNER_ROLE_ID;
+}
+
+function hasNullCordRole(userId: string) {
+    if (!GuildMemberStore?.getMember) return false;
+
+    if (!nullCordGuildId || !nullCordRoleId) {
+        resolveNullCordRoleTarget();
+    }
+
+    if (!nullCordGuildId || !nullCordRoleId) return false;
+
+    const member = GuildMemberStore.getMember(nullCordGuildId, userId);
+    return !!member?.roles?.includes(nullCordRoleId);
+}
 
 async function refresh() {
+    resolveNullCordRoleTarget();
+
     if (!Native) return;
     const members = await Native.getTeam();
     if (!members) return;
@@ -103,6 +138,15 @@ const badges: ProfileBadge[] = ROLES.map(role => ({
     shouldShow: ({ userId }) => roleMembers.get(role.id)?.has(userId) ?? false
 }));
 
+const nullCordCommunityBadge: ProfileBadge = {
+    id: "NullCord-community-role",
+    description: "NullCord Owner",
+    iconSrc: OWNER_CROWN_ICON,
+    position: BadgePosition.START,
+    link: BRAND_WEBSITE,
+    shouldShow: ({ userId }) => hasNullCordRole(userId)
+};
+
 export default definePlugin({
     name: "NullCordBadges",
     description: "Shows NullCord badges — team (Developer, Staff, Helper) and supporters (Donor, Contributor) — on the profiles of the people who build, support and back NullCord. Visible to everyone running NullCord.",
@@ -112,6 +156,7 @@ export default definePlugin({
 
     async start() {
         badges.forEach(b => addProfileBadge(b));
+        addProfileBadge(nullCordCommunityBadge);
         await refresh();
         refreshTimer = setInterval(refresh, 10 * 60 * 1000);
     },
@@ -122,6 +167,7 @@ export default definePlugin({
             refreshTimer = null;
         }
         badges.forEach(b => removeProfileBadge(b));
+        removeProfileBadge(nullCordCommunityBadge);
     }
 });
 
